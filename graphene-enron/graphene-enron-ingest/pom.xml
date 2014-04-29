@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>graphene-enron</groupId>
+		<artifactId>graphene-enron</artifactId>
+		<version>4.0.6-SNAPSHOT</version>
+	</parent>
+	<groupId>graphene-enron</groupId>
+	<artifactId>graphene-enron-ingest</artifactId>
+	<description>Ingest scripts and utilities that should not be deployed on a web server.</description>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-ingest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-model</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-dao</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-dao-sql</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-dao-neo4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>graphene</groupId>
+			<artifactId>graphene-util</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>graphene</groupId>
+			<artifactId>graphene-introspect</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+		</dependency>
+		<!-- This may not be the best way to do this. See build notes in this module. -->
+		<dependency>
+			<groupId>graphene-enron</groupId>
+			<artifactId>graphene-enron-web</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+			<classifier>classes</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>com.mysema.querydsl</groupId>
+			<artifactId>querydsl-sql-codegen</artifactId>
+		</dependency>
+
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>

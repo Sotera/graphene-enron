@@ -1,0 +1,21 @@
+To import old Enron database into MySQL 5.6
+In sql:
+
+set @@sql_mode='no_engine_substitution';
+select @@sql_mode;
+
+SELECT @@global.time_zone, @@session.time_zone;
+SET GLOBAL time_zone = '-5:00';
+
+
+
+
+From command line, with unix tools (or windows port of unix tools), modify the old enron.sql file to be acceptable to MySQL 5.6
+
+sed -i 's/TYPE=MyISAM/ENGINE=MyISAM/g' enron.sql
+sed -i 's/timestamp(14)/timestamp/g' enron.sql
+sed -i 's/messagedt timestamp/messagedt datetime/g' enron.sql
+
+
+Then from command line:
+mysql --user=root --password=password enron < enron.sql

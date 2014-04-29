@@ -1,0 +1,269 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>graphene-enron</groupId>
+		<artifactId>graphene-enron</artifactId>
+		<version>4.0.6-SNAPSHOT</version>
+	</parent>
+	<groupId>graphene-enron</groupId>
+	<artifactId>graphene-enron-web</artifactId>
+	<version>4.0.6-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<description>Web module (war) for Enron demo</description>
+	<dependencies>
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.jtds</groupId>
+			<artifactId>jtds</artifactId>
+		</dependency>
+		<!-- Too set up an application with a database, change the artifactId below 
+			to tapestry-hibernate, and add a dependency on your JDBC driver. You'll also 
+			need to add Hibernate configuration files, such as hibernate.cfg.xml. -->
+		<dependency>
+			<groupId>org.apache.tapestry</groupId>
+			<artifactId>tapestry-core</artifactId>
+		</dependency>
+		<!-- This adds automatic compression of JavaScript and CSS when in production 
+			mode. -->
+		<dependency>
+			<groupId>org.apache.tapestry</groupId>
+			<artifactId>tapestry-yuicompressor</artifactId>
+		</dependency>
+		<!-- Uncomment this to add support for file uploads: <dependency> <groupId>org.apache.tapestry</groupId> 
+			<artifactId>tapestry-upload</artifactId> <version>${tapestry-release-version}</version> 
+			</dependency> -->
+		<!-- A dependency on either JUnit or TestNG is required, or the surefire 
+			plugin (which runs the tests) will fail, preventing Maven from packaging 
+			the WAR. Tapestry includes a large number of testing facilities designed 
+			for use with TestNG (http://testng.org/), so it's recommended. -->
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Provided by the servlet container, but sometimes referenced in the 
+			application code. -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<!-- Provide dependency to the Tapestry javadoc taglet which replaces the 
+			Maven component report -->
+		<dependency>
+			<groupId>org.apache.tapestry</groupId>
+			<artifactId>tapestry-javadoc</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.tynamo</groupId>
+			<artifactId>tapestry-resteasy</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-avro</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-csv</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-jaxb-provider</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.solr</groupId>
+			<artifactId>solr-solrj</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.mysema.querydsl</groupId>
+			<artifactId>querydsl-apt</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mysema.querydsl</groupId>
+			<artifactId>querydsl-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.mysema.querydsl</groupId>
+			<artifactId>querydsl-collections</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.mysema.querydsl</groupId>
+			<artifactId>querydsl-sql</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.mysema.querydsl</groupId>
+			<artifactId>querydsl-sql-codegen</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tapestry</groupId>
+			<artifactId>tapestry-ioc</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-rest</artifactId>
+			<type>jar</type>
+		</dependency>
+		<!-- Here's the war overlay -->
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-web</artifactId>
+			<type>war</type>
+		</dependency>
+		<!-- Here's just the classes, needed for compilation -->
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-web</artifactId>
+			<classifier>classes</classifier>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<artifactId>graphene-model</artifactId>
+			<groupId>${base.project.groupId}</groupId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-dao</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-search</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-util</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-memorydb</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-dao-sql</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-dao-neo4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-model</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-dao</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${base.project.groupId}</groupId>
+			<artifactId>graphene-export</artifactId>
+			<type>jar</type>
+		</dependency>
+
+	</dependencies>
+	<repositories>
+		<!-- This repository is only needed when the Tapestry version is a preview 
+			release, rather than a final release. -->
+		<repository>
+			<id>apache-staging</id>
+			<url>https://repository.apache.org/content/groups/staging/</url>
+		</repository>
+	</repositories>
+	<build>
+		<finalName>graphene-enron-web</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<!-- <includes> <include>**/*.*</include> <include>log4j.properties</include> 
+					<include>tablenames.properties</include> </includes> -->
+				<targetPath>.</targetPath>
+			</resource>
+			<!-- <resource> <directory>src/main/filtered-resources</directory> <targetPath>filtered</targetPath> 
+				<filtering>true</filtering> </resource> -->
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<workDirectory>target\overlay-war-folder</workDirectory>
+					<webXml>src\main\webapp\WEB-INF\web.xml</webXml>
+
+					<overlays>
+						<overlay>
+							<groupId>${base.project.groupId}</groupId>
+							<artifactId>graphene-web</artifactId>
+							<excludes>
+								<exclude>**/log4j.properties</exclude>
+								<exclude>WEB-INF/lib/*.jar</exclude>
+							</excludes>
+						</overlay>
+					</overlays>
+					<!-- If true, this will package the classes as their own jar, INSIDE 
+						the war's web-inf/lib. At the moment this seems incompatible with the attachClasses 
+						flag, which we absolutely need for building. -->
+					<archiveClasses>false</archiveClasses>
+					<attachClasses>true</attachClasses>
+					<!-- Just to be explicit. 'classes' is the default. This makes a second 
+						target as a jar with just the classes and no html/js -->
+					<classesClassifier>classes</classesClassifier>
+				</configuration>
+			</plugin>
+			<!-- Run the application using "mvn jetty:run" -->
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>maven-jetty-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+	<reporting></reporting>
+
+
+</project>
