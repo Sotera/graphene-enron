@@ -13,7 +13,6 @@ import graphene.model.view.entities.Account;
 import graphene.model.view.entities.Address;
 import graphene.model.view.entities.EmailAddress;
 import graphene.model.view.entities.Entity;
-import graphene.model.view.entities.IdProperty;
 import graphene.model.view.entities.Name;
 import graphene.model.view.entities.CommunicationId;
 
@@ -21,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import mil.darpa.vande.legacy.entity.IdProperty;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;

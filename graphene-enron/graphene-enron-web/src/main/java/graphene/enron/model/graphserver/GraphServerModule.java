@@ -1,8 +1,8 @@
 package graphene.enron.model.graphserver;
 
-import graphene.model.graphserver.GraphBuilder;
-import graphene.model.graphserver.GraphBuilderDirected;
-import graphene.model.graphserver.GraphBuilderWithDirection;
+import mil.darpa.vande.legacy.graphserver.GraphBuilder;
+import mil.darpa.vande.legacy.graphserver.GraphBuilderDirected;
+import mil.darpa.vande.legacy.graphserver.GraphBuilderWithDirection;
 
 import org.apache.tapestry5.ioc.ServiceBinder;
 

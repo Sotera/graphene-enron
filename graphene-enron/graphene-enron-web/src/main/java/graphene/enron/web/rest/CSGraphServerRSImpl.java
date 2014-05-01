@@ -3,13 +3,6 @@ package graphene.enron.web.rest;
 import graphene.dao.TransactionDAO;
 import graphene.enron.model.graphserver.InteractionFinderEnronImpl;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
-import graphene.model.graph.GenericEdge;
-import graphene.model.graph.GenericGraph;
-import graphene.model.graph.GenericNode;
-import graphene.model.graph.cytoscapejs.CSGraph;
-import graphene.model.graph.graphml.GraphmlContainer;
-import graphene.model.graphserver.GraphBuilder;
-import graphene.model.graphserver.GraphBuilderWithDirection;
 import graphene.model.query.EventQuery;
 import graphene.rest.ws.CSGraphServerRS;
 import graphene.util.FastNumberUtils;
@@ -24,7 +17,15 @@ import javax.ws.rs.QueryParam;
 import mil.darpa.vande.InteractionFinder;
 import mil.darpa.vande.TemporalGraphQuery;
 import mil.darpa.vande.converters.cytoscapejs.V_CSGraph;
+import mil.darpa.vande.generic.V_GraphQuery;
 import mil.darpa.vande.interactions.InteractionGraphBuilder;
+import mil.darpa.vande.legacy.GenericEdge;
+import mil.darpa.vande.legacy.GenericGraph;
+import mil.darpa.vande.legacy.GenericNode;
+import mil.darpa.vande.legacy.cytoscapejs.CSGraph;
+import mil.darpa.vande.legacy.graphml.GraphmlContainer;
+import mil.darpa.vande.legacy.graphserver.GraphBuilder;
+import mil.darpa.vande.legacy.graphserver.GraphBuilderWithDirection;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.InjectService;
@@ -265,11 +266,12 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 		GraphBuilder graphBuilder = entityGraphBuilder;
 
 		if (objectType.equalsIgnoreCase("transfers")) {
-			EventQuery q = new EventQuery();
-			q.setMinSecs(startDate);
-			q.setMaxSecs(endDate);
-			for (String ac : values)
-				q.addId(ac);
+			V_GraphQuery q = new V_GraphQuery();
+			q.setStartTime(startDate);
+			q.setEndTime(endDate);
+			for (String ac : values) {
+				q.addSearchId(ac);
+			}
 			graphBuilder = transferGraphBuilder;
 			((GraphBuilderWithDirection) graphBuilder).setQuery(q); // so we
 																	// know any
@@ -300,9 +302,9 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 		for (GenericEdge e : g.getEdges()) {
 			e.setWeight(e.getCount());
 			e.setDataValue("IdentifierType", "DISTINCT EMAIL PAIR");
-			e.setAmount(Integer.toString(e.getCount())); // quick hack to get
-															// the nbr of emails
-															// shown on the edge
+			e.setAmount(e.getCount()); // quick hack to get
+										// the nbr of emails
+										// shown on the edge
 			// longer term we should have a data.label attribute that cytoscape
 			// uses
 		}
@@ -480,11 +482,12 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 
 		GraphBuilder graphBuilder = transferGraphBuilder;
 
-		EventQuery q = new EventQuery();
-		q.setMinSecs(startDate);
-		q.setMaxSecs(endDate);
-		for (String ac : values)
-			q.addId(ac);
+		V_GraphQuery q = new V_GraphQuery();
+		q.setStartTime(startDate);
+		q.setEndTime(endDate);
+		for (String ac : values) {
+			q.addSearchId(ac);
+		}
 		((GraphBuilderWithDirection) graphBuilder).setQuery(q); // so we know
 																// any dates or
 																// other

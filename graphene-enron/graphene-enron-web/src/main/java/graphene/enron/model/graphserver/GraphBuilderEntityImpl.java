@@ -4,14 +4,6 @@ import graphene.dao.EntityRefDAO;
 import graphene.dao.IdTypeDAO;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
-import graphene.model.graph.GenericEdge;
-import graphene.model.graph.GenericGraph;
-import graphene.model.graph.GenericNode;
-import graphene.model.graph.entity.EntityRefNode;
-import graphene.model.graph.entity.NodeFactory;
-import graphene.model.graph.entity.NodeList;
-import graphene.model.graph.graphml.GraphmlContainer;
-import graphene.model.graphserver.GraphBuilder;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_SearchType;
 import graphene.model.query.EntitySearchTuple;
@@ -26,6 +18,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import mil.darpa.vande.legacy.GenericEdge;
+import mil.darpa.vande.legacy.GenericGraph;
+import mil.darpa.vande.legacy.GenericNode;
+import mil.darpa.vande.legacy.entity.EntityRefNode;
+import mil.darpa.vande.legacy.entity.NodeFactory;
+import mil.darpa.vande.legacy.entity.NodeList;
+import mil.darpa.vande.legacy.graphml.GraphmlContainer;
+import mil.darpa.vande.legacy.graphserver.GraphBuilder;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
@@ -255,7 +256,7 @@ public class GraphBuilderEntityImpl implements GraphBuilder {
 					idNode = nodeFactory.makeIdentifierNode(idval, degree);
 					IdType idType = idTypeDAO.getByType(row.getIdtypeId());
 					if (idType != null) {
-						idNode.setId_type(idType);
+						idNode.setId_type(idType.getIdType_id());
 						idNode.setValueType(idType.getFamily());
 					}
 					nodeList.addNode(idNode);
@@ -359,7 +360,7 @@ public class GraphBuilderEntityImpl implements GraphBuilder {
 							degree);
 					IdType idType = idTypeDAO.getByType(r.getIdtypeId());
 					if (idType != null) {
-						idNode.setId_type(idType);
+						idNode.setId_type(idType.getIdType_id());
 						idNode.setValueType(idType.getFamily());
 					}
 					idNode.setPlaceholder(true);

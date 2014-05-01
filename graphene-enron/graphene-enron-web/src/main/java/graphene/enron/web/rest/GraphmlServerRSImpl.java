@@ -1,16 +1,18 @@
 package graphene.enron.web.rest;
 
-import graphene.model.graph.GenericGraph;
-import graphene.model.graph.graphml.GraphmlContainer;
-import graphene.model.graph.graphml.GraphmlGraph;
-import graphene.model.graphserver.GraphBuilder;
-import graphene.model.graphserver.GraphBuilderWithDirection;
 import graphene.model.query.EventQuery;
 import graphene.rest.ws.GraphmlServerRS;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+
+import mil.darpa.vande.generic.V_GraphQuery;
+import mil.darpa.vande.legacy.GenericGraph;
+import mil.darpa.vande.legacy.graphml.GraphmlContainer;
+import mil.darpa.vande.legacy.graphml.GraphmlGraph;
+import mil.darpa.vande.legacy.graphserver.GraphBuilder;
+import mil.darpa.vande.legacy.graphserver.GraphBuilderWithDirection;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.InjectService;
@@ -26,7 +28,6 @@ import org.slf4j.Logger;
 
 public class GraphmlServerRSImpl implements GraphmlServerRS {
 
-        
 	@InjectService("Entity")
 	private GraphBuilder entityGraphBuilder;
 	@InjectService("Transfer")
@@ -108,18 +109,18 @@ public class GraphmlServerRSImpl implements GraphmlServerRS {
 
 		GenericGraph g = null;
 		try {
-			g = entityGraphBuilder.makeGraphResponse(type, values, maxdegree, "");
+			g = entityGraphBuilder.makeGraphResponse(type, values, maxdegree,
+					"");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		GraphmlGraph m = new GraphmlGraph(g, true);
 		GraphmlContainer c = new GraphmlContainer();
 		c.setGraph(m);
 		return c;
 
-		
 	}
 
 	@Override
@@ -191,19 +192,23 @@ public class GraphmlServerRSImpl implements GraphmlServerRS {
 			values = new String[] { value };
 
 		GraphBuilder graphBuilder = entityGraphBuilder;
-		
-		
+
 		if (objectType.equalsIgnoreCase("transfers")) {
-			EventQuery q = new EventQuery();
-			q.setMinSecs(startDate);
-			q.setMaxSecs(endDate);
-			for (String ac:values)
-				q.addId(ac);
+			V_GraphQuery q = new V_GraphQuery();
+			q.setStartTime(startDate);
+			q.setEndTime(endDate);
+			for (String ac : values) {
+				q.addSearchId(ac);
+			}
 			graphBuilder = transferGraphBuilder;
-			((GraphBuilderWithDirection) graphBuilder).setQuery(q); // so we know any dates or other restrictions
+			((GraphBuilderWithDirection) graphBuilder).setQuery(q); // so we
+																	// know any
+																	// dates or
+																	// other
+																	// restrictions
 			((GraphBuilderWithDirection) graphBuilder).setMinWeight(minWeight);
 		}
-		
+
 		// TODO: other types in due course
 		graphBuilder.setStyle(GQT_Style);
 
@@ -213,7 +218,8 @@ public class GraphmlServerRSImpl implements GraphmlServerRS {
 		GraphmlContainer r = null;
 		GenericGraph g = null;
 		try {
-			g = graphBuilder.makeGraphResponse(valueType, values, maxdegree, "");
+			g = graphBuilder
+					.makeGraphResponse(valueType, values, maxdegree, "");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

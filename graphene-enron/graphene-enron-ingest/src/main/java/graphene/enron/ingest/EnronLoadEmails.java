@@ -85,19 +85,26 @@ public class EnronLoadEmails {
 				System.out.println(tId);
 
 		}
-
+		try {
+			input.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		System.out.println("Populated transactions with " + tId + " Entries");
 		return true;
 
 	}
-/**
-+ "(pair_id, id_search_token, sender_id, sender_value_str,  "
-				+ "receiver_id,receiver_value_str, trn_dt, trn_type, trn_value_nbr, trn_value_nbr_unit,trn_value_str)"
-				+ "VALUES ?,?,?,?,?,?,?,?,?,?,?,?";
- * @param line
- * @return
- * @throws SQLException
- */
+
+	/**
+	 * + "(pair_id, id_search_token, sender_id, sender_value_str,  " +
+	 * "receiver_id,receiver_value_str, trn_dt, trn_type, trn_value_nbr, trn_value_nbr_unit,trn_value_str)"
+	 * + "VALUES ?,?,?,?,?,?,?,?,?,?,?,?";
+	 * 
+	 * @param line
+	 * @return
+	 * @throws SQLException
+	 */
 	boolean parseLine(String line) throws SQLException {
 		Email e = new Email();
 		if (!e.parseFromLine(line)) {
@@ -117,10 +124,10 @@ public class EnronLoadEmails {
 		long tm = dt.getTime();
 		java.sql.Date d = new java.sql.Date(tm);
 		ps.setDate(7, d);
-		ps.setString(8, "email"); //type
-		ps.setDouble(9, e.getLength()); //number value
-		ps.setString(10, "length"); //number value
-		ps.setString(11, null);//put message payload here
+		ps.setString(8, "email"); // type
+		ps.setDouble(9, e.getLength()); // number value
+		ps.setString(10, "length"); // number value
+		ps.setString(11, null);// put message payload here
 		ps.execute();
 		return true;
 	}

@@ -1,9 +1,9 @@
 package graphene.enron.model.graphserver;
 
 import graphene.dao.TransactionDistinctPairDAO;
-import graphene.model.graph.GenericGraph;
-import graphene.model.graphserver.GraphBuilder;
-import graphene.model.graphserver.GraphBuilderDirected;
+import mil.darpa.vande.legacy.GenericGraph;
+import mil.darpa.vande.legacy.graphserver.GraphBuilder;
+import mil.darpa.vande.legacy.graphserver.GraphBuilderDirected;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;

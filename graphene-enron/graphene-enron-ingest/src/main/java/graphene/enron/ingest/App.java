@@ -3,11 +3,8 @@ package graphene.enron.ingest;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * App to ingest a subset of the Enron data from CSV files as a demo

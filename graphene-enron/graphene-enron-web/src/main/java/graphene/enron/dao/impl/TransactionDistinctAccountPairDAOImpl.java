@@ -4,15 +4,16 @@ import graphene.dao.TransactionDAO;
 import graphene.dao.TransactionDistinctPairDAO;
 import graphene.dao.sql.GenericDAOJDBCImpl;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
-import graphene.model.graphserver.TransactionDistinctAccountPair;
 import graphene.model.query.EventQuery;
-import graphene.model.view.entities.IdProperty;
 import graphene.util.CallBack;
 import graphene.util.stats.TimeReporter;
 import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import mil.darpa.vande.legacy.entity.IdProperty;
+import mil.darpa.vande.legacy.graphserver.TransactionDistinctAccountPair;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.tapestry5.ioc.annotations.Inject;
