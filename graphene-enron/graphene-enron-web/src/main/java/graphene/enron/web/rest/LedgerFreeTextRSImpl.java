@@ -5,6 +5,7 @@ import graphene.model.query.EventQuery;
 import graphene.model.view.events.SingleSidedEventRow;
 import graphene.model.view.events.SingleSidedEvents;
 import graphene.rest.ws.LedgerFreeTextRS;
+import graphene.util.FastNumberUtils;
 
 import java.util.List;
 
@@ -20,8 +21,8 @@ public class LedgerFreeTextRSImpl implements LedgerFreeTextRS {
 
 	@Override
 	public SingleSidedEvents getTransactions(String account, int start,
-			int limit, String minAmount, String maxAmount, String fromdtSecs,
-			String todtSecs, String comments, String sortColumn) {
+			int limit, String minAmount, String maxAmount, String minSecs,
+			String maxSecs, String comments, String sortColumn) {
 
 		EventQuery q = new EventQuery();
 		q.addId(account);
@@ -30,8 +31,8 @@ public class LedgerFreeTextRSImpl implements LedgerFreeTextRS {
 		q.setMinAmount(Double.parseDouble(minAmount.isEmpty() ? "0" : minAmount));
 		q.setMaxAmount(Double.parseDouble(maxAmount.isEmpty() ? "0" : maxAmount));
 
-		q.setMinSecs(Long.parseLong(fromdtSecs.isEmpty() ? "0" : fromdtSecs));
-		q.setMaxSecs(Long.parseLong(todtSecs.isEmpty() ? "0" : todtSecs));
+		q.setMinSecs(FastNumberUtils.parseLongWithCheck(minSecs, 0));
+		q.setMaxSecs(FastNumberUtils.parseLongWithCheck(maxSecs, 0));
 
 		// FIXME: we probably want this by default, but it should be a parameter
 		q.setFindRelatedIds(true);

@@ -1,5 +1,7 @@
 package graphene.enron.ingest;
 
+import graphene.util.FastNumberUtils;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,7 +40,7 @@ public class Email {
 			return false;
 		}
 		
-		length = Integer.parseInt(cols[3]);
+		length = FastNumberUtils.parseIntWithCheck(cols[3]);
 		
 		try {
 			dt= df.parse(cols[2]);

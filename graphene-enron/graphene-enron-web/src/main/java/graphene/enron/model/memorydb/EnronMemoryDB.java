@@ -14,7 +14,7 @@ import graphene.model.query.EntityRefQuery;
 import graphene.model.query.SearchFilter;
 import graphene.model.view.entities.CustomerDetails;
 import graphene.model.view.entities.IdType;
-import graphene.util.CallBack;
+import graphene.util.G_CallBack;
 import graphene.util.jvm.JVMHelper;
 import graphene.util.stats.MemoryReporter;
 import graphene.util.stats.TimeReporter;
@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * @author PWG, djue
  * 
  */
-public class EnronMemoryDB implements CallBack<EnronEntityref100>,
+public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 		IMemoryDB<EnronEntityref100, EnronIdentifierType100, CustomerDetails> {
 
 	private static MemIndex accounts;

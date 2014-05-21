@@ -6,7 +6,7 @@ import graphene.enron.model.sql.enron.EnronIdentifierType100;
 import graphene.enron.model.sql.enron.QEnronIdentifierType100;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.view.entities.IdType;
-import graphene.util.CallBack;
+import graphene.util.G_CallBack;
 import graphene.util.validator.ValidationUtils;
 
 import java.sql.Connection;
@@ -19,7 +19,10 @@ import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
 
 import com.mysema.query.BooleanBuilder;
+import com.mysema.query.sql.HSQLDBTemplates;
 import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.sql.SQLTemplates;
+import com.mysema.query.types.EntityPath;
 
 /**
  * All implementations requested from the IOC registry are singletons by
@@ -35,7 +38,11 @@ public class IdTypeDAOSQLImpl extends
 
 	private boolean loaded;
 	private Map<Integer, IdType> loadedTypes = new HashMap<Integer, IdType>();
-
+	@Override
+	protected SQLQuery from(Connection conn, EntityPath<?>... o) {
+		SQLTemplates dialect = new HSQLDBTemplates(); // SQL-dialect
+		return new SQLQuery(conn, dialect).from(o);
+	}
 	@Inject
 	private Logger logger;
 
@@ -287,7 +294,7 @@ public class IdTypeDAOSQLImpl extends
 
 	@Override
 	public boolean performCallback(long offset, long maxResults,
-			CallBack<EnronIdentifierType100> cb, String q) {
+			G_CallBack<EnronIdentifierType100> cb, String q) {
 		return basicCallback(offset, maxResults, cb, q);
 	}
 

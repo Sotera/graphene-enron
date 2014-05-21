@@ -13,6 +13,7 @@ import graphene.model.idl.G_SearchType;
 import graphene.model.query.DirectedEventQuery;
 import graphene.model.query.SearchTypeHelper;
 import graphene.rest.ws.EventSearchRS;
+import graphene.util.FastNumberUtils;
 import graphene.util.stats.TimeReporter;
 
 import java.util.ArrayList;
@@ -21,8 +22,6 @@ import java.util.List;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 
 public class EventSearchRSImpl implements EventSearchRS {
 
@@ -57,18 +56,15 @@ public class EventSearchRSImpl implements EventSearchRS {
 		// Party A
 		properties.add(new PropertyHelper("aName", "Sender Name", k
 				.getSenderId(), G_PropertyType.STRING, G_PropertyTag.NAME));
-		properties.add(new PropertyHelper("aId", "Sender Id", k
-				.getSenderId(), G_PropertyType.STRING, G_PropertyTag.ID));
+		properties.add(new PropertyHelper("aId", "Sender Id", k.getSenderId(),
+				G_PropertyType.STRING, G_PropertyTag.ID));
 
 		// Party B
-		properties
-				.add(new PropertyHelper("aName", "Receiver Name", k
-						.getReceiverValueStr(), G_PropertyType.STRING,
-						G_PropertyTag.NAME));
-		properties
-				.add(new PropertyHelper("aId", "Receiver Id", k
-						.getReceiverId(), G_PropertyType.STRING,
-						G_PropertyTag.ID));
+		properties.add(new PropertyHelper("aName", "Receiver Name", k
+				.getReceiverValueStr(), G_PropertyType.STRING,
+				G_PropertyTag.NAME));
+		properties.add(new PropertyHelper("aId", "Receiver Id", k
+				.getReceiverId(), G_PropertyType.STRING, G_PropertyTag.ID));
 
 		// Common
 		properties.add(new PropertyHelper("Comments", "Comments", k
@@ -96,8 +92,7 @@ public class EventSearchRSImpl implements EventSearchRS {
 	public List<G_Link> getEvents(String identifiers, int offset, int limit,
 			String minSecs, String maxSecs, String comments,
 			boolean intersectionOnly) {
-		TimeReporter t = new TimeReporter("Getting events",
-				logger);
+		TimeReporter t = new TimeReporter("Getting events", logger);
 
 		if (offset < 0) {
 			offset = 0;
@@ -105,8 +100,8 @@ public class EventSearchRSImpl implements EventSearchRS {
 		DirectedEventQuery q = new DirectedEventQuery();
 		q.setFirstResult(offset);
 		q.setMaxResult(limit);
-		q.setMinSecs(Long.parseLong(minSecs.isEmpty() ? "0" : minSecs));
-		q.setMaxSecs(Long.parseLong(maxSecs.isEmpty() ? "0" : maxSecs));
+		q.setMinSecs(FastNumberUtils.parseLongWithCheck(minSecs, 0));
+		q.setMaxSecs(FastNumberUtils.parseLongWithCheck(maxSecs, 0));
 		q.setIntersectionOnly(intersectionOnly);
 
 		List<G_SearchTuple<String>> tupleList = SearchTypeHelper
@@ -133,8 +128,7 @@ public class EventSearchRSImpl implements EventSearchRS {
 	public List<G_Link> getEvents(String from, String to, int offset,
 			int limit, String minSecs, String maxSecs, String comments,
 			boolean intersectionOnly) {
-		TimeReporter t = new TimeReporter("Getting events",
-				logger);
+		TimeReporter t = new TimeReporter("Getting events", logger);
 
 		if (offset < 0) {
 			offset = 0;
@@ -142,8 +136,8 @@ public class EventSearchRSImpl implements EventSearchRS {
 		DirectedEventQuery q = new DirectedEventQuery();
 		q.setFirstResult(offset);
 		q.setMaxResult(limit);
-		q.setMinSecs(Long.parseLong(minSecs.isEmpty() ? "0" : minSecs));
-		q.setMaxSecs(Long.parseLong(maxSecs.isEmpty() ? "0" : maxSecs));
+		q.setMinSecs(FastNumberUtils.parseLongWithCheck(minSecs, 0));
+		q.setMaxSecs(FastNumberUtils.parseLongWithCheck(maxSecs, 0));
 		/*
 		 * Note that the intersectionOnly flag (default true) completes the
 		 * nature of this request, which is to only show events between specific
@@ -158,7 +152,6 @@ public class EventSearchRSImpl implements EventSearchRS {
 		q.setPayloadKeywords(SearchTypeHelper.processSearchList(comments,
 				G_SearchType.COMPARE_CONTAINS));
 
-	
 		List<G_Link> s = search(q);
 		t.logAsCompleted();
 		return s;

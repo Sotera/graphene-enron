@@ -8,6 +8,7 @@ import graphene.model.view.events.EventStatistics;
 import graphene.model.view.events.DirectedEvents;
 import graphene.model.view.events.DirectedEventRow;
 import graphene.rest.ws.TransferServerRS;
+import graphene.util.FastNumberUtils;
 import graphene.util.stats.TimeReporter;
 
 import java.util.ArrayList;
@@ -62,8 +63,8 @@ public class TransferServerRSImpl implements TransferServerRS {
 		q.addId(account);
 		q.setFirstResult(start);
 		q.setMaxResult(limit);
-		q.setMinSecs(Long.parseLong(minSecs.isEmpty() ? "0" : minSecs));
-		q.setMaxSecs(Long.parseLong(maxSecs.isEmpty() ? "0" : maxSecs));
+		q.setMinSecs(FastNumberUtils.parseLongWithCheck(minSecs,0));
+		q.setMaxSecs(FastNumberUtils.parseLongWithCheck(maxSecs,0));
 		q.setMinAmount(Double.parseDouble(minAmount.isEmpty() ? "0" : minAmount));
 		q.setMaxAmount(Double.parseDouble(maxAmount.isEmpty() ? "0" : maxAmount));
 		q.setComments(comments);

@@ -18,9 +18,9 @@ import org.slf4j.Logger;
  * it's a good place to configure and extend Tapestry, or to place your own
  * service definitions.
  */
-@SubModule({ EnronDAOModule.class, AppRestModule.class, GraphServerModule.class,
-		graphene.web.services.GrapheneModule.class,
-		graphene.rest.services.RestModule.class,UtilModule.class })
+@SubModule({ EnronDAOModule.class, AppRestModule.class,
+		GraphServerModule.class, graphene.web.services.GrapheneModule.class,
+		graphene.rest.services.RestModule.class, UtilModule.class })
 public class AppModule {
 
 	public static void bind(ServiceBinder binder) {
@@ -36,7 +36,8 @@ public class AppModule {
 	public static void contributeApplicationDefaults(
 			MappedConfiguration<String, Object> configuration) {
 		configuration.add(G_SymbolConstants.APPLICATION_NAME, "Graphene-Enron");
-		configuration.add(G_SymbolConstants.APPLICATION_CONTACT, "Example Company");
+		configuration.add(G_SymbolConstants.APPLICATION_CONTACT,
+				"Example Company");
 		configuration.add(SymbolConstants.APPLICATION_VERSION, "4.0.6");
 	}
 

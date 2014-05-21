@@ -3,7 +3,7 @@ package graphene.enron.dao.impl;
 import graphene.dao.EntityRefDAO;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.model.query.EntityRefQuery;
-import graphene.util.CallBack;
+import graphene.util.G_CallBack;
 import graphene.util.fs.DiskCache;
 import graphene.util.fs.ObjectStreamIterator;
 import graphene.util.stats.TimeReporter;
@@ -99,7 +99,7 @@ public class EntityRefDAODiskImpl extends EntityRefDAOImpl implements
 
 	@Override
 	public boolean performCallback(long offset, long maxResults,
-			CallBack<EnronEntityref100> cb, EntityRefQuery q) {
+			G_CallBack<EnronEntityref100> cb, EntityRefQuery q) {
 		logger.debug("Acquiring data to iterate over...");
 		ObjectStreamIterator<EnronEntityref100> iter = getIterator(
 				DELETE_EXISTING, TRY_SERIALIZED, SAVE_LOCALLY, maxResults);

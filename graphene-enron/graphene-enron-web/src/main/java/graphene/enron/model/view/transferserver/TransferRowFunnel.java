@@ -29,7 +29,7 @@ public class TransferRowFunnel {
 		tr.setAcnoSender(e.getSenderId().toString());
 		/*
 		 * PWG: why were we doing this? try { long longAcctNbr =
-		 * Long.parseLong(e.getAcctNmReceiver()); setAcnoReceiver(longAcctNbr);
+		 * FastNumberUtils.parseLongWithCheck(e.getAcctNmReceiver()); setAcnoReceiver(longAcctNbr);
 		 * } catch (Exception ex) { logger.error(ex.getMessage());
 		 * ex.printStackTrace(); }
 		 */

@@ -1,18 +1,20 @@
 package graphene.enron.web.rest;
 
-import graphene.model.query.EventQuery;
 import graphene.rest.ws.GraphmlServerRS;
+import graphene.util.FastNumberUtils;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
+import mil.darpa.vande.converters.graphml.GraphmlContainer;
+import mil.darpa.vande.converters.graphml.GraphmlGraph;
+import mil.darpa.vande.generic.V_GenericGraph;
 import mil.darpa.vande.generic.V_GraphQuery;
-import mil.darpa.vande.legacy.GenericGraph;
-import mil.darpa.vande.legacy.graphml.GraphmlContainer;
-import mil.darpa.vande.legacy.graphml.GraphmlGraph;
-import mil.darpa.vande.legacy.graphserver.GraphBuilder;
-import mil.darpa.vande.legacy.graphserver.GraphBuilderWithDirection;
+import mil.darpa.vande.interactions.InteractionFinder;
+import mil.darpa.vande.interactions.InteractionGraphBuilder;
+import mil.darpa.vande.property.PropertyFinder;
+import mil.darpa.vande.property.PropertyGraphBuilder;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.InjectService;
@@ -25,13 +27,21 @@ import org.slf4j.Logger;
  * @author PWG for DARPA
  * 
  */
-
+@Deprecated
 public class GraphmlServerRSImpl implements GraphmlServerRS {
 
 	@InjectService("Entity")
-	private GraphBuilder entityGraphBuilder;
+	private PropertyGraphBuilder entityGraphBuilder;
+
+	@InjectService("finder")
+	private PropertyFinder propertyFinder;
+
+	@InjectService("finder")
+	private InteractionFinder interactionFinder;
+
 	@InjectService("Transfer")
-	private GraphBuilderWithDirection transferGraphBuilder;
+	private InteractionGraphBuilder interactionGraphBuilder;
+	// private TransactionDistinctPairDAO finder;
 
 	@Inject
 	private Logger logger;
@@ -68,49 +78,31 @@ public class GraphmlServerRSImpl implements GraphmlServerRS {
 		logger.trace("Bipartite " + bipartite);
 		logger.trace("showNameNodes " + showNameNodes);
 
-		int maxdegree = 6;
-		try {
-			maxdegree = Integer.parseInt(degree);
-		} catch (Exception e) {
-			maxdegree = 6;
-		}
-
-		int maxnodes = 1000; // MFM changed from 5000 to 1000
-		try {
-			maxnodes = Integer.parseInt(maxNodes);
-		} catch (Exception e) {
-			maxnodes = 1000; // MFM changed from 5000 to 1000
-		}
-
-		int maxedges = 50;
-		try {
-			maxedges = Integer.parseInt(maxEdgesPerNode);
-		} catch (Exception e) {
-			maxedges = 50;
-		}
-
-		boolean GQT_Style = !showIcons;
-
-		entityGraphBuilder.setStyle(!showIcons);
-		entityGraphBuilder.setStyle(GQT_Style);
-
-		entityGraphBuilder.setMaxNodes(maxnodes);
-		entityGraphBuilder.setMaxEdgesPerNode(maxedges);
-		entityGraphBuilder.setBiPartite(bipartite);
-		entityGraphBuilder.setShowNameNodes(showNameNodes);
+		int maxdegree = FastNumberUtils.parseIntWithCheck(degree, 6);
+		int maxnodes = FastNumberUtils.parseIntWithCheck(maxNodes, 1000);
+		int maxedges = FastNumberUtils.parseIntWithCheck(maxEdgesPerNode, 50);
 
 		value = fixup(value);
 		String[] values;
 
 		if (type.contains("list")) {
 			values = value.split("_");
-		} else
+		} else {
 			values = new String[] { value };
+		}
 
-		GenericGraph g = null;
+		V_GraphQuery q = new V_GraphQuery();
+
+		q.addSearchIds(values);
+
+		q.setMaxEdgesPerNode(maxedges);
+		q.setMaxHops(maxdegree);
+		q.setMaxNodes(maxnodes);
+		q.setType(type); // new, --djue
+
+		V_GenericGraph g = null;
 		try {
-			g = entityGraphBuilder.makeGraphResponse(type, values, maxdegree,
-					"");
+			g = entityGraphBuilder.makeGraphResponse(q, propertyFinder);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -143,46 +135,13 @@ public class GraphmlServerRSImpl implements GraphmlServerRS {
 		logger.trace("Max Edges " + maxEdgesPerNode);
 		logger.trace("min weight " + minimumWeight);
 
-		// NB: min weight does not work. It is intended to say don't count edges
-		// unless they occur X times (i.e. a called b + b called a > X)
-		// However we are not iterating through the calls - we are using
-		// SELECT DISTINCT for now.
-
-		int maxdegree = 6;
-		try {
-			maxdegree = Integer.parseInt(degree);
-		} catch (Exception e) {
-		}
-
-		int maxnodes = 1000;
-		try {
-			maxnodes = Integer.parseInt(maxNodes);
-		} catch (Exception e) {
-		}
-		int maxedges = 50;
-		try {
-			maxedges = Integer.parseInt(maxEdgesPerNode);
-		} catch (Exception e) {
-		}
-		int minWeight = 0;
-		try {
-			minWeight = Integer.parseInt(minimumWeight);
-		} catch (Exception e) {
-		}
-		;
-		boolean GQT_Style = !showIcons;
-		long startDate = 0;
-		try {
-			startDate = Long.parseLong(minSecs);
-		} catch (Exception e) {
-		}
-		;
-		long endDate = 0;
-		try {
-			endDate = Long.parseLong(maxSecs);
-		} catch (Exception e) {
-		}
-		;
+		// FIXME: Min weight is not working
+		int maxdegree = FastNumberUtils.parseIntWithCheck(degree, 6);
+		int maxnodes = FastNumberUtils.parseIntWithCheck(maxNodes, 1000);
+		int maxedges = FastNumberUtils.parseIntWithCheck(maxEdgesPerNode, 50);
+		int minWeight = FastNumberUtils.parseIntWithCheck(minimumWeight, 0);
+		long startDate = FastNumberUtils.parseLongWithCheck(minSecs, 0);
+		long endDate = FastNumberUtils.parseLongWithCheck(maxSecs, 0);
 
 		String[] values;
 
@@ -191,35 +150,25 @@ public class GraphmlServerRSImpl implements GraphmlServerRS {
 		} else
 			values = new String[] { value };
 
-		GraphBuilder graphBuilder = entityGraphBuilder;
+		V_GraphQuery q = new V_GraphQuery();
 
+		q.addSearchIds(values);
+
+		q.setMaxEdgesPerNode(maxedges);
+		q.setMaxHops(maxdegree);
+		q.setMaxNodes(maxnodes);
+		q.setStartTime(startDate);
+		q.setEndTime(endDate);
+		q.setType(valueType); // new, --djue
+		q.setMinTransValue(minWeight); // new --djue
+
+		InteractionGraphBuilder graphBuilder = null;
 		if (objectType.equalsIgnoreCase("transfers")) {
-			V_GraphQuery q = new V_GraphQuery();
-			q.setStartTime(startDate);
-			q.setEndTime(endDate);
-			for (String ac : values) {
-				q.addSearchId(ac);
-			}
-			graphBuilder = transferGraphBuilder;
-			((GraphBuilderWithDirection) graphBuilder).setQuery(q); // so we
-																	// know any
-																	// dates or
-																	// other
-																	// restrictions
-			((GraphBuilderWithDirection) graphBuilder).setMinWeight(minWeight);
+			graphBuilder = interactionGraphBuilder;
 		}
-
-		// TODO: other types in due course
-		graphBuilder.setStyle(GQT_Style);
-
-		graphBuilder.setMaxNodes(maxnodes);
-		graphBuilder.setMaxEdgesPerNode(maxedges);
-
-		GraphmlContainer r = null;
-		GenericGraph g = null;
+		V_GenericGraph g = null;
 		try {
-			g = graphBuilder
-					.makeGraphResponse(valueType, values, maxdegree, "");
+			g = graphBuilder.makeGraphResponse(q, interactionFinder);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

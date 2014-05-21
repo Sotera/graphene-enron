@@ -9,7 +9,8 @@ import graphene.enron.model.sql.enron.EnronTransactionPair100;
 import graphene.enron.model.sql.enron.QEnronTransactionPair100;
 import graphene.model.idl.G_Link;
 import graphene.model.query.EventQuery;
-import graphene.util.CallBack;
+import graphene.util.G_CallBack;
+import graphene.util.FastNumberUtils;
 import graphene.util.validator.ValidationUtils;
 
 import java.sql.Connection;
@@ -23,7 +24,10 @@ import org.slf4j.Logger;
 
 import com.mysema.query.BooleanBuilder;
 import com.mysema.query.Tuple;
+import com.mysema.query.sql.HSQLDBTemplates;
 import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.sql.SQLTemplates;
+import com.mysema.query.types.EntityPath;
 
 /**
  * @author djue
@@ -35,6 +39,12 @@ public class TransactionDAOSQLImpl extends
 
 	@Inject
 	private Logger logger;
+
+	@Override
+	protected SQLQuery from(Connection conn, EntityPath<?>... o) {
+		SQLTemplates dialect = new HSQLDBTemplates(); // SQL-dialect
+		return new SQLQuery(conn, dialect).from(o);
+	}
 
 	/**
 	 * 
@@ -58,12 +68,13 @@ public class TransactionDAOSQLImpl extends
 			List<Long> accountIntegerList = new ArrayList<Long>();
 			for (String acno : q.getIdList()) {
 				if (NumberUtils.isDigits(acno)) {
-					accountIntegerList.add(Long.parseLong(acno));
+					accountIntegerList.add(FastNumberUtils
+							.parseLongWithCheck(acno));
 				} else {
 					logger.warn("Non numeric id provided.");
 				}
 			}
-			if (accountIntegerList.size() > 0) {
+			if (ValidationUtils.isValid(accountIntegerList)) {
 				if (q.isIntersectionOnly()) {
 					// events where both sides are in the list. Basically an
 					// inner
@@ -77,7 +88,9 @@ public class TransactionDAOSQLImpl extends
 					builder.and(t.receiverId.in(accountIntegerList).or(
 							t.senderId.in(accountIntegerList)));
 				}
-			} else if (q.getIdList().size() > 0) {
+			} else if (ValidationUtils.isValid(q.getIdList())) {
+				logger.debug("The original id list was had no numbers, trying the query against string values: "
+						+ q.getIdList());
 				// XXX: This is a hack. For some reason Enron is sending the
 				// email as the account number (instead of an id number)--djue
 				if (q.isIntersectionOnly()) {
@@ -93,6 +106,9 @@ public class TransactionDAOSQLImpl extends
 					builder.and(t.receiverValueStr.in(q.getIdList()).or(
 							t.senderValueStr.in(q.getIdList())));
 				}
+			} else {
+				logger.error("Id list was empty, this is probably an error. Query is: "
+						+ q);
 			}
 		}
 		if (ValidationUtils.isValid(q.getComments())) {
@@ -224,6 +240,24 @@ public class TransactionDAOSQLImpl extends
 	}
 
 	/**
+	 * 
+	 * 
+	 * @throws Exception
+	 */
+	@Override
+	public long countEdges(String id) throws Exception {
+		long result = 0;
+		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
+		Connection conn = getConnection();
+		Long idNumber = FastNumberUtils.parseLongWithCheck(id);
+		result = from(conn, t)
+				.where(t.senderId.eq(idNumber).or(t.receiverId.eq(idNumber)))
+				.distinct().count();
+		conn.close();
+		return result;
+	}
+
+	/**
 	 * TODO: This is the same as getTransactions, so migrate usage to this
 	 * method.
 	 */
@@ -234,9 +268,12 @@ public class TransactionDAOSQLImpl extends
 		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
 		Connection conn;
 		conn = getConnection();
-		// OLD SQLQuery sq = buildQuery(q, t, conn).orderBy(t.trnDt.asc());
+		if (q.getIdList().isEmpty()) {
+			logger.warn("query has no ids:" + q);
+		}
 		SQLQuery sq = buildQuery(q, t, conn); // MFM
-		sq = setOffsetAndLimit(q, sq);
+		sq = setOffsetAndLimit(offset, maxResults, sq);
+		logger.debug(q.toString());
 		results = sq.list(t);
 		conn.close();
 		if (results != null) {
@@ -255,12 +292,12 @@ public class TransactionDAOSQLImpl extends
 		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
 		BooleanBuilder builder = new BooleanBuilder();
 		for (String acno : q.getIdList()) {
-			builder.or(t.receiverId.eq(Long.parseLong(acno)));
-			builder.or(t.senderId.eq(Long.parseLong(acno)));
+			builder.or(t.receiverId.eq(FastNumberUtils.parseLongWithCheck(acno)));
+			builder.or(t.senderId.eq(FastNumberUtils.parseLongWithCheck(acno)));
 		}
 		Connection conn = getConnection();
 		SQLQuery sq = from(conn, t).where(builder).orderBy(t.receiverId.asc());
-		sq = setOffsetAndLimit(q, sq);
+		sq = setOffsetAndLimit(q.getFirstResult(), q.getMaxResult(), sq);
 		List<Tuple> list = sq.list(t.receiverId, t.senderId);
 		for (Tuple tuple : list) {
 			// TODO: fill in more fields
@@ -296,36 +333,13 @@ public class TransactionDAOSQLImpl extends
 
 	@Override
 	public boolean performCallback(long offset, long maxResults,
-			CallBack<EnronTransactionPair100> cb, EventQuery q) {
+			G_CallBack<EnronTransactionPair100> cb, EventQuery q) {
 		return basicCallback(offset, maxResults, cb, q);
-	}
-
-	/**
-	 * Equivalent to
-	 * 
-	 * String query =
-	 * "Select count(*) From (Select distinct Acct_Nbr_Sender, Acct_Nbr_Receiver "
-	 * + " from pairsTable " +
-	 * " where Acct_Nbr_Sender = ? or Acct_Nbr_Receiver = ?) as ct";
-	 * 
-	 * @throws Exception
-	 */
-	@Override
-	public long countEdges(String id) throws Exception {
-		long result = 0;
-		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
-		Connection conn = getConnection();
-		Long idNumber = Long.parseLong(id);
-		result = from(conn, t)
-				.where(t.senderId.eq(idNumber).or(t.receiverId.eq(idNumber)))
-				.distinct().count();
-		conn.close();
-		return result;
 	}
 
 	@Override
 	public boolean performThrottlingCallback(long offset, long maxResults,
-			CallBack<EnronTransactionPair100> cb, EventQuery q) {
+			G_CallBack<EnronTransactionPair100> cb, EventQuery q) {
 		return throttlingCallback(offset, maxResults, cb, q);
 	}
 

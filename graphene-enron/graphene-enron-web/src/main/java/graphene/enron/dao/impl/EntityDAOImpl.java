@@ -7,21 +7,21 @@ import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_SearchType;
 import graphene.model.query.AdvancedSearch;
-import graphene.model.query.EntitySearchTuple;
 import graphene.model.query.EntityRefQuery;
+import graphene.model.query.EntitySearchTuple;
 import graphene.model.view.entities.Account;
-import graphene.model.view.entities.Address;
+import graphene.model.view.entities.CommunicationId;
 import graphene.model.view.entities.EmailAddress;
 import graphene.model.view.entities.Entity;
+import graphene.model.view.entities.Identifier;
 import graphene.model.view.entities.Name;
-import graphene.model.view.entities.CommunicationId;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mil.darpa.vande.legacy.entity.IdProperty;
+import mil.darpa.vande.generic.V_IdProperty;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
@@ -29,8 +29,12 @@ import org.slf4j.LoggerFactory;
 
 public class EntityDAOImpl implements EntityDAO {
 	private static Logger logger = LoggerFactory.getLogger(EntityDAOImpl.class);
-	@Inject
 	private EntityRefDAO dao;
+
+	@Inject
+	public EntityDAOImpl(EntityRefDAO dao) {
+		dao = dao;
+	}
 
 	@Override
 	public List<Entity> getEntitiesByProperty(G_CanonicalPropertyType property,
@@ -94,9 +98,9 @@ public class EntityDAOImpl implements EntityDAO {
 
 		e.setNameList(new HashSet<Name>());
 		e.setCommunicationIdList(new HashSet<CommunicationId>());
-		e.setAddressList(new HashSet<Address>());
+		e.setAddressList(new HashSet<Identifier>());
 		e.setEmailList(new HashSet<EmailAddress>());
-		e.setIdentList(new HashSet<IdProperty>());
+		e.setIdentList(new HashSet<V_IdProperty>());
 		e.setAccountList(new HashSet<Account>());
 
 		Set<EnronEntityref100> rows;
@@ -118,7 +122,7 @@ public class EntityDAOImpl implements EntityDAO {
 			}
 
 			else if (family.equals("address")) {
-				Address ad = new Address(e.getDatasourceId(), val, val);
+				Identifier ad = new Identifier(e.getDatasourceId(), val, val);
 				e.addAddress(ad);
 			} else if (family.equals("communicationId")) {
 				CommunicationId communicationId = new CommunicationId(e.getDatasourceId(), val, val);
@@ -128,12 +132,12 @@ public class EntityDAOImpl implements EntityDAO {
 						val);
 				e.addEmailAddress(ad);
 			} else {
-				e.getIdentList().add(new IdProperty(family, val));
+				e.getIdentList().add(new V_IdProperty(family, val));
 			}
 			if (r.getAccountnumber() != null) {
 				Account ac = new Account(e.getDatasourceId(),
 						r.getAccountnumber(), r.getAccountnumber());
-				ac.setOwner(e);
+				//ac.setOwner(e);
 				e.addAccount(ac);
 			}
 		}
