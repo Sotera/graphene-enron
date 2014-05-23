@@ -20,12 +20,6 @@ import org.apache.tapestry5.services.ApplicationGlobals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// History
-// 09/02/13     A. Weller - Initial version
-// 10/16/13     M. Martinet - Revised to use POST methods for export services,
-//              removed the JSONArray painfull headaches, and added a getExportedGraph service,
-//              and Inject for the ServletContext
-
 public class ExportGraphRSImpl implements ExportGraphRS {
 
 	static Logger logger = LoggerFactory.getLogger(ExportGraphRSImpl.class);
@@ -37,10 +31,6 @@ public class ExportGraphRSImpl implements ExportGraphRS {
 		// constructor
 	}
 
-	// @Override
-	// @POST
-	// @Path("/exportGraphAsXML")
-	// @Produces("application/xml")
 	@Override
 	public Response exportGraphAsXML(@QueryParam("fileName") String fileName,
 			@QueryParam("fileExt") String fileExt,
@@ -50,8 +40,8 @@ public class ExportGraphRSImpl implements ExportGraphRS {
 														// millisecs as a string
 			String graphJSONdata) {
 
-//		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//		OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+		// ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		// OutputStreamWriter writer = new OutputStreamWriter(outputStream);
 
 		// DEBUG
 		logger.debug("exportGraphAsXML: fileName = " + fileName
@@ -63,22 +53,6 @@ public class ExportGraphRSImpl implements ExportGraphRS {
 				graphJSONdata);
 	}
 
-        // NOTES:
-        // The graph export must be done in two stages and cannot be done using one simple Get request
-        // because the graph data sent from the client will typically be large ( > 4K).
-        //
-        // 1. Graph data in JSON from the browser app is POSTed to this service (/exportGraphAsJSON) using an AJAX request.
-        //    The graph data is stored in a temporary file on the web server. The response contains the path to this file.
-        //
-        // 2. A subsequent GET request (/getExportedGraph) is sent from the Browser app which prompts the user to
-        //    download the temporary file from the server and save it to their local filesystem.
-        //    After the temporary file is downloaded it is deleted.
-	//
-	//@POST
-	//@Consumes(MediaType.APPLICATION_JSON)
-	//@Path("/exportGraphAsJSON")
-	//@Produces("text/plain")
-	//@Override
 	public Response exportGraphAsJSON(@QueryParam("fileName") String fileName,
 			@QueryParam("fileExt") String fileExt,
 			@QueryParam("userName") String userName,
@@ -147,7 +121,7 @@ public class ExportGraphRSImpl implements ExportGraphRS {
 			fout.close();
 			String finalPath = file.toURI().toString();
 			finalPath = finalPath.replace("file:/", ""); // remove leading
-									
+
 			// DEBUG
 			// logger.debug("exportGraphAsJSON: file toURI = " + finalPath);
 
@@ -163,11 +137,6 @@ public class ExportGraphRSImpl implements ExportGraphRS {
 
 	}
 
-	// This service is used to downloaded a file containing a previously
-	// exported graph
-	// @GET
-	// @Path("/getExportedGraph")
-	// @Produces("application/x-unknown")
 	@Override
 	public Response getExportedGraph(@QueryParam("filePath") String filePath) {
 		// DEBUG
@@ -179,72 +148,28 @@ public class ExportGraphRSImpl implements ExportGraphRS {
 			inStream = new FileInputStream(filePath);
 			fileContents = IOUtils.toString(inStream);
 			inStream.close();
-                    // delete the file
-                    File f = new File(filePath);
-                    if (!f.delete()) {
-                        logger.error("getExportedGraph: Failed to delete temporary file: " + filePath);
-                    }
+			// delete the file
+			File f = new File(filePath);
+			if (!f.delete()) {
+				logger.error("getExportedGraph: Failed to delete temporary file: "
+						+ filePath);
+			}
 
 		} catch (Exception gfe) {
 			logger.error("getExportedGraph: Failed to read file. Details: "
 					+ gfe.getLocalizedMessage());
 		}
 
-		// DEBUG
-		// logger.debug("getExportedGraph: File contents = " + fileContents +
-		// "\n");
-
 		ResponseBuilder response = Response.ok(fileContents);
 		// THIS IS KEY:
-                // Force the Browser to download/save locally rather than attempt to render it
+		// Force the Browser to download/save locally rather than attempt to
+		// render it
 		response.type("application/x-unknown");
-		response.header("Content-Disposition", "attachment; filename=\"" + filePath + "\"");
+		response.header("Content-Disposition", "attachment; filename=\""
+				+ filePath + "\"");
 		Response responseOut = response.build();
 
 		return responseOut;
 	};
-
-	/*
-	 * NOT YET private void parseNodeForXML(JSONObject node, OutputStreamWriter
-	 * writer) throws Exception {
-	 *
-	 * @SuppressWarnings("unchecked") Iterator<String> it = (Iterator<String>)
-	 * node.keys();
-	 *
-	 * while (it.hasNext()) {
-	 *
-	 * String key = it.next(); Object value = node.get(key);
-	 *
-	 * if (value instanceof String) {
-	 *
-	 * writer.write("<" + key + ">"); writer.write(value.toString());
-	 * writer.write("</" + key + ">\n");
-	 *
-	 * } else if (value instanceof JSONArray) {
-	 *
-	 * writer.write("<" + key + ">\n"); JSONArray ja = (JSONArray) value;
-	 *
-	 * // iterate over each index of the JSONArray, calling parseNodeForXML for
-	 * each for (int i = 0; i < ja.length(); i++) {
-	 *
-	 * Object jArrayObj = ja.get(i);
-	 *
-	 * if (jArrayObj instanceof JSONObject) { // Recursive case
-	 * parseNodeForXML((JSONObject)jArrayObj, writer); } else if (jArrayObj
-	 * instanceof JSONArray) {
-	 *
-	 * //TODO: figure out what to do about arrays
-	 *
-	 * @SuppressWarnings("unused") String str = ""; } }
-	 *
-	 * writer.write("</" + key + ">\n");
-	 *
-	 * } else if (value instanceof JSONObject) {
-	 *
-	 * writer.write("<" + key + ">\n"); parseNodeForXML((JSONObject)value,
-	 * writer); writer.write("</" + key + ">\n");
-	 *
-	 * } } } ** END NOT YET *
-	 */
 
 }

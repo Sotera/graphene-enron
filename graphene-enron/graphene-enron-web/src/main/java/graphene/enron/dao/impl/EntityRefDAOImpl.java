@@ -15,6 +15,7 @@ import graphene.model.query.AdvancedSearch;
 import graphene.model.query.EntityRefQuery;
 import graphene.model.query.EntitySearchTuple;
 import graphene.model.query.EventQuery;
+import graphene.model.query.StringQuery;
 import graphene.util.G_CallBack;
 import graphene.util.ExceptionUtil;
 import graphene.util.FastNumberUtils;
@@ -75,7 +76,7 @@ public class EntityRefDAOImpl extends
 	}
 
 	@Inject
-	private IdTypeDAO<EnronIdentifierType100, String> idTypeDAO;
+	private IdTypeDAO<EnronIdentifierType100, StringQuery> idTypeDAO;
 	@Inject
 	private IMemoryDB memDb;
 
@@ -108,7 +109,8 @@ public class EntityRefDAOImpl extends
 			Connection conn) throws Exception {
 		BooleanBuilder builder = new BooleanBuilder();
 		// make sure we have a list worth writing a query about.
-		if (ValidationUtils.isValid(q.getAttributeList())) {
+		if (ValidationUtils.isValid(q)
+				&& ValidationUtils.isValid(q.getAttributeList())) {
 			ArrayList<String> optimizedIdentifierList = new ArrayList<String>(4);
 			ArrayList<String> optimizedAccountNumberList = new ArrayList<String>(
 					4);
@@ -266,18 +268,7 @@ public class EntityRefDAOImpl extends
 			}
 		}
 
-		return from(conn, t).where(builder).limit(q.getMaxResult())
-				.orderBy(t.entityrefId.asc());
-	}
-
-	@Override
-	public long count() throws Exception {
-		Connection conn;
-		conn = getConnection();
-		QEnronEntityref100 t = new QEnronEntityref100("t");
-		long count = from(conn, t).count();
-		conn.close();
-		return count;
+		return from(conn, t).where(builder).orderBy(t.entityrefId.asc());
 	}
 
 	@Override
@@ -292,17 +283,37 @@ public class EntityRefDAOImpl extends
 	}
 
 	@Override
-	public List<EnronEntityref100> findByQuery(long offset, long maxResults,
-			EntityRefQuery q) throws Exception {
-		Connection conn;
-		conn = getConnection();
-		QEnronEntityref100 t = new QEnronEntityref100("t");
-		SQLQuery sq = buildQuery(q, t, conn);
-		sq = setOffsetAndLimit(offset, maxResults, sq);
-		List<EnronEntityref100> results = sq.list(t);
-		conn.close();
+	public List<EnronEntityref100> findByQuery(/* long offset, long maxResults, */
+	EntityRefQuery q) throws Exception {
 
-		return results;
+		if (isReady()) {
+			List<EntitySearchTuple<String>> values = q.getAttributeList();
+			Set<MemRow> results = new HashSet<MemRow>();
+			for (EntitySearchTuple<String> s : values) {
+				if (s.getFamily().equals(G_CanonicalPropertyType.ACCOUNT)) {
+					results.addAll(memDb.getRowsForAccount(s.getValue()));
+				} else if (s.getFamily().equals(
+						G_CanonicalPropertyType.CUSTOMER_NUMBER)) {
+					results.addAll(memDb.getRowsForCustomer(s.getValue()));
+				} else {
+					// all other families
+					results.addAll(memDb.getRowsForIdentifier(s.getValue(), s
+							.getFamily().getValueString()));
+				}
+
+			}
+			return memRowsToDBentries(results);
+		} else {
+			Connection conn;
+			conn = getConnection();
+			QEnronEntityref100 t = new QEnronEntityref100("t");
+			SQLQuery sq = buildQuery(q, t, conn);
+			sq = setOffsetAndLimit(q, sq);
+			List<EnronEntityref100> results = sq.list(t);
+			conn.close();
+
+			return results;
+		}
 	}
 
 	@Override
@@ -327,9 +338,10 @@ public class EntityRefDAOImpl extends
 			List<EntitySearchTuple<String>> attrs = new ArrayList<EntitySearchTuple<String>>();
 			attrs.add(srch);
 			q.setAttributeList(attrs);
-			List<EnronEntityref100> rows = rowSearch(q);
-			for (EnronEntityref100 e : rows)
+			List<EnronEntityref100> rows = findByQuery(q);
+			for (EnronEntityref100 e : rows) {
 				results.add(e);
+			}
 		}
 
 		return results;
@@ -339,7 +351,6 @@ public class EntityRefDAOImpl extends
 	public Set<String> getAccountsForCustomer(String cust) throws Exception {
 		if (memDb != null && memDb.isLoaded()) {
 			Set<String> results = new HashSet<String>();
-			// XXX: See if this step was necessary, or if it was just Eclipse
 			Set<MemRow> rows = memDb.getRowsForCustomer(cust);
 			for (MemRow r : rows) {
 				results.add(memDb
@@ -576,6 +587,8 @@ public class EntityRefDAOImpl extends
 			conn = getConnection();
 			QEnronEntityref100 t = new QEnronEntityref100("t");
 			SQLQuery sq = buildQuery(q, t, conn);
+			sq = setOffsetAndLimit(q.getFirstResult(), q.getMaxResult(), sq);
+
 			List<EnronEntityref100> results = sq.list(t);
 			conn.close();
 
@@ -656,15 +669,11 @@ public class EntityRefDAOImpl extends
 
 	@Override
 	public long countEdges(String id) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
+		Connection conn = getConnection();
+		QEnronEntityref100 t = new QEnronEntityref100("t");
+		long count = from(conn, t)
+				.where(t.identifier.eq(id).or(t.accountnumber.eq(id))
+						.or(t.customernumber.eq(id))).distinct().count();
+		return count;
 	}
-
-	@Override
-	public boolean performThrottlingCallback(long offset, long maxResults,
-			G_CallBack<EnronEntityref100> cb, EventQuery q) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 }

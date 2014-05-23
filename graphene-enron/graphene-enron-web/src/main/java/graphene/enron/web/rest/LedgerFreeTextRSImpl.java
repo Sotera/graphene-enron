@@ -13,8 +13,8 @@ import org.apache.tapestry5.ioc.annotations.InjectService;
 
 public class LedgerFreeTextRSImpl implements LedgerFreeTextRS {
 
-	//TODO: Revisit the caching needs.  This is not how the pros do it. --djue
-	//private LedgerQuery prevQuery;
+	// TODO: Revisit the caching needs. This is not how the pros do it. --djue
+	// private LedgerQuery prevQuery;
 
 	@InjectService("Solr")
 	private TransferDAO<SingleSidedEventRow, EventQuery> solr;
@@ -42,7 +42,7 @@ public class LedgerFreeTextRSImpl implements LedgerFreeTextRS {
 		List<SingleSidedEventRow> results;
 		SingleSidedEvents lt = new SingleSidedEvents();
 		try {
-			results = solr.findByQuery(q.getFirstResult(), q.getMaxResult(), q);
+			results = solr.findByQuery(q);
 			lt.setMultiUnit(true);
 			lt.setRows(results);
 		} catch (Exception e) {

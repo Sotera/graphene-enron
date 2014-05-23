@@ -33,8 +33,7 @@ public class EventSearchRSImpl implements EventSearchRS {
 	private List<G_Link> search(DirectedEventQuery q) {
 		List<G_Link> retval = new ArrayList<G_Link>();
 		try {
-			List<EnronTransactionPair100> list = dao.findByQuery(
-					q.getFirstResult(), q.getMaxResult(), q);
+			List<EnronTransactionPair100> list = dao.findByQuery(q);
 			for (EnronTransactionPair100 k : list) {
 				retval.add(convertToLink(k));
 			}

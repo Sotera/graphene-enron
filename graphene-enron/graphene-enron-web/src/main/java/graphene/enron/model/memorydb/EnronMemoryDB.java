@@ -12,6 +12,7 @@ import graphene.model.memorydb.MemRow;
 import graphene.model.query.AdvancedSearch;
 import graphene.model.query.EntityRefQuery;
 import graphene.model.query.SearchFilter;
+import graphene.model.query.StringQuery;
 import graphene.model.view.entities.CustomerDetails;
 import graphene.model.view.entities.IdType;
 import graphene.util.G_CallBack;
@@ -108,7 +109,7 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 
 	Set<String> identifierSet;
 	@Inject
-	private IdTypeDAO<EnronIdentifierType100, String> idTypeDAO;
+	private IdTypeDAO<EnronIdentifierType100, StringQuery> idTypeDAO;
 
 	private boolean loaded;
 
@@ -127,6 +128,7 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 	// Used for logging the amount of memory taken up by each item. It is reset
 	// if there is more than one pass.
 	private long numProcessed = 0;
+	private List<G_CanonicalPropertyType> communicationTypes;
 
 	/*
 	 * 
@@ -166,12 +168,13 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 			// instance.
 			return true;
 		}
+
 		/**
 		 * If it's a communication id, strip a leading zero if needed.
 		 * 
 		 * XXX: Move this ETL decision to the database.
 		 */
-		if (currentIdType.getType() == G_CanonicalPropertyType.PHONE) {
+		if (communicationTypes.contains(currentIdType.getType())) {
 			if (identifierString.startsWith("0"))
 				identifierString = identifierString.substring(1);
 		}
@@ -182,8 +185,7 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 				identifierSet.add(identifierString);
 				if (currentIdType.getType() == G_CanonicalPropertyType.NAME) {
 					nameSet.add(identifierString);
-				}
-				if (currentIdType.getType() == G_CanonicalPropertyType.PHONE) {
+				} else if (communicationTypes.contains(currentIdType.getType())) {
 					communicationIdSet.add(identifierString);
 				}
 			}
@@ -537,6 +539,10 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 		} else {
 			logger.info("MemoryDB intends to load all records");
 		}
+		// TODO: expand this setup logic
+		communicationTypes = new ArrayList<G_CanonicalPropertyType>();
+		communicationTypes.add(G_CanonicalPropertyType.EMAIL);
+		communicationTypes.add(G_CanonicalPropertyType.PHONE);
 		/*
 		 * How this works: We do two passes through the database. On the first
 		 * pass we create sets of unique values for identifier,customer, and
@@ -559,7 +565,7 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 			test(100000);
 			try {
 				logger.debug("Counting rows...");
-				nRows = dao.count();
+				nRows = dao.count(null);
 			} catch (Exception e) {
 				logger.error(e.getMessage());
 				e.printStackTrace();

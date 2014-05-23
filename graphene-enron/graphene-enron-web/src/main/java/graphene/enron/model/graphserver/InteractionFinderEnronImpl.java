@@ -49,7 +49,7 @@ public class InteractionFinderEnronImpl implements InteractionFinder,
 		this.cb = cb;
 		EventQuery eq = new EventQuery();
 		eq.addIds(idList);
-		dao.performThrottlingCallback(0, 0, this, eq);
+		dao.performCallback(0, 0, this, eq);
 	}
 
 	private Interaction makeInteraction(EnronTransactionPair100 p) {

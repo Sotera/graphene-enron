@@ -4,13 +4,20 @@ import graphene.dao.EntityRefDAO;
 import graphene.dao.IdTypeDAO;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
+import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_RelationshipType;
+import graphene.model.idl.G_SearchType;
 import graphene.model.query.EntityRefQuery;
+import graphene.model.query.EntitySearchTuple;
 import graphene.model.query.EventQuery;
+import graphene.model.query.StringQuery;
 import graphene.util.G_CallBack;
 import graphene.util.validator.ValidationUtils;
 
 import java.util.List;
+
+import org.apache.tapestry5.ioc.annotations.Inject;
+import org.slf4j.Logger;
 
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericGraph;
@@ -22,15 +29,16 @@ import mil.darpa.vande.property.V_PropertyCallback;
 
 public class PropertyFinderEnronImpl implements PropertyFinder,
 		G_CallBack<EnronEntityref100> {
-
 	public static final char ENTITY_ACCOUNT = 'A';
 	public static final char ENTITY_CUSTOMER = 'C';
-
 	public static final char ENTITY_IDENTIFIER = 'I';
 
 	private V_PropertyCallback cb = null;
 
-	private IdTypeDAO<EnronIdentifierType100, String> idTypeDAO;
+	private IdTypeDAO<EnronIdentifierType100, StringQuery> idTypeDAO;
+
+	@Inject
+	private Logger logger;
 
 	private V_NodeList nodeList;
 
@@ -160,9 +168,16 @@ public class PropertyFinderEnronImpl implements PropertyFinder,
 	@Override
 	public void query(List<String> idList, V_GraphQuery q, V_PropertyCallback cb) {
 		this.cb = cb;
-		EventQuery eq = new EventQuery();
-		eq.addIds(idList);
-		propertyDAO.performThrottlingCallback(0, 0, this, eq);
+		EntityRefQuery eq = new EntityRefQuery();
+
+		// add to attribute list
+		for (String id : idList) {
+			eq.getAttributeList().add(
+					new EntitySearchTuple<String>(G_SearchType.COMPARE_EQUALS,
+							G_CanonicalPropertyType.ANY, id));
+		}
+		logger.debug("EntityRefQuery=" + eq.toString());
+		propertyDAO.performCallback(0, 0, this, eq);
 	}
 
 }

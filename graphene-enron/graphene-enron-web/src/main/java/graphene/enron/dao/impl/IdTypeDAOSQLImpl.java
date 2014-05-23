@@ -5,6 +5,7 @@ import graphene.dao.sql.GenericDAOJDBCImpl;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
 import graphene.enron.model.sql.enron.QEnronIdentifierType100;
 import graphene.model.idl.G_CanonicalPropertyType;
+import graphene.model.query.StringQuery;
 import graphene.model.view.entities.IdType;
 import graphene.util.G_CallBack;
 import graphene.util.validator.ValidationUtils;
@@ -33,8 +34,8 @@ import com.mysema.query.types.EntityPath;
  * 
  */
 public class IdTypeDAOSQLImpl extends
-		GenericDAOJDBCImpl<EnronIdentifierType100, String> implements
-		IdTypeDAO<EnronIdentifierType100, String> {
+		GenericDAOJDBCImpl<EnronIdentifierType100, StringQuery> implements
+		IdTypeDAO<EnronIdentifierType100, StringQuery> {
 
 	private boolean loaded;
 	private Map<Integer, IdType> loadedTypes = new HashMap<Integer, IdType>();
@@ -53,12 +54,12 @@ public class IdTypeDAOSQLImpl extends
 		return false;
 	}
 
-	private SQLQuery buildQuery(String q, QEnronIdentifierType100 t,
+	private SQLQuery buildQuery(StringQuery q, QEnronIdentifierType100 t,
 			Connection conn) throws Exception {
 		BooleanBuilder builder = new BooleanBuilder();
 
 		if (ValidationUtils.isValid(q)) {
-			builder.and(t.shortName.eq(q));
+			builder.and(t.shortName.eq(q.getValue()));
 		}
 
 		SQLQuery sq = from(conn, t).where(builder);
@@ -66,7 +67,7 @@ public class IdTypeDAOSQLImpl extends
 	}
 
 	@Override
-	public long count(String q) throws Exception {
+	public long count(StringQuery q) throws Exception {
 		long results = 0;
 		QEnronIdentifierType100 t = new QEnronIdentifierType100("t");
 		Connection conn;
@@ -87,13 +88,15 @@ public class IdTypeDAOSQLImpl extends
 	}
 
 	@Override
-	public List<EnronIdentifierType100> findByQuery(long offset,
-			long maxResults, String q) throws Exception {
+	public List<EnronIdentifierType100> findByQuery(/*long offset,
+			long maxResults,*/ StringQuery q) throws Exception {
 		List<EnronIdentifierType100> results;
 		QEnronIdentifierType100 t = new QEnronIdentifierType100("t");
 		Connection conn;
 		conn = getConnection();
-		SQLQuery sq = buildQuery(q, t, conn).orderBy(t.idtypeId.asc());
+		SQLQuery sq = buildQuery(q, t, conn);
+		sq=setOffsetAndLimit(q, sq);
+		sq=sq.orderBy(t.idtypeId.asc());
 		results = sq.list(t);
 		conn.close();
 		if (results != null) {
@@ -292,11 +295,6 @@ public class IdTypeDAOSQLImpl extends
 		return loaded;
 	}
 
-	@Override
-	public boolean performCallback(long offset, long maxResults,
-			G_CallBack<EnronIdentifierType100> cb, String q) {
-		return basicCallback(offset, maxResults, cb, q);
-	}
 
 	@Override
 	public void setLoaded(boolean l) {

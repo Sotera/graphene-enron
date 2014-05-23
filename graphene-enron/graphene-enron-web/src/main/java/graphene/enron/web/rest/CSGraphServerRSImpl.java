@@ -34,16 +34,16 @@ import org.slf4j.Logger;
 
 public class CSGraphServerRSImpl implements CSGraphServerRS {
 
-	@InjectService("Entity")
+	@Inject
 	private PropertyGraphBuilder entityGraphBuilder;
 
-	@InjectService("finder")
+	@InjectService("Property")
 	private PropertyFinder propertyFinder;
-	
-	@InjectService("finder")
+
+	@InjectService("Interaction")
 	private InteractionFinder interactionFinder;
-	
-	@InjectService("Transfer")
+
+	@Inject
 	private InteractionGraphBuilder interactionGraphBuilder;
 
 	@Inject
@@ -100,14 +100,9 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 	}
 
 	@Override
-	public V_CSGraph getByIdentifier( String type,
-		 String value,String degree,
-			 String maxNodes,
-			 String maxEdgesPerNode,
-		 boolean bipartite,
-		 boolean leafNodes,
-		 boolean showNameNodes,
-			 boolean showIcons) {
+	public V_CSGraph getByIdentifier(String type, String[] value, String degree,
+			String maxNodes, String maxEdgesPerNode, boolean bipartite,
+			boolean leafNodes, boolean showNameNodes, boolean showIcons) {
 		logger.trace("-------");
 		logger.trace("getGraph for type " + type);
 		logger.trace("Value     " + value);
@@ -129,16 +124,9 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 		q.setMaxNodes(maxnodes);
 		q.setMaxEdgesPerNode(maxedges);
 		q.setMaxHops(maxdegree);
-		value = fixup(value);
-		String[] values;
-
-		if (type.contains("list")) {
-			values = value.split("_");
-		} else {
-			values = new String[] { value };
-		}
-			q.addSearchIds(values);
-		
+		//value = fixup(value);
+		q.addSearchIds(value);
+		logger.debug("starting rest service with Q="+q);
 		V_GenericGraph g = null;
 		try {
 			g = entityGraphBuilder.makeGraphResponse(q, propertyFinder);
@@ -286,22 +274,12 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 	// }
 
 	@Override
-	public V_CSGraph getInteractionGraph(
-			String objectType, 
-			String[] ids,
-			String valueType,
-			 String maxHops,
-			 String maxNodes,
-			 String maxEdgesPerNode,
-			 boolean showIcons,
-			String minSecs,
-			 String maxSecs,
-			 String minLinksPairOverall, 
-		String minValueAnyInteraction, 
-		boolean daily,
-			 boolean monthly,
-	 boolean yearly,
-			 boolean directed) {
+	public V_CSGraph getInteractionGraph(String objectType, String[] ids,
+			String valueType, String maxHops, String maxNodes,
+			String maxEdgesPerNode, boolean showIcons, String minSecs,
+			String maxSecs, String minLinksPairOverall,
+			String minValueAnyInteraction, boolean daily, boolean monthly,
+			boolean yearly, boolean directed) {
 		logger.debug("-------");
 		logger.debug("get Interaction Graph for type " + objectType);
 		logger.debug("IDs     " + ids);
@@ -344,8 +322,8 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 		String[] values;
 		// FIXME: I think you meant to split the ids value into multiple ones.
 
-			gq.addSearchIds(ids);
-		
+		gq.addSearchIds(ids);
+
 		logger.debug(gq.toString());
 
 		InteractionFinder finder = new InteractionFinderEnronImpl(transferDAO);
@@ -364,7 +342,7 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 
 	@Override
 	public V_CSGraph getInteractions(final String objectType,
-			final String value, final String valueType, final String degree,
+			final String[] value, final String valueType, final String degree,
 			final String maxNodes, final String maxEdgesPerNode,
 			final boolean showIcons, final String minSecs,
 			final String maxSecs, final String minimumWeight) {
@@ -387,23 +365,13 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 		int minWeight = FastNumberUtils.parseIntWithCheck(minimumWeight, 0);
 		long startDate = FastNumberUtils.parseLongWithCheck(minSecs, 0);
 		long endDate = FastNumberUtils.parseLongWithCheck(maxSecs, 0);
-		String[] values;
-
-		if (valueType.contains("list")) {
-			values = value.split("_");
-		} else {
-			values = new String[] { value };
-		}
-
 		V_GraphQuery q = new V_GraphQuery();
 		q.setMaxHops(maxdegree);
 		q.setStartTime(startDate);
 		q.setEndTime(endDate);
 		q.setType(valueType); // new, --djue
 		q.setMinTransValue(minWeight); // new --djue
-
-			q.addSearchIds(values);
-		
+		q.addSearchIds(value);
 		q.setMaxNodes(maxnodes);
 		q.setMaxEdgesPerNode(maxedges);
 
@@ -411,13 +379,14 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 		V_CSGraph m = null;
 		try {
 			g = interactionGraphBuilder.makeGraphResponse(q, interactionFinder);
-			// g = graphBuilder
-			// .makeGraphResponse(valueType, values, maxdegree, "");
 			m = new V_CSGraph(g, true);
+			if (m != null) {
+				logger.debug(m.toString());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		logger.debug(m.toString());
+
 		return m;
 	}
 

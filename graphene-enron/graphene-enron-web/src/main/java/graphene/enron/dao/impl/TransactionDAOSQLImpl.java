@@ -262,8 +262,8 @@ public class TransactionDAOSQLImpl extends
 	 * method.
 	 */
 	@Override
-	public List<EnronTransactionPair100> findByQuery(long offset,
-			long maxResults, EventQuery q) throws Exception {
+	public List<EnronTransactionPair100> findByQuery(/*long offset,
+			long maxResults,*/ EventQuery q) throws Exception {
 		List<EnronTransactionPair100> results;
 		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
 		Connection conn;
@@ -272,7 +272,7 @@ public class TransactionDAOSQLImpl extends
 			logger.warn("query has no ids:" + q);
 		}
 		SQLQuery sq = buildQuery(q, t, conn); // MFM
-		sq = setOffsetAndLimit(offset, maxResults, sq);
+		sq = setOffsetAndLimit(q, sq);
 		logger.debug(q.toString());
 		results = sq.list(t);
 		conn.close();
@@ -322,25 +322,14 @@ public class TransactionDAOSQLImpl extends
 		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
 		Connection conn;
 		conn = getConnection();
-		SQLQuery sq = from(conn, t).offset(offset).limit(maxResults);
+		SQLQuery sq = from(conn, t);
+		sq = setOffsetAndLimit(offset, maxResults, sq);
 		results = sq.list(t);
 		conn.close();
 		if (results != null) {
 			logger.debug("Returning " + results.size() + " entries");
 		}
 		return results;
-	}
-
-	@Override
-	public boolean performCallback(long offset, long maxResults,
-			G_CallBack<EnronTransactionPair100> cb, EventQuery q) {
-		return basicCallback(offset, maxResults, cb, q);
-	}
-
-	@Override
-	public boolean performThrottlingCallback(long offset, long maxResults,
-			G_CallBack<EnronTransactionPair100> cb, EventQuery q) {
-		return throttlingCallback(offset, maxResults, cb, q);
 	}
 
 }

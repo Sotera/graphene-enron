@@ -33,7 +33,7 @@ public class EntityDAOImpl implements EntityDAO {
 
 	@Inject
 	public EntityDAOImpl(EntityRefDAO dao) {
-		dao = dao;
+		this.dao = dao;
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class EntityDAOImpl implements EntityDAO {
 		q.setAttributeList(attrs);
 
 		try {
-			entityIds = dao.rowSearch(q);
+			entityIds = dao.findByQuery(q);
 			for (String id : entityIds) {
 				results.add(getById(id));
 			}
@@ -125,7 +125,8 @@ public class EntityDAOImpl implements EntityDAO {
 				Identifier ad = new Identifier(e.getDatasourceId(), val, val);
 				e.addAddress(ad);
 			} else if (family.equals("communicationId")) {
-				CommunicationId communicationId = new CommunicationId(e.getDatasourceId(), val, val);
+				CommunicationId communicationId = new CommunicationId(
+						e.getDatasourceId(), val, val);
 				e.addCommunicationId(communicationId);
 			} else if (family.equals("email")) {
 				EmailAddress ad = new EmailAddress(e.getDatasourceId(), val,
@@ -137,7 +138,7 @@ public class EntityDAOImpl implements EntityDAO {
 			if (r.getAccountnumber() != null) {
 				Account ac = new Account(e.getDatasourceId(),
 						r.getAccountnumber(), r.getAccountnumber());
-				//ac.setOwner(e);
+				// ac.setOwner(e);
 				e.addAccount(ac);
 			}
 		}

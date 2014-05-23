@@ -143,7 +143,7 @@ public class EntityRefSearch {
 				.processSearchList(value, G_SearchType.COMPARE_EQUALS,
 						G_CanonicalPropertyType.NAME));
 
-		List<EnronEntityref100> rows = dao.rowSearch(customerNumberQuery);
+		List<EnronEntityref100> rows = dao.findByQuery(customerNumberQuery);
 
 		Set<String> cnumbers = new HashSet<String>();
 		for (EnronEntityref100 r : rows) {
@@ -160,7 +160,7 @@ public class EntityRefSearch {
 			customerDetailsQuery.getAttributeList().add(e);
 		}
 
-		List<EnronEntityref100> crows = dao.rowSearch(customerDetailsQuery);
+		List<EnronEntityref100> crows = dao.findByQuery(customerDetailsQuery);
 
 		for (CustomerDetails cd : rowsToCustomers(crows)) {
 			sr.getResults().add(cd);
@@ -229,7 +229,7 @@ public class EntityRefSearch {
 				.processSearchList(value, G_SearchType.COMPARE_EQUALS,
 						G_CanonicalPropertyType.ACCOUNT));
 
-		List<EnronEntityref100> rows = dao.rowSearch(customerQuery);
+		List<EnronEntityref100> rows = dao.findByQuery(customerQuery);
 
 		for (CustomerDetails cd : rowsToCustomers(rows)) {
 			sr.getResults().add(cd);
@@ -312,7 +312,7 @@ public class EntityRefSearch {
 					new EntitySearchTuple<>(G_SearchType.fromValue(searchType),
 							G_CanonicalPropertyType.ANY, null, identifier));
 		}
-		List<EnronEntityref100> rows = dao.rowSearch(customerQuery);
+		List<EnronEntityref100> rows = dao.findByQuery(customerQuery);
 
 		for (CustomerDetails cd : rowsToCustomers(rows)) {
 			sr.getResults().add(cd);

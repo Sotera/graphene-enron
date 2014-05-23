@@ -46,11 +46,10 @@ public class TransferServerRSImpl implements TransferServerRS {
 	@Inject
 	private TransactionDAO<EnronTransactionPair100, EventQuery> transferDAO;
 
-
 	@Override
-	public DirectedEvents getEvents(String account, int start,
-			int limit, String minAmount, String maxAmount, String minSecs,
-			String maxSecs, String comments, String sortColumn) {
+	public DirectedEvents getEvents(String account, int start, int limit,
+			String minAmount, String maxAmount, String minSecs, String maxSecs,
+			String comments, String sortColumn) {
 		TimeReporter t = new TimeReporter("getEvents", logger);
 		if (start < 0) {
 			logger.debug("Got Enron Transfers request with invalid starting offset "
@@ -63,8 +62,8 @@ public class TransferServerRSImpl implements TransferServerRS {
 		q.addId(account);
 		q.setFirstResult(start);
 		q.setMaxResult(limit);
-		q.setMinSecs(FastNumberUtils.parseLongWithCheck(minSecs,0));
-		q.setMaxSecs(FastNumberUtils.parseLongWithCheck(maxSecs,0));
+		q.setMinSecs(FastNumberUtils.parseLongWithCheck(minSecs, 0));
+		q.setMaxSecs(FastNumberUtils.parseLongWithCheck(maxSecs, 0));
 		q.setMinAmount(Double.parseDouble(minAmount.isEmpty() ? "0" : minAmount));
 		q.setMaxAmount(Double.parseDouble(maxAmount.isEmpty() ? "0" : maxAmount));
 		q.setComments(comments);
@@ -82,8 +81,7 @@ public class TransferServerRSImpl implements TransferServerRS {
 				allRows = processIntersections(account, transactions);
 
 			} else if (q.isSingleId()
-					&& (q.getComments() == null || q.getComments()
-							.length() == 0)) {
+					&& (q.getComments() == null || q.getComments().length() == 0)) {
 				allRows = processSingleAccount(q, transactions);
 				if (transactions.isMultiUnit()) {
 					for (DirectedEventRow r : allRows)
@@ -153,10 +151,9 @@ public class TransferServerRSImpl implements TransferServerRS {
 		sortCol = sortCol + sortDir;
 		fullQ.setSortAndDirection(sortCol);
 
-		entries = transferDAO.findByQuery(fullQ.getFirstResult(),
-				fullQ.getMaxResult(), fullQ); // *** MFM REVISIT
-												// NAME:
-												// transferDAOfullQ
+		entries = transferDAO.findByQuery(fullQ); // *** MFM REVISIT
+													// NAME:
+													// transferDAOfullQ
 		// TODO: Check if we need to dedupe here, before calculating statistics.
 		rows = new ArrayList<DirectedEventRow>();
 
@@ -248,8 +245,7 @@ public class TransferServerRSImpl implements TransferServerRS {
 			q.addId(ac);
 		}
 
-		entries = transferDAO.findByQuery(q.getFirstResult(), q.getMaxResult(),
-				q);
+		entries = transferDAO.findByQuery(q);
 		rows = new ArrayList<DirectedEventRow>();
 
 		for (EnronTransactionPair100 e : entries) {
@@ -272,8 +268,7 @@ public class TransferServerRSImpl implements TransferServerRS {
 
 		logger.debug("Starting getTransactions with query " + q.toString());
 
-		entries = transferDAO.findByQuery(q.getFirstResult(), q.getMaxResult(),
-				q);
+		entries = transferDAO.findByQuery(q);
 		rows = new ArrayList<DirectedEventRow>();
 		for (EnronTransactionPair100 e : entries) {
 			rows.add(funnel.from(e));
@@ -292,8 +287,9 @@ public class TransferServerRSImpl implements TransferServerRS {
 
 	}
 
+	// XXX: GET RID OF THIS
 	private List<DirectedEventRow> slice(List<DirectedEventRow> rows,
-			int start, int limit) {
+			long start, long limit) {
 		logger.debug("Slicing from total: " + rows.size() + " start: " + start
 				+ " limit: " + limit);
 		List<DirectedEventRow> newRows = new ArrayList<DirectedEventRow>();

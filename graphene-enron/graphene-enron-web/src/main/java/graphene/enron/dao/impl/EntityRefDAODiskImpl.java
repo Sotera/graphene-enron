@@ -35,13 +35,16 @@ public class EntityRefDAODiskImpl extends EntityRefDAOImpl implements
 	private long numRows = 0;
 
 	@Override
-	public long count() throws Exception {
+	public long count(EntityRefQuery q) throws Exception {
 		TimeReporter t = new TimeReporter("Counting all rows", logger);
 		ObjectStreamIterator<EnronEntityref100> iter = getIterator(
 				DELETE_EXISTING, TRY_SERIALIZED, SAVE_LOCALLY, 0);
 		EnronEntityref100 e;
 		if (numRows == 0) {
 			while (iter.hasNext() && (e = iter.next()) != null) {
+				// TODO: we are disregarding the query object now, because we
+				// never use it this way. However, the code should do what you
+				// would think it does, so put this in the bucket list. --djue
 				numRows++;
 				if (numRows % 1000 == 0) {
 					t.getSpeed(numRows, "Count EnronEntityref100");
@@ -75,12 +78,12 @@ public class EntityRefDAODiskImpl extends EntityRefDAOImpl implements
 		// secondary option.
 		TimeReporter tr = new TimeReporter("Loading from database", logger);
 
-		if (saveLocally ) {
+		if (saveLocally) {
 
 			ObjectOutputStream objStream = diskCache.getObjectStream(FILE_NAME);
 
 			try {
-				//Note that the maxValue is the highest index number.
+				// Note that the maxValue is the highest index number.
 				super.throttlingCallbackOnValues(0, maxResults, diskCache,
 						null, 500000, 500000, 800000, 0,
 						super.getMaxIndexValue());
@@ -103,7 +106,7 @@ public class EntityRefDAODiskImpl extends EntityRefDAOImpl implements
 		logger.debug("Acquiring data to iterate over...");
 		ObjectStreamIterator<EnronEntityref100> iter = getIterator(
 				DELETE_EXISTING, TRY_SERIALIZED, SAVE_LOCALLY, maxResults);
-		
+
 		EnronEntityref100 e;
 		long numProcessed = 0;
 		TimeReporter t = new TimeReporter("Performing callbacks on all rows",
