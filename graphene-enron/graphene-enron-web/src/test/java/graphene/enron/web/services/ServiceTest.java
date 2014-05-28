@@ -5,11 +5,17 @@ import graphene.dao.TransactionDAO;
 import graphene.dao.sql.DAOSQLModule;
 import graphene.enron.dao.EnronDAOModule;
 import graphene.enron.model.graphserver.GraphServerModule;
+import graphene.enron.model.graphserver.PropertyGraphBuilderUnrolled;
+import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
+import graphene.model.query.EntityRefQuery;
 import graphene.model.query.EventQuery;
 import graphene.util.ConnectionPoolModule;
 import graphene.util.UtilModule;
 import graphene.util.db.DBConnectionPoolService;
+import mil.darpa.vande.generic.V_GenericEdge;
+import mil.darpa.vande.generic.V_GenericGraph;
+import mil.darpa.vande.generic.V_GenericNode;
 import mil.darpa.vande.interactions.InteractionFinder;
 import mil.darpa.vande.interactions.InteractionGraphBuilder;
 import mil.darpa.vande.property.PropertyFinder;
@@ -27,10 +33,22 @@ public class ServiceTest {
 	protected Logger logger;
 	protected PropertyGraphBuilder pgb;
 	protected InteractionGraphBuilder igb;
-	protected EntityRefDAO dao;
+	protected EntityRefDAO<EnronEntityref100, EntityRefQuery> dao;
 	protected TransactionDAO<EnronTransactionPair100, EventQuery> transactionDAO;
 	protected InteractionFinder interactionFinder;
 	protected PropertyFinder propertyFinder;
+	protected PropertyGraphBuilderUnrolled pgbu;
+
+	protected void printGraph(V_GenericGraph g) {
+		System.out.println("=====================");
+		for (V_GenericNode x : g.getNodes()) {
+			System.out.println(x);
+		}
+		for (V_GenericEdge x : g.getEdges()) {
+			System.out.println(x);
+		}
+		System.out.println("=====================");
+	}
 
 	@BeforeSuite
 	public void setup() {
@@ -51,9 +69,9 @@ public class ServiceTest {
 
 		dao = registry.getService(EntityRefDAO.class);
 		transactionDAO = registry.getService(TransactionDAO.class);
-		
-		
+
 		pgb = registry.getService(PropertyGraphBuilder.class);
+		pgbu = registry.getService(PropertyGraphBuilderUnrolled.class);
 		propertyFinder = registry.getService(PropertyFinder.class);
 		igb = registry.getService(InteractionGraphBuilder.class);
 		interactionFinder = registry.getService(InteractionFinder.class);

@@ -442,7 +442,7 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 	private int fixLinks(MemRow[] grid, String value, MemIndex index, int offset) {
 		int id = index.getIDForValue(value);
 		if (id < 0) {
-			logger.error("Invalid id for value " + value);
+			logger.error("Invalid id for value '" + value + "'");
 			return 0;
 		}
 
@@ -471,7 +471,7 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 	public Set<MemRow> getRowsForAccount(String ac) {
 		int id = accounts.getIDForValue(ac);
 		if (id < 0) {
-			logger.error("Invalid id for " + ac);
+			logger.warn("Invalid id for account '" + ac + "'");
 			return new HashSet<MemRow>();
 		}
 
@@ -486,6 +486,11 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 	@Override
 	public Set<MemRow> getRowsForCustomer(String cust) {
 		int id = customers.getIDForValue(cust);
+		// new block --djue
+		if (id < 0) {
+			logger.warn("Invalid id for customer '" + cust + "'");
+			return new HashSet<MemRow>();
+		}
 		return traverse(id, customers, CUSTOMER);
 	}
 
@@ -497,22 +502,27 @@ public class EnronMemoryDB implements G_CallBack<EnronEntityref100>,
 	@Override
 	public Set<MemRow> getRowsForIdentifier(String ident) {
 		int id = identifiers.getIDForValue(ident);
-		Set<MemRow> r = traverse(id, identifiers, IDENTIFIER);
-		return r;
+		// new block --djue
+		if (id < 0) {
+			logger.warn("Invalid id for identifier '" + ident + "'");
+			return new HashSet<MemRow>();
+		}
+		return traverse(id, identifiers, IDENTIFIER);
+
 	}
 
 	@Override
 	public Set<MemRow> getRowsForIdentifier(String ident, String family) {
 		int id = identifiers.getIDForValue(ident);
-		Set<MemRow> r;
+		Set<MemRow> setOfRows;
 		if (family == null || family.length() == 0
 				|| family.equalsIgnoreCase("all")
 				|| family.equalsIgnoreCase("any")) {
-			r = traverse(id, identifiers, IDENTIFIER);
+			setOfRows = traverse(id, identifiers, IDENTIFIER);
 		} else {
-			r = traverseWithFamily(id, identifiers, family, IDENTIFIER);
+			setOfRows = traverseWithFamily(id, identifiers, family, IDENTIFIER);
 		}
-		return r;
+		return setOfRows;
 	}
 
 	@Override

@@ -58,7 +58,7 @@ public class PropertyFinderEnronImpl implements PropertyFinder,
 	}
 
 	@Override
-	public long countEdges(V_GraphQuery q, String id) {
+	public long countEdges(String id) {
 		long n = 0;
 		try {
 			n = propertyDAO.countEdges(id);

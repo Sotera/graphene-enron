@@ -2,6 +2,7 @@ package graphene.enron.web.rest;
 
 import graphene.dao.TransactionDAO;
 import graphene.enron.model.graphserver.InteractionFinderEnronImpl;
+import graphene.enron.model.graphserver.PropertyGraphBuilderUnrolled;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
 import graphene.model.query.EventQuery;
 import graphene.rest.ws.CSGraphServerRS;
@@ -45,7 +46,8 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 
 	@Inject
 	private InteractionGraphBuilder interactionGraphBuilder;
-
+	@Inject
+	private PropertyGraphBuilderUnrolled pbgu;
 	@Inject
 	private Logger logger;
 
@@ -100,9 +102,10 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 	}
 
 	@Override
-	public V_CSGraph getByIdentifier(String type, String[] value, String degree,
-			String maxNodes, String maxEdgesPerNode, boolean bipartite,
-			boolean leafNodes, boolean showNameNodes, boolean showIcons) {
+	public V_CSGraph getByIdentifier(String type, String[] value,
+			String degree, String maxNodes, String maxEdgesPerNode,
+			boolean bipartite, boolean leafNodes, boolean showNameNodes,
+			boolean showIcons) {
 		logger.trace("-------");
 		logger.trace("getGraph for type " + type);
 		logger.trace("Value     " + value);
@@ -124,12 +127,13 @@ public class CSGraphServerRSImpl implements CSGraphServerRS {
 		q.setMaxNodes(maxnodes);
 		q.setMaxEdgesPerNode(maxedges);
 		q.setMaxHops(maxdegree);
-		//value = fixup(value);
+		// value = fixup(value);
 		q.addSearchIds(value);
-		logger.debug("starting rest service with Q="+q);
+		logger.debug("starting rest service with Q=" + q);
 		V_GenericGraph g = null;
 		try {
-			g = entityGraphBuilder.makeGraphResponse(q, propertyFinder);
+			// g = entityGraphBuilder.makeGraphResponse(q, propertyFinder);
+			g = pbgu.makeGraphResponse(q);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

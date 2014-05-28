@@ -16,6 +16,7 @@ public class GraphServerModule {
 				"Interaction");
 		binder.bind(InteractionGraphBuilder.class);
 		binder.bind(PropertyGraphBuilder.class);
+		binder.bind(PropertyGraphBuilderUnrolled.class);
 //		binder.bind(GraphBuilder.class, GraphBuilderDirected.class)
 //				.withId("Directed");
 //

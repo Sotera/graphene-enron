@@ -286,22 +286,34 @@ public class EntityRefDAOImpl extends
 	public List<EnronEntityref100> findByQuery(/* long offset, long maxResults, */
 	EntityRefQuery q) throws Exception {
 
-		if (isReady()) {
+		if (memDb != null && memDb.isLoaded()) {
 			List<EntitySearchTuple<String>> values = q.getAttributeList();
 			Set<MemRow> results = new HashSet<MemRow>();
 			for (EntitySearchTuple<String> s : values) {
 				if (s.getFamily().equals(G_CanonicalPropertyType.ACCOUNT)) {
+					logger.debug("finding account types that match " + values);
 					results.addAll(memDb.getRowsForAccount(s.getValue()));
 				} else if (s.getFamily().equals(
 						G_CanonicalPropertyType.CUSTOMER_NUMBER)) {
+					logger.debug("finding customer number types that match "
+							+ values);
+					results.addAll(memDb.getRowsForCustomer(s.getValue()));
+				} else if (s.getFamily().equals(G_CanonicalPropertyType.ANY)) {
+					logger.debug("finding any types that match " + values);
+					results.addAll(memDb.getRowsForIdentifier(s.getValue(), s
+							.getFamily().getValueString()));
+					results.addAll(memDb.getRowsForAccount(s.getValue()));
 					results.addAll(memDb.getRowsForCustomer(s.getValue()));
 				} else {
-					// all other families
+					logger.debug("finding identifier types that match "
+							+ values);
+					// just identifiers --djue
 					results.addAll(memDb.getRowsForIdentifier(s.getValue(), s
 							.getFamily().getValueString()));
 				}
 
 			}
+			logger.debug("Found results: " + results);
 			return memRowsToDBentries(results);
 		} else {
 			Connection conn;
@@ -525,7 +537,7 @@ public class EntityRefDAOImpl extends
 		for (MemRow m : ms) {
 			results.add(memRowToDBEntry(m));
 		}
-
+		logger.debug("Converted results: " + results);
 		return results;
 	}
 
@@ -533,16 +545,12 @@ public class EntityRefDAOImpl extends
 	public boolean performCallback(long offset, long maxResults,
 			G_CallBack<EnronEntityref100> cb, EntityRefQuery q) {
 
-		// return throttlingCallback(offset, maxResults, cb, q,
-		// INITIAL_CHUNK_SIZE, MIN_CHUNK_SIZE, MAX_CHUNK_SIZE);
-		//
 		long MAX_VALUE = 100000000;
 		try {
 			MAX_VALUE = getMaxIndexValue();
 		} catch (Exception e) {
 			logger.error("Could not retrieve max index value: "
 					+ ExceptionUtil.getRootCauseMessage(e));
-			// e.printStackTrace();
 		}
 		return throttlingCallbackOnValues(offset, maxResults, cb, q,
 				INITIAL_CHUNK_SIZE, MIN_CHUNK_SIZE, MAX_CHUNK_SIZE, 0,
@@ -669,11 +677,20 @@ public class EntityRefDAOImpl extends
 
 	@Override
 	public long countEdges(String id) throws Exception {
-		Connection conn = getConnection();
-		QEnronEntityref100 t = new QEnronEntityref100("t");
-		long count = from(conn, t)
-				.where(t.identifier.eq(id).or(t.accountnumber.eq(id))
-						.or(t.customernumber.eq(id))).distinct().count();
-		return count;
+		if (memDb != null && memDb.isLoaded()) {
+			long count = 0;
+			count += memDb.getRowsForAccount(id).size();
+			count += memDb.getRowsForCustomer(id).size();
+			count += memDb.getRowsForIdentifier(id).size();
+			return count;
+		} else {
+			Connection conn = getConnection();
+			QEnronEntityref100 t = new QEnronEntityref100("t");
+			long count = from(conn, t)
+					.where(t.identifier.eq(id).or(t.accountnumber.eq(id))
+							.or(t.customernumber.eq(id))).distinct().count();
+			conn.close();
+			return count;
+		}
 	}
 }

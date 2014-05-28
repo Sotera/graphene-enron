@@ -110,14 +110,4 @@ public class GraphServiceTest extends ServiceTest {
 
 	}
 
-	private void printGraph(V_GenericGraph g) {
-		System.out.println("=====================");
-		for (V_GenericNode x : g.getNodes()) {
-			System.out.println(x);
-		}
-		for (V_GenericEdge x : g.getEdges()) {
-			System.out.println(x);
-		}
-		System.out.println("=====================");
-	}
 }
