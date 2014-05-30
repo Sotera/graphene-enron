@@ -45,7 +45,7 @@ public class GraphServiceTest extends ServiceTest {
 		q.addSearchIds(new String[] { id });
 		System.out.println(q);
 		try {
-			V_GenericGraph g = pgb.makeGraphResponse(q, propertyFinder);
+			V_GenericGraph g = pgb.makeGraphResponse(q);
 			printGraph(g);
 		} catch (Exception e) {
 			e.printStackTrace();
