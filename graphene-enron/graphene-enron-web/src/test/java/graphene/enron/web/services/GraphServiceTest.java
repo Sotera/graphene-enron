@@ -1,14 +1,8 @@
 package graphene.enron.web.services;
 
-import graphene.enron.model.graphserver.InteractionFinderEnronImpl;
 import graphene.util.FastNumberUtils;
-import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericGraph;
-import mil.darpa.vande.generic.V_GenericNode;
 import mil.darpa.vande.generic.V_GraphQuery;
-import mil.darpa.vande.interactions.InteractionFinder;
-import mil.darpa.vande.interactions.InteractionGraphBuilder;
-import mil.darpa.vande.interactions.TemporalGraphQuery;
 
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
@@ -54,60 +48,6 @@ public class GraphServiceTest extends ServiceTest {
 
 	}
 
-	@Test(dataProvider = "AllIds")
-	public void testIG(String id, String degree) throws Exception {
-		System.out.println("Starting interaction test 1");
-		V_GraphQuery q = new V_GraphQuery();
-		q.setType("customer");
-		q.setMaxNodes(300);
-		q.setMaxEdgesPerNode(50);
-		q.setMaxHops(FastNumberUtils.parseIntWithCheck(degree));
-		q.addSearchIds(new String[] { id });
-		System.out.println(q);
-		igb.setOriginalQuery(q);
-		try {
-			V_GenericGraph g = igb.makeGraphResponse(q, interactionFinder);
-			printGraph(g);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
-	@Test(dataProvider = "AllIds")
-	public void testIG2(String id, String degree) throws Exception {
-		System.out.println("Starting temporal interaction test 1");
-		TemporalGraphQuery gq = new TemporalGraphQuery();
-		long startDate = FastNumberUtils.parseLongWithCheck("0", 0);
-		long endDate = FastNumberUtils.parseLongWithCheck("" + Long.MAX_VALUE,
-				0);
-		gq.setMaxHops(FastNumberUtils.parseIntWithCheck(degree));
-		gq.setMaxNodes(5);
-		gq.setMaxEdgesPerNode(5);
-		gq.setMinLinks(2);
-		gq.setMinTransValue(0);
-		gq.setByMonth(false);
-		gq.setByDay(true);
-		gq.setByYear(false);
-		gq.setDirected(true);
-		gq.setStartTime(startDate);
-		gq.setEndTime(endDate);
-		gq.addSearchIds(new String[] { id });
-
-		System.out.println(gq);
-
-		InteractionFinder finder = new InteractionFinderEnronImpl(
-				this.transactionDAO);
-		InteractionGraphBuilder b = new InteractionGraphBuilder();
-		b.setOriginalQuery(gq);
-		V_GenericGraph g = b.makeGraphResponse(gq, finder);
-
-		logger.debug("Made graph with " + g.getNodes().size() + " Nodes and "
-				+ g.getEdges().size() + " Edges");
-
-		printGraph(g);
-		// V_CSGraph m = new V_CSGraph(g, true);
-		// System.out.println(g.toString());
-
-	}
 
 }

@@ -15,8 +15,6 @@ import graphene.util.db.DBConnectionPoolService;
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericGraph;
 import mil.darpa.vande.generic.V_GenericNode;
-import mil.darpa.vande.interactions.InteractionFinder;
-import mil.darpa.vande.interactions.InteractionGraphBuilder;
 
 import org.apache.tapestry5.ioc.Registry;
 import org.apache.tapestry5.ioc.RegistryBuilder;
@@ -29,10 +27,10 @@ public class ServiceTest {
 	protected DBConnectionPoolService cp;
 	protected Logger logger;
 	protected PropertyGraphBuilder pgb;
-	protected InteractionGraphBuilder igb;
+	//protected InteractionGraphBuilder igb;
 	protected EntityRefDAO<EnronEntityref100, EntityRefQuery> dao;
 	protected TransactionDAO<EnronTransactionPair100, EventQuery> transactionDAO;
-	protected InteractionFinder interactionFinder;
+	//protected InteractionFinder interactionFinder;
 
 	protected void printGraph(V_GenericGraph g) {
 		System.out.println("=====================");
@@ -65,8 +63,6 @@ public class ServiceTest {
 		transactionDAO = registry.getService(TransactionDAO.class);
 
 		pgb = registry.getService(PropertyGraphBuilder.class);
-		igb = registry.getService(InteractionGraphBuilder.class);
-		interactionFinder = registry.getService(InteractionFinder.class);
 		do {
 			System.out.println("Waiting for EntityRefDAO to be available.");
 			try {

@@ -9,9 +9,7 @@ import graphene.model.query.StringQuery;
 import graphene.services.PropertyGraphBuilder;
 import graphene.util.validator.ValidationUtils;
 import mil.darpa.vande.generic.V_GenericEdge;
-import mil.darpa.vande.generic.V_GenericGraph;
 import mil.darpa.vande.generic.V_GenericNode;
-import mil.darpa.vande.generic.V_GraphQuery;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
@@ -23,7 +21,7 @@ import org.slf4j.Logger;
  * @author djue
  * 
  */
-public class PropertyGraphBuilderImpl extends
+public class PropertyGraphBuilderEnronImpl extends
 		PropertyGraphBuilder<EnronEntityref100> {
 
 	private IdTypeDAO<EnronEntityref100, StringQuery> idTypeDAO;
@@ -32,15 +30,13 @@ public class PropertyGraphBuilderImpl extends
 	Logger logger;
 
 	@Inject
-	public PropertyGraphBuilderImpl(IdTypeDAO idTypeDAO,
+	public PropertyGraphBuilderEnronImpl(IdTypeDAO idTypeDAO,
 			EntityRefDAO propertyDAO) {
 		super();
 		this.idTypeDAO = idTypeDAO;
 		this.dao = propertyDAO;
 		this.supportedDatasets.add("Enron");
 	}
-
-	
 
 	/**
 	 * This callback just creates the nodes and edges from a single row.
@@ -138,23 +134,26 @@ public class PropertyGraphBuilderImpl extends
 				nodeList.addNode(idNode);
 			}
 			if (custNode != null && idNode != null) {
-				V_GenericEdge v = new V_GenericEdge(custNode, idNode);
-				G_RelationshipType rel = G_RelationshipType.HAS_ID;
-				if (nodeType == G_CanonicalPropertyType.PHONE) {
-					rel = G_RelationshipType.HAS_PHONE;
-				}
-				if (nodeType == G_CanonicalPropertyType.EMAIL) {
-					rel = G_RelationshipType.HAS_EMAIL_ADDRESS;
-				}
-				if (nodeType == G_CanonicalPropertyType.ADDRESS) {
-					rel = G_RelationshipType.HAS_ADDRESS;
-				}
-				v.setIdType(rel.name());
-				v.setLabel(rel.name());
-				v.setIdVal(rel.name());
-
-				String edgeId = generateEdgeId(v);
+				String edgeId = generateEdgeId(custNode.getId(), idNode.getId());
 				if (!edgeMap.containsKey(edgeId)) {
+					V_GenericEdge v = new V_GenericEdge(custNode, idNode);
+					G_RelationshipType rel = G_RelationshipType.HAS_ID;
+					if (nodeType == G_CanonicalPropertyType.PHONE) {
+						rel = G_RelationshipType.HAS_PHONE;
+					}
+					if (nodeType == G_CanonicalPropertyType.EMAIL) {
+						rel = G_RelationshipType.HAS_EMAIL_ADDRESS;
+					}
+					if (nodeType == G_CanonicalPropertyType.ADDRESS) {
+						rel = G_RelationshipType.HAS_ADDRESS;
+					}
+					v.setIdType(rel.name());
+					v.setLabel(null);
+					v.setIdVal(rel.name());
+					v.addData("Relationship type",
+							G_RelationshipType.HAS_ACCOUNT.name());
+					v.addData("Source Column", p.getIdentifiercolumnsource());
+					v.addData("Source Table", p.getIdentifiertablesource());
 					edgeMap.put(edgeId, v);
 				}
 
@@ -162,13 +161,17 @@ public class PropertyGraphBuilderImpl extends
 		}
 
 		if (custNode != null && acnoNode != null) {
-			V_GenericEdge v = new V_GenericEdge(custNode, acnoNode);
-			v.setIdType(G_RelationshipType.HAS_ACCOUNT.name());
-			v.setLabel(G_RelationshipType.HAS_ACCOUNT.name());
-			v.setIdVal(G_RelationshipType.HAS_ACCOUNT.name());
-
-			String key = generateEdgeId(v);
+			String key = generateEdgeId(custNode.getId(), acnoNode.getId());
 			if (!edgeMap.containsKey(key)) {
+				V_GenericEdge v = new V_GenericEdge(custNode, acnoNode);
+				v.setIdType(G_RelationshipType.HAS_ACCOUNT.name());
+				v.setLabel(null);
+				v.setIdVal(G_RelationshipType.HAS_ACCOUNT.name());
+				v.addData("Relationship type",
+						G_RelationshipType.HAS_ACCOUNT.name());
+				v.addData("Source Column", p.getIdentifiercolumnsource());
+				v.addData("Source Table", p.getIdentifiertablesource());
+
 				edgeMap.put(key, v);
 			}
 		}
