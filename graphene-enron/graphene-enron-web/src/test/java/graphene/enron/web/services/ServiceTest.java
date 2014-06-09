@@ -10,7 +10,6 @@ import graphene.enron.model.sql.enron.EnronTransactionPair100;
 import graphene.model.query.EntityRefQuery;
 import graphene.model.query.EventQuery;
 import graphene.services.PropertyGraphBuilder;
-import graphene.util.ConnectionPoolModule;
 import graphene.util.UtilModule;
 import graphene.util.db.DBConnectionPoolService;
 import mil.darpa.vande.generic.V_GenericEdge;
@@ -18,7 +17,6 @@ import mil.darpa.vande.generic.V_GenericGraph;
 import mil.darpa.vande.generic.V_GenericNode;
 import mil.darpa.vande.interactions.InteractionFinder;
 import mil.darpa.vande.interactions.InteractionGraphBuilder;
-import mil.darpa.vande.property.PropertyFinder;
 
 import org.apache.tapestry5.ioc.Registry;
 import org.apache.tapestry5.ioc.RegistryBuilder;
@@ -35,7 +33,6 @@ public class ServiceTest {
 	protected EntityRefDAO<EnronEntityref100, EntityRefQuery> dao;
 	protected TransactionDAO<EnronTransactionPair100, EventQuery> transactionDAO;
 	protected InteractionFinder interactionFinder;
-	protected PropertyFinder propertyFinder;
 
 	protected void printGraph(V_GenericGraph g) {
 		System.out.println("=====================");
@@ -53,7 +50,6 @@ public class ServiceTest {
 
 		RegistryBuilder builder = new RegistryBuilder();
 		builder.add(UtilModule.class);
-		builder.add(ConnectionPoolModule.class);
 		builder.add(DAOSQLModule.class);
 		builder.add(GraphServerModule.class);
 		builder.add(EnronDAOModule.class);
@@ -69,7 +65,6 @@ public class ServiceTest {
 		transactionDAO = registry.getService(TransactionDAO.class);
 
 		pgb = registry.getService(PropertyGraphBuilder.class);
-		propertyFinder = registry.getService(PropertyFinder.class);
 		igb = registry.getService(InteractionGraphBuilder.class);
 		interactionFinder = registry.getService(InteractionFinder.class);
 		do {

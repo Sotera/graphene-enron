@@ -7,13 +7,13 @@ import graphene.util.G_CallBack;
 
 import java.util.List;
 
-import org.apache.tapestry5.ioc.annotations.Inject;
-
 import mil.darpa.vande.generic.V_Actor;
 import mil.darpa.vande.generic.V_GraphQuery;
 import mil.darpa.vande.interactions.Interaction;
 import mil.darpa.vande.interactions.InteractionFinder;
 import mil.darpa.vande.interactions.V_InteractionCallback;
+
+import org.apache.tapestry5.ioc.annotations.Inject;
 
 public class InteractionFinderEnronImpl implements InteractionFinder,
 		G_CallBack<EnronTransactionPair100> {

@@ -36,7 +36,8 @@ public class PropertyGraphBuilderImpl extends
 			EntityRefDAO propertyDAO) {
 		super();
 		this.idTypeDAO = idTypeDAO;
-		this.propertyDAO = propertyDAO;
+		this.dao = propertyDAO;
+		this.supportedDatasets.add("Enron");
 	}
 
 	

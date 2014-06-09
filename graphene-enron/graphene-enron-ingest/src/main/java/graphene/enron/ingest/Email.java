@@ -19,7 +19,6 @@ public class Email {
 	
 	boolean parseFromLine(String line)
 	{
-		int p;
 		String[]cols;
 		
 		cols = line.split("\t");

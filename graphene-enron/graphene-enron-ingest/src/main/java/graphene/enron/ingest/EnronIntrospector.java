@@ -2,7 +2,6 @@ package graphene.enron.ingest;
 
 import graphene.enron.model.DTOGenerationModule;
 import graphene.introspect.Introspector;
-import graphene.util.ConnectionPoolModule;
 import graphene.util.db.DBConnectionPoolService;
 import graphene.util.db.MainDB;
 
@@ -99,7 +98,7 @@ public class EnronIntrospector {
 	public static void setup() {
 
 		RegistryBuilder builder = new RegistryBuilder();
-		builder.add(ConnectionPoolModule.class, DTOGenerationModule.class);
+		builder.add(DTOGenerationModule.class);
 		registry = builder.build();
 		registry.performRegistryStartup();
 		mainDB = registry.getService(DBConnectionPoolService.class,

@@ -7,9 +7,10 @@ import graphene.dao.TransactionDAO;
 import graphene.dao.sql.GenericDAOJDBCImpl;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
 import graphene.enron.model.sql.enron.QEnronTransactionPair100;
+import graphene.enron.model.view.transferserver.TransferRowFunnel;
 import graphene.model.idl.G_Link;
 import graphene.model.query.EventQuery;
-import graphene.util.G_CallBack;
+import graphene.model.view.events.DirectedEventRow;
 import graphene.util.FastNumberUtils;
 import graphene.util.validator.ValidationUtils;
 
@@ -262,8 +263,11 @@ public class TransactionDAOSQLImpl extends
 	 * method.
 	 */
 	@Override
-	public List<EnronTransactionPair100> findByQuery(/*long offset,
-			long maxResults,*/ EventQuery q) throws Exception {
+	public List<EnronTransactionPair100> findByQuery(/*
+													 * long offset, long
+													 * maxResults,
+													 */EventQuery q)
+			throws Exception {
 		List<EnronTransactionPair100> results;
 		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
 		Connection conn;
@@ -330,6 +334,22 @@ public class TransactionDAOSQLImpl extends
 			logger.debug("Returning " + results.size() + " entries");
 		}
 		return results;
+	}
+
+	private TransferRowFunnel funnel = new TransferRowFunnel();
+
+	@Override
+	public List<DirectedEventRow> getEvents(EventQuery q) {
+		ArrayList<DirectedEventRow> rows = new ArrayList<DirectedEventRow>();
+		try {
+			for (EnronTransactionPair100 e : findByQuery(q)) {
+				rows.add(funnel.from(e));
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return rows;
 	}
 
 }
