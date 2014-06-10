@@ -736,174 +736,34 @@ Ext.define("DARPA.GraphVis",
     },
    
     // layoutName   - User selected layout name
-    changeLayout: function(layoutName) {
+    changeLayout: function(layoutName, config) {
         var scope = this;
         if (scope.initialized) {
-            scope.currentLayout = layoutName;
+		
+        	// set in each layout function now
+            /*scope.currentLayout = layoutName;*/
+			
             switch (layoutName) {
                 case 'circle':
-                    scope.gv.layout({
-                        name: 'circle',
-                        fit: true,          // fit the viewport to the graph
-                        rStepSize: 10,      // the step size for increasing the radius if the nodes don't fit on screen
-                        padding: 30,        // padding on fit
-                        // startAngle:  3/2 * Math.PI,  // position of the first node
-                        counterclockwise: false,    // whether the layout should go counterclockwise (true) or clockwise
-                        ready: undefined,   // callback on layoutready
-                        stop: function() {
-							if (!(scope.setBusy == undefined)) {
-								scope.setBusy(false);
-							}
-                        
-                            // DEBUG
-                            //console.log("circle layout done");
-                            // TODO - needs more tuning
-                            // for larger graphs, the circle is huge and does not fit within the viewport on initial display
-							
-							if (scope.owner.getProgressBar) {
-								var pb = scope.owner.getProgressBar();
-							
-								if (pb) {
-									pb.updateProgress(1, "100%");
-								}
-							}
-                            // scope.gv.zoom(0.8);
-                        }
-                    });
+					scope.doCircleLayout(config);
                     break;
-
-                 case 'grid':
-                    scope.gv.layout({
-                        name: 'grid',
-                        fit: true,          // fit the viewport to the graph
-                        rows: undefined,    // force number of rows in the grid
-                        columns: undefined, // force number of cols in the grid
-                        ready: undefined,   // callback on layoutready
-                        stop: function() {
-							if (!(scope.setBusy == undefined)) {
-								scope.setBusy(false);
-							}
-                            // DEBUG
-                            //console.log("grid layout done");
-							
-							if (scope.owner.getProgressBar) {
-								var pb = scope.owner.getProgressBar();
-							
-								if (pb) {
-									pb.updateProgress(1, "100%");
-								}
-							}
-                            // scope.gv.zoom(0.9);
-                        }
-                    });
-                    break;
-
+                case 'grid':
+					scope.doGridLayout(config);
+					break;
                 case 'breadthfirst':
                 case 'tree':
-                    
-                    
-                    scope.gv.layout({
-                        name: 'breadthfirst',
-                        fit: true,          // fit the viewport to the graph
-                        directed: true,     // whether the tree is directed downwards
-                        padding: 15,        // padding on fit
-                        circle: false,      // put depths in concentric circles if true, put depths top down if false
-                        roots: undefined,   // the root(s) of the tree(s), can be an array of node ids
-                        ready: undefined,   // callback on layoutready
-                        stop: function() {
-							if (!(scope.setBusy == undefined)) {
-								scope.setBusy(false);
-							}
-                            // DEBUG
-                            //console.log("tree layout done");
-							if (scope.owner.getProgressBar) {
-								var pb = scope.owner.getProgressBar();
-							
-								if (pb) {
-									pb.updateProgress(1, "100%");
-								}
-							}
-                            // scope.gv.zoom(0.9);
-                        }
-                    });
+                    scope.doHierarchicalLayout(config);
                     break;
-
-                    case 'cose':
-                    	// enable the Halt Layout button if it exists
-						if (scope.owner.getStopButton) {
-							var stopBtn = scope.owner.getStopButton();
-							stopBtn.setDisabled(false);
-							stopBtn.setCurrentLayout("COSE");
-						}
-						
-                        scope.gv.layout({
-                                name: 'cose',
-                                refresh		: 2500,			// Number of iterations between consecutive screen positions update (0 -> only updated on the end)
-                                fit		: true, 
-                                randomize	: false,
-                                debug		: false,
-
-                                nodeRepulsion	: 99999999,		// Node repulsion (non overlapping) multiplier
-                                nodeOverlap	: 5000,			// Node repulsion (overlapping) multiplier
-                                idealEdgeLength	: 10,			// Ideal edge (non nested) length
-                                edgeElasticity	: 1,			// Divisor to compute edge forces
-                                nestingFactor	: 5, 			// Nesting factor (multiplier) to compute ideal edge length for nested edges
-                                gravity		: 250, 			// Gravity force (constant)
-
-                                numIter		: 5000,			// Maximum number of iterations to perform
-                                initialTemp	: 500,			// Initial temperature (maximum node displacement)
-                                coolingFactor	: 0.95, 		// Cooling factor (how the temperature is reduced between consecutive iterations)
-                                minTemp 	: 8,			// Lower temperature threshold (below this point the layout will end)
-
-                                feedbackRate	: 10,			// get a status response from layout execution for every <feedbackRate> iterations
-
-                                onFeedback: function(opt) {
-                                	// feedback callback.  frequency of calls determined by options.feedbackRate
-									var progress = this.minTemp / opt.temp;
-									
-									if (scope.owner.getProgressBar) {
-										var pb = scope.owner.getProgressBar();
-									
-										if (pb) {
-											pb.updateProgress(progress, Math.floor(progress * 100) + "%");
-										}
-									}
-                                },
-
-                                stop: function() {
-									if (!(scope.setBusy == undefined)) {
-										scope.setBusy(false);
-									}
-									
-									if (scope.owner.getStopButton) {
-										var stopBtn = scope.owner.getStopButton();
-										stopBtn.setDisabled(true);
-										stopBtn.setCurrentLayout(undefined);
-									}
-                                        // DEBUG
-                                    //console.log("tree layout done");
-
-									if (scope.owner.getProgressBar) {
-										var pb = scope.owner.getProgressBar();
-									
-										if (pb) {
-											pb.updateProgress(1, "100%");
-										}
-									}
-                                    // scope.gv.zoom(0.9);
-                                }
-                            });
-                            break;
-					
-                 case 'arbor':
-                 case 'arbor-snow':     // force directed arbor - out of the box
-                    scope.doForceDirectedLayout('arbor-snow');
-                    break;
-                    
-                 case 'arbor-wheel':    // custom arbor
-                    scope.doForceDirectedLayout('arbor-wheel');
-                    break;
-
+                case 'cose':
+					scope.doCOSELayout(config);
+					break
+                case 'arbor':
+                case 'arbor-snow':     // force directed arbor - out of the box
+					scope.doForceDirectedLayout('arbor-snow');
+					break;
+                case 'arbor-wheel':    // custom arbor
+					scope.doForceDirectedLayout('arbor-wheel');
+					break;
                 default:
                     // do nothing, invalid layout
                     break;
@@ -922,236 +782,357 @@ Ext.define("DARPA.GraphVis",
     
     // Default layout is a tree to get the initial display to show up quickly.
     // The user can then change to use a different layout
-    doDefaultLayout: function() {
+    doDefaultLayout: function(config) {
         var scope = this;
         
-        if (!(scope.setBusy == undefined)) {
-		scope.setBusy(true);
-        }
-	/* MFM commented out 
-        else {
-		var mbox = Ext.Msg.show({
-			title: 'Graph Display',
-			msg: 'The graph is being prepared for display. Please wait...',
-			buttons: Ext.Msg.OK
-		});
-        }
-        */
-        scope.currentLayout = 'breadthfirst';
-        scope.gv.layout({
-            name: 'breadthfirst',
-            fit: true,          // fit the viewport to the graph
-            directed: true,     // whether the tree is directed downwards
-            padding: 15,        // padding on fit
-            circle: false,      // put depths in concentric circles if true, put depths top down if false
-            roots: undefined,   // the root(s) of the tree(s)
-            ready: function() {  // callback on layoutready
-            },
+		if (config == undefined) {
+			config = {};
+		}
+		
+        // if (!(scope.setBusy == undefined)) {
+		//	scope.setBusy(true);
+        // }
+		
+		scope.doHierarchicalLayout(config)
+    },
+    
+	doCircleLayout: function(config) {
+		var scope = this;
+    	
+		if (config == undefined) {
+			config = {};
+		}
+		
+		scope.currentLayout = 'circle';
+		
+    	var options = {
+            name: 'circle',
+            
+            fit: 		(typeof config.fit !== "undefined") 		? config.fit : true,          // fit the viewport to the graph
+            rStepSize: 	(typeof config.rStepSize !== "undefined") 	? config.rStepSize : 10,      // the step size for increasing the radius if the nodes don't fit on screen
+            padding: 	(typeof config.padding !== "undefined") 	? config.padding : 30,        // padding on fit
+            		
+            // startAngle:  (typeof config.startAngle !== "undefined") ? config.startAngle : 3/2 * Math.PI,  		// position of the first node
+            counterclockwise: (typeof config.counterclockwise !== "undefined") ? config.counterclockwise : false,	// whether the layout should go counterclockwise (true) or clockwise
+            		
+            ready: undefined,   // callback on layoutready
+            
             stop: function() {
+				// if (!(scope.setBusy == undefined)) {
+				// 	scope.setBusy(false);
+				// }
+				
+				if (scope.owner.getProgressBar) {
+					var pb = scope.owner.getProgressBar();
+				
+					if (pb) pb.updateProgress(1, "100%");
+				}
+            }
+        };
+    	
+    	if (config.letServerDoLayout == true) {
+			// TODO server does layout
+		} else {
+			// browser does layout
+			scope.gv.layout(options);
+		}
+	},
+	
+	doGridLayout: function(config) {
+    	var scope = this;
+    	
+		if (config == undefined) {
+			config = {};
+		}
+
+		scope.currentLayout = 'grid';
+		
+    	var options = {
+            name: 'grid',
+            
+            fit: 	 (typeof config.fit !== "undefined") 	 ? config.fit : true,          	// fit the viewport to the graph
+            rows: 	 (typeof config.rows !== "undefined") 	 ? config.rows : undefined,    	// force number of rows in the grid
+            columns: (typeof config.columns !== "undefined") ? config.column : undefined, 	// force number of cols in the grid
+            		
+            ready: 	 undefined,   // callback on layoutready
+            
+            stop: function() {
+				// if (!(scope.setBusy == undefined)) {
+				//	scope.setBusy(false);
+				// }
+				
+				if (scope.owner.getProgressBar) {
+					var pb = scope.owner.getProgressBar();
+				
+					if (pb) pb.updateProgress(1, "100%");
+				}
+            }
+        };
+    	
+    	if (config.letServerDoLayout == true) {
+			// TODO server does layout
+		} else {
+			// browser does layout
+			scope.gv.layout(options);
+		}
+	},
+	
+	doHierarchicalLayout: function(config) {
+    	var scope = this;
+    	
+		if (config == undefined) {
+			config = {};
+		}
+
+		scope.currentLayout = 'breadthfirst';
+		
+    	var options = {
+            name: 'breadthfirst',
+            
+            fit: 		(typeof config.fit !== "undefined") 		? config.fit : true,		// fit the viewport to the graph
+            directed: 	(typeof config.directed !== "undefined") 	? config.directed : true,	// whether the tree is directed downwards
+            padding: 	(typeof config.padding !== "undefined") 	? config.padding : 15,		// padding on fit
+            circle: 	(typeof config.circle !== "undefined") 		? config.circle : false,	// put depths in concentric circles if true, put depths top down if false
+            		
+            roots: 		(typeof config.roots !== "undefined") ? config.roots : undefined,   	// the root(s) of the tree(s), can be an array of node ids
+            		
+            ready: 		undefined,   // callback on layoutready
+            		
+            stop: function() {
+				// if (!(scope.setBusy == undefined)) {
+				// 	scope.setBusy(false);
+				// }
+				
+				if (scope.owner.getProgressBar) {
+					var pb = scope.owner.getProgressBar();
+				
+					if (pb) pb.updateProgress(1, "100%");
+				}
+            }
+        };
+    	
+    	if (config.letServerDoLayout == true) {
+			// TODO server does layout
+		} else {
+			// browser does layout
+			scope.gv.layout(options);
+		}
+	},
+	
+    doCOSELayout: function(config) {
+    	var scope = this;
+    	
+		if (config == undefined) {
+			config = {};
+		}
+
+		scope.currentLayout = 'cose';
+		
+    	// enable the Halt Layout button if it exists
+		if (scope.owner.getStopButton) {
+			var stopBtn = scope.owner.getStopButton();
+			stopBtn.setDisabled(false);
+			stopBtn.setCurrentLayout("COSE");
+		}
+		
+		var options = {
+            name: 'cose',
+            
+            refresh: 	(typeof config.refresh !== "undefined") 	? config.refresh : 10,		// Number of iterations between consecutive screen positions update (0 -> only updated on the end)
+            fit: 		(typeof config.fit !== "undefined") 		? config.fit : true, 
+            randomize: 	(typeof config.randomize !== "undefined") 	? config.randomize : true,
+            debug: 		(typeof config.debug !== "undefined") 		? config.debug : false,
+
+            nodeRepulsion: 	 (typeof config.nodeRepulsion !== "undefined") 		? config.nodeRepulsion : 99999999,	// Node repulsion (non overlapping) multiplier
+            nodeOverlap: 	 (typeof config.nodeOverlap !== "undefined") 		? config.nodeOverlap : 5000,		// Node repulsion (overlapping) multiplier
+            idealEdgeLength: (typeof config.idealEdgeLength !== "undefined") 	? config.idealEdgeLength : 10,		// Ideal edge (non nested) length
+            edgeElasticity:  (typeof config.edgeElasticity !== "undefined") 	? config.edgeElasticity : 1,		// Divisor to compute edge forces
+            nestingFactor: 	 (typeof config.nestingFactor !== "undefined") 		? config.nestingFactor : 5,			// Nesting factor (multiplier) to compute ideal edge length for nested edges
+            gravity: 		 (typeof config.gravity !== "undefined") 			? config.gravity : 250, 			// Gravity force (constant)
+
+            numIter: 		(typeof config.numIter !== "undefined") 		? config.numIter : 5000,		// Maximum number of iterations to perform
+            initialTemp: 	(typeof config.initialTemp !== "undefined") 	? config.initialTemp : 500,		// Initial temperature (maximum node displacement)
+            coolingFactor: 	(typeof config.coolingFactor !== "undefined") 	? config.coolingFactor : 0.95,	// Cooling factor (how the temperature is reduced between consecutive iterations)
+            minTemp: 		(typeof config.minTemp !== "undefined") 		? config.minTemp : 8,			// Lower temperature threshold (below this point the layout will end)
+
+            feedbackRate: (typeof config.feedbackRate !== "undefined") ? config.feedbackRate : 5,	// get a status response from layout execution for every <feedbackRate> iterations
+            intervalRate: (typeof config.intervalRate !== "undefined") ? config.intervalRate : 1,	
+            		
+            onFeedback: function(opt) {
+            	// feedback callback.  frequency of calls determined by options.feedbackRate
 				if (scope.owner.getProgressBar) {
 					var pb = scope.owner.getProgressBar();
 				
 					if (pb) {
-						pb.updateProgress(1, "100%");
+						var progress = this.minTemp / opt.temp;
+						pb.updateProgress(progress, Math.floor(progress * 100) + "%");
 					}
 				}
-                // scope.gv.zoom(0.9);
-	        	if (!(scope.setBusy == undefined)) {
-	        		scope.setBusy(false);
-                }
-                /* MFM commented out
-                if (mbox) {
-                    var dt4 = window.setTimeout(function() {
-                            window.clearTimeout(dt4);
-                            mbox.close();
-                    },5000);
-                }
-                */
+            },
+
+            stop: function() {
+				// if (!(scope.setBusy == undefined)) {
+				// 	scope.setBusy(false);
+				// }
+				
+				if (scope.owner.getStopButton) {
+					var stopBtn = scope.owner.getStopButton();
+					stopBtn.setDisabled(true);
+					stopBtn.setCurrentLayout(undefined);
+				}
+
+				if (scope.owner.getProgressBar) {
+					var pb = scope.owner.getProgressBar();
+				
+					if (pb) pb.updateProgress(1, "100%");
+				}
             }
-        });
-    },
-        
+        };
+		
+		if (config.letServerDoLayout == true) {
+			// TODO server does layout
+		} else {
+			// browser does layout
+			scope.gv.layout(options);
+		}
+	},
+	
     // fdType   - 'arbor-wheel' or 'arbor-snow'
     doForceDirectedLayout: function(fdType) {
-            var scope = this;
-            
-            // for feedback while the graph is in progress
+    	var scope = this;
+    	
+		if (config == undefined) {
+			config = {};
+		}
+        
+		scope.currentLayout = layoutName;
+		
+		/* the spinner in the tab makes Arbor graph plot twice 
+		 * comment out until better solution can be implemented *//*
+    	// for feedback while the graph is in progress
 	    if (!(scope.setBusy == undefined)) {
-		scope.setBusy(true);
-            }
-            /* MFM commented out
-            else {
-		    var mbox = Ext.Msg.show({
-			title: 'Graph Display',
-			msg: 'The graph is being prepared for display. Please wait...',
-			buttons: Ext.Msg.OK
-		    });
+	    	scope.setBusy(true);
 	    }
-            */
-	    	// enable the Halt Layout button if it exists
-		    if (scope.owner.getStopButton) {
-				var stopBtn = scope.owner.getStopButton();
-				stopBtn.setDisabled(false);
-				stopBtn.setCurrentLayout("ARBOR");
-			}
-	    
-	    	var progress = 0;
-            scope.gv.layout({
-                    name: 'arbor',
+	    */
+		
+	    // enable the Halt Layout button if it exists
+	    if (scope.owner.getStopButton) {
+			var stopBtn = scope.owner.getStopButton();
+			stopBtn.setDisabled(false);
+			stopBtn.setCurrentLayout("ARBOR");
+		}
+    
+    	var progress = 0;
+    	
+    	var options = {
+            name: 'arbor',
 
-                    liveUpdate: true,       // whether to show the layout as it's running
-                    maxSimulationTime: 90000, // max time in ms to run the layout
-                    fit: true,              // fit to viewport
-                    padding: [ 50,10,50,10 ], // top, right, bottom, left
-                    ungrabifyWhileSimulating: false, // so you CAN drag nodes during layout
+            liveUpdate: 		(typeof config.liveUpdate !== "undefined") 			? config.liveUpdate : true,       // whether to show the layout as it's running
+            maxSimulationTime: 	(typeof config.maxSimulationTime !== "undefined")	? config.maxSimulationTime : 90000, // max time in ms to run the layout
+            fit: 				(typeof config.fit !== "undefined") 				? config.fit : true,              // fit to viewport
+            		
+            padding: [ 50,10,50,10 ], // [top, right, bottom, left]
+            ungrabifyWhileSimulating: (typeof config.ungrabifyWhileSimulating !== "undefined") ? config.ungrabifyWhileSimulating : false, // so you CAN drag nodes during layout
 
-                    // forces used by arbor (use arbor default on undefined)
-                    repulsion: 8000,    //15000,       // force repelling the nodes from each other
-                    stiffness: 300,     //500, //undefined,    // rigity of the edges
-                    friction: undefined,    // amount of damping in the system
-                    gravity: true,          // additional force attracting nodes to the origin
-                    fps: 240,               // frames per second
-                    precision: 0.2, // 0.5, // 0 is fast but jittery, 1 is smooth but cpu intensive
+            // forces used by arbor (use arbor default on undefined)
+            repulsion: 	(typeof config.repulsion !== "undefined")	? config.repulsion : 8000,    //15000,       // force repelling the nodes from each other
+            stiffness: 	(typeof config.stiffness !== "undefined")	? config.stiffness : 300,     //500, //undefined,    // rigity of the edges
+            friction: 	(typeof config.friction !== "undefined")	? config.friction : undefined,    // amount of damping in the system
+            gravity: 	(typeof config.gravity !== "undefined")		? config.gravity : true,          // additional force attracting nodes to the origin
+            fps: 		(typeof config.fps !== "undefined")			? config.fps : 240,               // frames per second
+            precision: 	(typeof config.precision !== "undefined")	? config.precision :  0.2, // 0.5, // 0 is fast but jittery, 1 is smooth but cpu intensive
 
-                    // static numbers or functions that dynamically return what these
-                    // values should be for each element
-                    nodeMass: undefined, 
-                    edgeLength: 3,  //undefined,
-                    stepSize: 1,            // size of timestep in simulation
+            // static numbers or functions that dynamically return what these
+            // values should be for each element
+            nodeMass: 	(typeof config.nodeMass !== "undefined") 	? config.nodeMass : undefined, 
+            edgeLength: (typeof config.edgeLength !== "undefined") 	? config.edgeLength : 3,  //undefined,
+            stepSize: 	(typeof config.stepSize !== "undefined") 	? config.stepSize : 1,            // size of timestep in simulation
+            		
+            ready: undefined,
 
-                    // function that returns true if the system is stable to indicate
-                    // that the layout can be stopped
-                    stableEnergy: function( energy ){
-                    	var max_progress = 0.3 / energy.max;
-						var mean_progress = 0.2 / energy.mean;
-						var avg_progress = (max_progress + mean_progress) / 2;
-						
-						if (avg_progress > progress) {
-							progress = avg_progress;
-						}
-						
-						if (scope.owner.getProgressBar) {
-							var pb = scope.owner.getProgressBar();
-						
-							if (pb) {
-								pb.updateProgress(progress, Math.floor(progress * 100) + "%");
-							}
-						}
-						return (energy.max <= 0.3) || (energy.mean <= 0.2);
-                    },
-                    ready: function() { // callback on layoutready
-                        // DEBUG
-                        //console.log("arbor ready");
-                    },
-                    stop: function() {
-                        // DEBUG
-                        //console.log("arbor done");
+            // function that returns true if the system is stable to indicate
+            // that the layout can be stopped
+            stableEnergy: function( energy ) {
+            	var max_progress = 0.3 / energy.max;
+				var mean_progress = 0.2 / energy.mean;
+				var avg_progress = (max_progress + mean_progress) / 2;
+				
+				if (avg_progress > progress) {
+					progress = avg_progress;
+				}
+				
+				if (scope.owner.getProgressBar) {
+					var pb = scope.owner.getProgressBar();
+				
+					if (pb) pb.updateProgress(progress, Math.floor(progress * 100) + "%");
+				}
+				return (energy.max <= 0.3) || (energy.mean <= 0.2);
+            },
+            
+            stop: function() {
 
-                    	if (scope.owner.getStopButton) {
-							var stopBtn = scope.owner.getStopButton();
-							stopBtn.setDisabled(true);
-							stopBtn.setCurrentLayout(undefined);
-						}
-                    	
-                        if (fdType == "arbor-wheel") {
-                            // Optimize the leaf node positions and layout
-                            // Find all (leaf) nodes having just one edge
- 
-                            // NOTE
-                            // The stop function will be triggered before the graph layout optimization 
-                            // is actually completed (stops moving), so we have to delay this a bit.
-                            // Timeout will depend on the total number of nodes and Browser speed, and the FD algo
-                            // This is a bit kludgey to workaround the problem of the stop function being called too early
-                            var delayFactor = 20;
-                            if (window.navigator.appVersion.indexOf("Chrome") < 0) {    // Chrome is a LOT faster than Firefox
-                                delayFactor = 100;  
-                            }
-                            var delay = (scope.currentNumNodes > 0)? scope.currentNumNodes * delayFactor : 2000;
-                            var dt2 = window.setTimeout(function() {
-                                window.clearTimeout(dt2);
-                                var anodes = scope.gv.nodes();
-                                var originNodes = {};
+            	if (scope.owner.getStopButton) {
+					var stopBtn = scope.owner.getStopButton();
+					stopBtn.setDisabled(true);
+					stopBtn.setCurrentLayout(undefined);
+				}
+            	
+                if (layoutName == "arbor-wheel") {
+                    // Optimize the leaf node positions and layout
+                    // Find all (leaf) nodes having just one edge
+                	
+                    var anodes = scope.gv.nodes();
+                    var originNodes = {};
 
-                                // Find all of the cluster origin nodes having 1 or more leafs
-                                anodes.each(function(indx, n) {
-                                   var degree = n.degree();
-                                   if (degree == 1) {   // This is a leaf
-                                       var nodeName = n.data().name;
+                    // Find all of the cluster origin nodes having 1 or more leafs
+                    anodes.each(function(indx, n) {
+						var degree = n.degree();
+						if (degree == 1) {   // This is a leaf
+							var nodeName = n.data().name;
 
-                                       // Should only be one edge
-                                       //DOES NOT WORK: var connectedNodes = n._private.edges.connectedNodes();
-                                       var connectedEdge = n._private.edges[0];
-                                       var connectedNodes = connectedEdge.connectedNodes();
-                                       connectedNodes.each(function(indx, cnode) {
-                                           var cnodeName = cnode.data().name;
-                                           var cnodeId = cnode.data().id;
-                                           if (cnodeName != nodeName) { // This is the node the leaf is connected to
-                                               if (originNodes[cnodeId] === undefined || originNodes[cnodeId] == null) {
-                                                    originNodes[cnodeId] = cnode; // just push unique cnodes
-                                               }
-                                           }
-                                       });
-                                   }
-                                }); 
-
-                                // For each cluster with leafs, reposition the leafs 'around' the cluster origin
-                                scope.repositionClusters(originNodes);
-		                                
-			        			if (!(scope.setBusy == undefined)) {
-			        				scope.setBusy(false);
-                                }
-                            /* MFM commented out
-                                if (mbox) {
-                                    var mboxcloseDelay = 5000;
-                                    if (window.navigator.appVersion.indexOf("Chrome") < 0) {    // Chrome is a LOT faster than Firefox and IE
-                                        mboxcloseDelay = 20000;
-                                    }
-                                    
-                                    var dt3 = window.setTimeout(function() {
-                                        window.clearTimeout(dt3);
-                                        mbox.close();
-                                    }, mboxcloseDelay);
-                                }
-                                */
-								if (scope.owner.getProgressBar) {
-									var pb = scope.owner.getProgressBar();
-								
-									if (pb) {
-										pb.updateProgress(1, "100%");
+							// Should only be one edge
+							//DOES NOT WORK: var connectedNodes = n._private.edges.connectedNodes();
+							var connectedEdge = n._private.edges[0];
+							var connectedNodes = connectedEdge.connectedNodes();
+							connectedNodes.each(function(indx, cnode) {
+								var cnodeName = cnode.data().name;
+								var cnodeId = cnode.data().id;
+								if (cnodeName != nodeName) { // This is the node the leaf is connected to
+									if (originNodes[cnodeId] === undefined || originNodes[cnodeId] == null) {
+										originNodes[cnodeId] = cnode; // just push unique cnodes
 									}
 								}
-                            }, delay); 
-                        }   
-                        else {
-							if (!(scope.setBusy == undefined)) {
-								scope.setBusy(false);
-							}
-							
-							if (scope.owner.getProgressBar) {
-								var pb = scope.owner.getProgressBar();
-							
-								if (pb) {
-									pb.updateProgress(1, "100%");
-								}
-							}
-                            // scope.gv.zoom(0.9);
-                            
-                            /* MFM commented out
-                            if (mbox) {
-                                var mboxcloseDelay = 3000;
-                                if (window.navigator.appVersion.indexOf("Chrome") < 0) {    // Chrome is a LOT faster than Firefox
-                                    mboxcloseDelay = 12000;
-                                }
-                                    
-                                var dt3 = window.setTimeout(function() {
-                                        window.clearTimeout(dt3);
-                                        mbox.close();
-                                }, mboxcloseDelay);
-                            }
-                            */
-                        }
-                    }
-            });
+							});
+						}
+                    }); 
+
+					//originNodes = scope.gv.nodes(":parent");
+
+                    // For each cluster with leafs, reposition the leafs 'around' the cluster origin
+                    scope.repositionClusters(originNodes);
+                }
+				
+				/* the spinner in the tab makes Arbor graph plot twice 
+				 * comment out until better solution can be implemented *//*
+				if (!(scope.setBusy == undefined)) {
+					scope.setBusy(false);
+				}
+				*/
+                    
+				if (scope.owner.getProgressBar) {
+					var pb = scope.owner.getProgressBar();
+				
+					if (pb) pb.updateProgress(1, "100%");
+				}
+            }
+        };
+    	
+    	if (config.letServerDoLayout == true) {
+			// TODO server does layout
+		} else {
+			// browser does layout
+			scope.gv.layout(options);
+		}
     },
 	
     reset: function() {
@@ -1207,6 +1188,10 @@ Ext.define("DARPA.GraphVis",
         // DRAG NODE - This function is called for every node dragged
         // The border checks are to prevent the node from being dragged outside of the visible graph disp area
         scope.gv.on('drag','node', function(e) {
+		
+			// prevent mouseover popup from appearing while dragging
+			clearTimeout(timeoutFn);
+		
             var node = e.cyTarget;
             var data = node.data();   // the current selected edge
             var pos = node.renderedPosition();
