@@ -1,0 +1,99 @@
+<!DOCTYPE html [<!ENTITY nbsp "&#160;">]>
+<html t:type="graphene/layout" title="Entity Search"
+	xmlns:t="http://tapestry.apache.org/schema/tapestry_5_3.xsd" xmlns:p="tapestry:parameter"
+	lang="en">
+	<!-- Most of the page content, including <head>, <body>, etc. tags, comes 
+		from Layout.tml -->
+	<!-- This is a span 10 in the bootstrap layout. You just need to add one 
+		or more fluid rows here. -->
+	<div class="row-fluid">
+		<div class="col-sm-12">
+			<table id="listAndEditor">
+				<tbody>
+					<tr>
+
+						<!-- This is the left side of the table: a list of Persons -->
+
+						<td id="listCell">
+							<t:zone t:id="listZone" id="listZone" t:update="prop:zoneUpdateFunction">
+
+								<!-- We can't use the form's id in the css because the Zone messes 
+									with it, so we add a div with its own id. -->
+								<div id="personFilter" class="well">
+									<form t:type="form" t:id="filterForm" t:zone="listZone">
+										<legend>Search for Event</legend>
+
+
+										<input class="input-block-level" t:id="partialName"
+											t:type="TextField" size="50" t:validate="maxLength=255" value="partialName" />
+										<input class="btn btn-primary" type="submit" value="Search"
+											title="Search" />
+									</form>
+								</div>
+
+								<div id="personList">
+									<table t:type="grid" source="events">
+										[Grid here]
+									</table>
+								</div>
+
+								<t:block t:id="emptyEvents">
+									<div id="noEvents">
+										(No events found)
+									</div>
+								</t:block>
+
+							</t:zone>
+						</td>
+
+						<!-- This is the right side of the table: where a Person will be created, 
+							reviewed, or updated. -->
+
+						<td id="editorCell">
+							<t:zone t:id="drillDownZone" id="drillDownZone" t:update="prop:zoneUpdateFunction">
+
+								<t:if test="modeDrillDownPerson">
+									<h1>Drill Down</h1>
+
+
+
+									<table>
+										<tr>
+											<th>Header</th>
+											<td>modeDrillDownPerson</td>
+										</tr>
+
+									</table>
+								</t:if>
+
+								<t:if test="modeDrillDownAccount">
+									<h1>Review</h1>
+									<table>
+										<tr>
+											<th>Id:</th>
+											<td>${drillDownPerson.senderId}</td>
+										</tr>
+										
+									</table>
+								</t:if>
+
+
+								<!-- This is needed to clear the zone. -->
+								<t:if test="modeNull">
+									<!-- The space character is needed only to make the zone update 
+										highlight visible. -->
+                                &nbsp;
+								</t:if>
+
+							</t:zone>
+						</td>
+
+					</tr>
+				</tbody>
+			</table>
+
+
+		</div>
+	</div>
+
+</html>
