@@ -55,9 +55,10 @@ Ext.define("DARPA.TXNGNodeDisplay",
 	}, // constructor
 	
 	//------------
-    setAttrs: function(attrs) {
+    setAttrs: function(data) {
 		var self = this;
 		var html = "<table rules='rows'>";
+		var attrs = data.attrs;
 		var detailsItems = self.items.items[0].items.items; // MFM
 		
 		for (var i = 0; i < attrs.length; ++i) {
