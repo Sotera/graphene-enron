@@ -5,6 +5,8 @@ import graphene.dao.EntityDAO;
 import graphene.dao.EntityRefDAO;
 import graphene.dao.IdTypeDAO;
 import graphene.dao.TransactionDAO;
+import graphene.dao.neo4j.DAONeo4JEModule;
+import graphene.dao.sql.DAOSQLModule;
 import graphene.enron.dao.impl.DataSourceListDAOImpl;
 import graphene.enron.dao.impl.EntityDAOImpl;
 import graphene.enron.dao.impl.EntityRefDAOImpl;
@@ -13,16 +15,20 @@ import graphene.enron.dao.impl.IdTypeDAOSQLImpl;
 import graphene.enron.dao.impl.TransactionDAOSQLImpl;
 import graphene.enron.model.memorydb.EnronMemoryDB;
 import graphene.model.memorydb.IMemoryDB;
+import graphene.util.FastNumberUtils;
 import graphene.util.PropertiesFileSymbolProvider;
-import graphene.util.db.DBConnectionPoolService;
-import graphene.util.db.MainDB;
+import graphene.util.db.JDBCUtil;
 
+import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.Invokable;
 import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.apache.tapestry5.ioc.ScopeConstants;
 import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.annotations.Contribute;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.Startup;
+import org.apache.tapestry5.ioc.annotations.SubModule;
+import org.apache.tapestry5.ioc.annotations.Symbol;
 import org.apache.tapestry5.ioc.services.ParallelExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +40,7 @@ import org.slf4j.LoggerFactory;
  * @author djue
  * 
  */
+@SubModule({ DAOSQLModule.class, DAONeo4JEModule.class })
 public class EnronDAOModule {
 
 	private static Logger logger = LoggerFactory
@@ -41,28 +48,8 @@ public class EnronDAOModule {
 
 	public static void bind(ServiceBinder binder) {
 
-		String tcHome = System.getenv("CATALINA_HOME");
-		logger.debug("TC Home = " + tcHome);
-
-		// FIXME: Remove this test once we get it working
-		logger.debug("======== TESTING JDBC DRIVER TO SEE IF IT IS ON THE CLASSPATH");
-
-		try {
-			Class.forName("org.hsqldb.jdbc.JDBCDriver");
-			logger.debug("+++++++++ SUCCESS org.hsqldb.jdbc.JDBCDriver");
-		} catch (ClassNotFoundException e1) {
-			logger.warn("======== Could not find org.hsqldb.jdbc.JDBCDriver on classpath");
-			e1.printStackTrace();
-		}
-
-		// Note that despite the name, EntityRefDAOSQLImpl will use memdb
-		// if available. Also note that currently it has to be available
-		// since not all functionality has been written to support SQL
-
 		binder.bind(EntityRefDAO.class, EntityRefDAOImpl.class).scope(
 				ScopeConstants.PERTHREAD);
-		// binder.bind(EntityRefDAO.class, EntityRefDAODiskImpl.class);
-		// binder.bind(EntityDAO.class, EntityDAOMemImpl.class);
 
 		binder.bind(EntityDAO.class, EntityDAOImpl.class);
 
@@ -70,14 +57,6 @@ public class EnronDAOModule {
 
 		binder.bind(TransactionDAO.class, TransactionDAOSQLImpl.class).scope(
 				ScopeConstants.PERTHREAD);
-		/*
-		 * binder.bind(TransferDAO.class, TransferDAOSQLImpl.class).scope(
-		 * ScopeConstants.PERTHREAD);
-		 */
-
-//		binder.bind(TransactionDistinctPairDAO.class,
-//				TransactionDistinctAccountPairDAOImpl.class).scope(
-//				ScopeConstants.PERTHREAD);
 
 		// TODO: Make this into a service in the core we can contribute to (for
 		// distributed configuration!)
@@ -87,131 +66,51 @@ public class EnronDAOModule {
 
 		binder.bind(IMemoryDB.class, EnronMemoryDB.class);
 	}
-
-	@Startup
-	public static void registerHSQLDBShutdownHook(
-			@Inject @MainDB final DBConnectionPoolService cps) {
-		/**
-		 * TODO: Find a way to contribute to a particular pool's shutdown hook.
-		 * This is needed for embedded databases, where we have to restart the
-		 * database along with the application and the pool.
-		 * 
-		 * The reason to make it a contribution is because we need to shutdown
-		 * the database before we shutdown the connection pool. Research this
-		 * more, and see if we want to handle this as a contribution or as an
-		 * extension of the connection pool service.
-		 */
-		// Runtime.getRuntime().addShutdownHook(new Thread() {
-		// @Override
-		// public void run() {
-		// if (cps != null) {
-		// logger.info("Shuting down Connection Pool for "
-		// + cps.getUrl() + " from registerHSQLDBShutdownHook");
-		// Connection conn;
-		// try {
-		// conn = cps.getConnection();
-		// java.sql.Statement statement = conn.createStatement();
-		// statement.executeUpdate("SHUTDOWN");
-		// statement.close();
-		// conn.close();
-		// } catch (Exception e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// JVMHelper.suggestGC();
-		// }
-		// }
-		// });
-	}
-
+	final static String MAX_MEMDB_ROWS_PARAMETER = "graphene.memorydb-maxIndexRecords";
+	final static String USE_MEMDB_PARAMETER = "graphene.memorydb-useMemDB";
 	// added for testing --djue
 	public void contributeApplicationDefaults(
 			MappedConfiguration<String, String> configuration) {
-		configuration.add("MAX_MEMDB_ROWS_PARAMETER", "0");
-		configuration.add("USE_MEMDB_PARAMETER", "true");
+		configuration.add(MAX_MEMDB_ROWS_PARAMETER, "0");
+		configuration.add(USE_MEMDB_PARAMETER, "true");
 	}
 
-	final static String MAX_MEMDB_ROWS_PARAMETER = "graphene.memorydb-maxIndexRecords";
-	final static String USE_MEMDB_PARAMETER = "graphene.memorydb-useMemDB";
+
+
+	/**
+	 * Use this contribution to list the preferred drivers you would like to be
+	 * used. Note that the jar files still need to be on the classpath, for
+	 * instance in the Tomcat/lib directory or elsewhere.
+	 * 
+	 * @param configuration
+	 */
+	@Contribute(JDBCUtil.class)
+	public static void contributeDesiredJDBCDriverClasses(
+			Configuration<String> configuration) {
+		configuration.add("org.hsqldb.jdbc.JDBCDriver");
+	}
 
 	@Startup
 	public static void scheduleJobs(ParallelExecutor executor,
-			final IMemoryDB memoryDb) {
-		executor.invoke(IMemoryDB.class, new Invokable<IMemoryDB>() {
-			@Override
-			public IMemoryDB invoke() {
-				memoryDb.initialize(0);
-				return memoryDb;
-			}
-		});
+			final IMemoryDB memoryDb,
+			@Inject @Symbol(USE_MEMDB_PARAMETER) final String useMemoryDB,
+			@Inject @Symbol(MAX_MEMDB_ROWS_PARAMETER) final String maxRecords) {
+
+		System.out.println(USE_MEMDB_PARAMETER + "=" + useMemoryDB);
+		System.out.println(MAX_MEMDB_ROWS_PARAMETER + "=" + maxRecords);
+		if ("true".equalsIgnoreCase(useMemoryDB)) {
+			System.out
+					.println("Scheduling parallel job to load in-memory database.");
+			executor.invoke(IMemoryDB.class, new Invokable<IMemoryDB>() {
+				@Override
+				public IMemoryDB invoke() {
+					memoryDb.initialize(FastNumberUtils
+							.parseIntWithCheck(maxRecords));
+					return memoryDb;
+				}
+			});
+		}
 	}
-
-	//
-	// @Startup
-	// public static void initMemoryDb(Logger logger, EnronMemoryDB memoryDb,
-	// @Inject @Symbol(USE_MEMDB_PARAMETER) String useMemoryDB,
-	// @Inject @Symbol(MAX_MEMDB_ROWS_PARAMETER) String maxRecords) {
-	//
-	// logger.info("Initializing MemoryDB");
-	// // String useMemoryDB = provider.valueForSymbol(USE_MEMDB_PARAMETER);
-	//
-	// if (useMemoryDB.equalsIgnoreCase("true")) {
-	// int maxRecordsInt = 100000;
-	// // String maxRecords = provider
-	// // .valueForSymbol(MAX_MEMDB_ROWS_PARAMETER);
-	// if (StringUtils.isNumeric(maxRecords)) {
-	// maxRecordsInt = FastNumberUtils.parseIntWithCheck(maxRecords);
-	// } else {
-	// logger.error("The was an error reading "
-	// + MAX_MEMDB_ROWS_PARAMETER
-	// + ": The value was not an integer.");
-	// logger.info("Using default " + MAX_MEMDB_ROWS_PARAMETER
-	// + " value :" + maxRecordsInt);
-	// }
-	//
-	// TimeReporter t = new TimeReporter("Initialize MemoryDB", logger);
-	// logger.trace("Free memory before preload " + JVMHelper.getFreeMem());
-	// memoryDb.initialize(maxRecordsInt);
-	// logger.trace("Free memory after preload: " + JVMHelper.getFreeMem());
-	// t.logAsCompleted();
-	// }
-	// }
-
-	/**
-	 * Note that any @Startup methods come before any @EagerLoad.
-	 * 
-	 * @param logger
-	 * @param memoryDb
-	 */
-	// @Startup
-	// public static void initMemoryDb(Logger logger, EnronMemoryDB memoryDb,
-	// Context context) {
-	//
-	// final String MAX_MEMDB_ROWS_PARAMETER = "maxIndexRecords";
-	// final String USE_MEMDB_PARAMETER = "useMemDB";
-	//
-	// logger.info("Initializing MemoryDB");
-	// if (context.getInitParameter(USE_MEMDB_PARAMETER).equalsIgnoreCase(
-	// "true")) {
-	// int maxRecords = 100000;
-	// try {
-	// // Try to load from the web.xml
-	// maxRecords = FastNumberUtils.parseIntWithCheck(context
-	// .getInitParameter(MAX_MEMDB_ROWS_PARAMETER));
-	// } catch (NumberFormatException e) {
-	// logger.error("The was an error reading "
-	// + MAX_MEMDB_ROWS_PARAMETER + ": " + e.getMessage());
-	// logger.info("Using default " + MAX_MEMDB_ROWS_PARAMETER
-	// + " value :" + maxRecords);
-	// }
-	//
-	// TimeReporter t = new TimeReporter("Initialize MemoryDB", logger);
-	// logger.trace("Free memory before preload " + JVMHelper.getFreeMem());
-	// memoryDb.initialize(maxRecords);
-	// logger.trace("Free memory after preload: " + JVMHelper.getFreeMem());
-	// t.logAsCompleted();
-	// }
-	// }
 
 	public PropertiesFileSymbolProvider buildTableNameSymbolProvider(
 			Logger logger) {

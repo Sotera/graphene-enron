@@ -263,10 +263,7 @@ public class TransactionDAOSQLImpl extends
 	 * method.
 	 */
 	@Override
-	public List<EnronTransactionPair100> findByQuery(/*
-													 * long offset, long
-													 * maxResults,
-													 */EventQuery q)
+	public List<EnronTransactionPair100> findByQuery(EventQuery q)
 			throws Exception {
 		List<EnronTransactionPair100> results;
 		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
