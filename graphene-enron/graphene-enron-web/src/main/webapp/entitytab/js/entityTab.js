@@ -41,31 +41,37 @@ Ext.define("DARPA.EntityTab", {
 			disabled:true			
 		});
 		
+		/* Graphene-Enron does not have a shared attribute entity graph */
+		/*
 		var entityGraph = Ext.create("DARPA.PBGraph", {
 			hidden:true, // no shared entities for this data set
 			title:'ENTITY GRAPH', 
 			entityId: config.id, 
 			id:config.id + '-EntityGraph',
                         institution: config.institution
-		});
+		}); 
+		*/
 
 		this.items = [
 		details, 
 //		transactions, 
 		transfers, 
 		transactionGraph, 
-		entityGraph
+		//entityGraph
 		];
 
 		this.callParent(arguments);
 		
+		/* Graphene-Enron does not have a shared attribute entity graph */
+		/*
 		entityGraph.load(config.id);
-		            if (entityGraph.prevLoadParams) {
-		                entityGraph.prevLoadParams.prevNumber = config.id;
-		            }
-		            else {
-		                entityGraph.prevLoadParams = {prevNumber: config.id};
-		            }
+		if (entityGraph.prevLoadParams) {
+			entityGraph.prevLoadParams.prevNumber = config.id;
+		}
+		else {
+			entityGraph.prevLoadParams = {prevNumber: config.id};
+		}
+		*/
 	},
 /*	
 	loadLedger:function(account) { 
@@ -109,6 +115,7 @@ Ext.define("DARPA.EntityTab", {
 	},
 	getEntityGraph:function()
 	{
+		// note: this should return undefined, since Graphene-Enron does not have an entity graph
 		var self = this;
 		return Ext.getCmp(this.id+'-EntityGraph');
 	}
