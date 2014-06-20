@@ -25,16 +25,13 @@ public class TransferRowFunnel {
 		tr.setMonth_zero_based(month);
 		tr.setYear(dt.getYear());
 
-		tr.dateMilliSeconds = dt.getMillis(); // needed for plotting
+		tr.setDateMilliSeconds(dt.getMillis()); // needed for plotting
 		tr.setAcnoSender(e.getSenderId().toString());
-		/*
-		 * PWG: why were we doing this? try { long longAcctNbr =
-		 * FastNumberUtils.parseLongWithCheck(e.getAcctNmReceiver()); setAcnoReceiver(longAcctNbr);
-		 * } catch (Exception ex) { logger.error(ex.getMessage());
-		 * ex.printStackTrace(); }
-		 */
+		tr.addData("senderValue", e.getSenderValueStr());
+		tr.addData("receiverValue", e.getReceiverValueStr());
+		tr.addData(e.getTrnValueNbrUnit(), e.getTrnValueNbr().toString());
+		
 		tr.setAcnoReceiver(e.getReceiverId().toString());
-
 		tr.setUnit(e.getTrnValueNbrUnit());
 		tr.setId(e.getPairId());
 		tr.setComments(e.getTrnValueStr());

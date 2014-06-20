@@ -192,7 +192,7 @@ Ext.define("DARPA.TransfersLedger", {
     	
 		this.setStatus("Loading");
 
-		g.setTitle("EMAIL LIST");
+		g.setTitle("EMAIL LIST for id ["+accountNumber+"]");
 		
 		g.viewConfig.emptyText ='Loading';
 		s.removeAll();

@@ -26,9 +26,12 @@ import org.apache.tapestry5.annotations.InjectComponent;
 import org.apache.tapestry5.annotations.Persist;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.annotations.SessionState;
+import org.apache.tapestry5.beaneditor.BeanModel;
 import org.apache.tapestry5.corelib.components.Zone;
 import org.apache.tapestry5.grid.GridDataSource;
+import org.apache.tapestry5.ioc.Messages;
 import org.apache.tapestry5.ioc.annotations.Inject;
+import org.apache.tapestry5.services.BeanModelSource;
 import org.apache.tapestry5.services.Request;
 import org.apache.tapestry5.services.ajax.AjaxResponseRenderer;
 import org.slf4j.Logger;
@@ -63,7 +66,7 @@ public class EventViewer {
 	private String drillDownId;
 
 	@Property
-	private DirectedEventRow drillDownPerson;
+	private DirectedEventRow drillDownevent;
 
 	@InjectComponent
 	private Zone drillDownZone;
@@ -71,15 +74,12 @@ public class EventViewer {
 	@Property
 	private GridDataSource gds = new DirectedEventDataSource(dao);
 
-	// @InjectComponent
-	// private Grid grid;
-
 	@Property
 	@Persist
 	private boolean highlightZoneUpdates;
 
 	@Property
-	private DirectedEventRow listPerson;
+	private DirectedEventRow listevent;
 
 	// /////////////////////////////////////////////////////////////////////
 	// FILTER
@@ -87,12 +87,6 @@ public class EventViewer {
 
 	@InjectComponent
 	private Zone listZone;
-
-	// Object onAction() {
-	//
-	// alertManager.info("onAction Happened");
-	// return result.getBody();
-	// }
 
 	@Inject
 	private Logger logger;
@@ -127,7 +121,7 @@ public class EventViewer {
 		return drillDown == Mode.ACCOUNT;
 	}
 
-	public boolean isModeDrillDownPerson() {
+	public boolean isModeDrillDownevent() {
 		return drillDown == Mode.CUSTOMER;
 	}
 
@@ -157,7 +151,7 @@ public class EventViewer {
 				logger.error(message);
 			}
 			if (list != null && list.size() > 0) {
-				drillDownPerson = list.get(0);
+				drillDownevent = list.get(0);
 			}
 			ajaxResponseRenderer.addRender(listZone).addRender(drillDownZone);
 		}
@@ -186,6 +180,21 @@ public class EventViewer {
 			logger.debug("Rendering AJAX response");
 			ajaxResponseRenderer.addRender(listZone);
 		}
+	}
+
+	@Inject
+	private BeanModelSource beanModelSource;
+	@Inject
+	private Messages messages;
+
+	public BeanModel getModel() {
+		BeanModel<DirectedEventRow> model = beanModelSource.createEditModel(
+				DirectedEventRow.class, messages);
+		model.exclude("accountGroup", "comments", "credit",
+				"dateMilliSeconds", "day_one_based", "debit", "id",
+				"localUnitBalance", "month_zero_based","unit","unitBalance","year");
+		model.reorder("date","senderId","receiverId");
+		return model;
 	}
 
 	// @OnEvent(value = EventConstants.SUCCESS)

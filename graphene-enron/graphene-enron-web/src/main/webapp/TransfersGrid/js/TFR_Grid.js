@@ -18,8 +18,8 @@ Ext.define('GTransaction', {
 	    {name: 'credit'},
 	    {name: 'senderId'},
 	    {name: 'receiverId'},	    
-	    {name: 'acname_sender'},
-	    {name: 'acname_receiver'},	    
+	    {name: "senderValue", mapping: "data.senderValue"},
+	    {name: 'receiverValue', mapping: "data.receiverValue"},	    
    	    {name: 'amount',
     	     	convert:function(value,record) { return record.get('debit') == 0 ? record.get('credit') : record.get('debit'); }
     	    }
@@ -65,8 +65,8 @@ Ext.define("DARPA.TransfersGrid",  {
         align:'left',
 	columns: [
 		{header: 'Date',        width:80,  dataIndex: 'date', sortable:true}, 					// 0
-		{header: 'From', width:240, dataIndex: 'acname_sender', sortable:true},// 1	
-		{header: 'To',   width:240, dataIndex: 'acname_receiver', sortable:true},// 1				
+		{header: 'From', width:240, dataIndex: 'senderValue', sortable:true},// 1	
+		{header: 'To',   width:240, dataIndex: 'receiverValue', sortable:true},// 1				
 		{header: 'Size ',   	width:100, dataIndex: 'amount',      align:'right', sortable:true}
 	],
         

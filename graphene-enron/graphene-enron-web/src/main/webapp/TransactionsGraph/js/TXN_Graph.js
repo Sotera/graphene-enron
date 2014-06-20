@@ -688,8 +688,8 @@ Ext.define("DARPA.TransactionGraph", {
                 
                 // Type must be set in the URL
                 // TODO - REVISIT THE URL
-		graphStore.proxy.url = Config.entityGraphUrl + intype + '/' + node.data().name;           
-                
+		//graphStore.proxy.url = Config.entityGraphUrl + intype + '/' + node.data().name;           
+		graphStore.proxy.url = Config.transferGraphCSUrl + intype + '/' + node.data().id; 
                 self.json1Hop=null; // prevents us from trying to display the previous graph if we switch to this tab
                                     // before we have fully loaded the new graph
                 self.json1HopNode = node;
