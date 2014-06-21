@@ -239,8 +239,7 @@ function interactionPreprocess(searchTarget, data, maxrow)
 			continue;
 
 		// normalize so if our target didn't have area code we modify
-		// Note that this is a little dangerous because conceivably there could be a matching number with the wrong
-		// area code.
+		
 		if (searchTarget.indexOf(",") == -1) {	// A single number
 			if (d.source.indexOf(searchTarget) != -1 || searchTarget.indexOf(d.source) != -1)
 				d.source = searchTarget;

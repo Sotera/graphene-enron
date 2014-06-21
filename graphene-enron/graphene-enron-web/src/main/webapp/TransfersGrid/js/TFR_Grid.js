@@ -219,8 +219,8 @@ Ext.define("DARPA.TransfersGrid",  {
         // csFlag       - true = case sensitive, else case INsensitive match
         gridFilter: function (item, filterVal, csFlag) {                        
             var sdate = item.get('date').toString();
-            var sfrom = item.get('acname_sender');
-            var sto = item.get('acname_receiver');
+            var sfrom = item.get('senderValue');
+            var sto = item.get('receiverValue');
             var samt = item.get('amount').toString(); 
             var dateMatch, fromMatch, toMatch, amtMatch;
             
@@ -477,8 +477,8 @@ function makeTransferStore(grid)
                             var x = records[i];
                             d.push(
                                     {
-                                            source:""+x.acname_sender,
-                                            target:""+x.acname_receiver,
+                                            source:""+x.senderValue,
+                                            target:""+x.receiverValue,
                                             time:x.dateMilliSeconds
                                     }
                             );

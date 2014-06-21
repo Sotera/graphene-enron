@@ -39,8 +39,6 @@ Ext.define("DARPA.TransfersCharts", // D3 charts
 	setChartData:function(data, maintarget) {
 		var self = this;
 		var title = "Emails with the most common correspondents";
-//		if (maintarget.indexOf(",") == -1)
-//			title += " and the most common accounts";
 		self.setTitle(title);
 		data = interactionPreprocess(maintarget, data, 10);
                 var ichart = self.getInteractionChart();
