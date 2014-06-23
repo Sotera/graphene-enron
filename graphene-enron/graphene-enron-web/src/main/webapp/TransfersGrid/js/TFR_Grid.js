@@ -477,8 +477,8 @@ function makeTransferStore(grid)
                             var x = records[i];
                             d.push(
                                     {
-                                            source:""+x.senderValue,
-                                            target:""+x.receiverValue,
+                                            source:""+x.data.senderValue,
+                                            target:""+x.data.receiverValue,
                                             time:x.dateMilliSeconds
                                     }
                             );
