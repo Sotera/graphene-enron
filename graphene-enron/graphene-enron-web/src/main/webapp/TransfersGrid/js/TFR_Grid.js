@@ -50,13 +50,6 @@ Ext.define("DARPA.TransfersGrid",  {
         verticalScrollerType:'paginggridscroller', // new
 
         viewConfig: {
-//        	getRowClass: function(record, index, rowParams, ds)
-//        	{
-//        		var grp = record.get('accountGroup');
-//        		var cls = 'groupcolor' + grp;
-//        		return cls.trim();
-//        	},
-//     	        emptyText: 'No Records',
         	invalidateScrollerOnRefresh:true,
         	loadMask:false,
                 enableTextSelection: true   // MFM added so that can copy the values

@@ -32,7 +32,7 @@
 								</div>
 
 								<div id="eventList">
-									<table t:type="grid" source="events">
+									<table t:type="grid" source="events" model="model">
 										[Grid here]
 									</table>
 								</div>

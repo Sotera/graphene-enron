@@ -26,12 +26,12 @@ public class TransferRowFunnel {
 		tr.setYear(dt.getYear());
 
 		tr.setDateMilliSeconds(dt.getMillis()); // needed for plotting
-		tr.setAcnoSender(e.getSenderId().toString());
+		tr.setSenderId(e.getSenderId().toString());
 		tr.addData("senderValue", e.getSenderValueStr());
 		tr.addData("receiverValue", e.getReceiverValueStr());
 		tr.addData(e.getTrnValueNbrUnit(), e.getTrnValueNbr().toString());
 		
-		tr.setAcnoReceiver(e.getReceiverId().toString());
+		tr.setReceiverId(e.getReceiverId().toString());
 		tr.setUnit(e.getTrnValueNbrUnit());
 		tr.setId(e.getPairId());
 		tr.setComments(e.getTrnValueStr());

@@ -12,13 +12,17 @@ import graphene.model.view.events.DirectedEventRow;
 import graphene.util.ExceptionUtil;
 import graphene.util.validator.ValidationUtils;
 import graphene.web.annotations.PluginPage;
+import graphene.web.annotations.ProtectedPage;
 import graphene.web.model.DirectedEventDataSource;
+import graphene.web.pages.SimpleBasePage;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.tapestry5.alerts.AlertManager;
 import org.apache.tapestry5.alerts.Duration;
 import org.apache.tapestry5.alerts.Severity;
@@ -36,8 +40,9 @@ import org.apache.tapestry5.services.Request;
 import org.apache.tapestry5.services.ajax.AjaxResponseRenderer;
 import org.slf4j.Logger;
 
+//@RequiresRoles("user")
 @PluginPage(visualType = G_VisualType.SEARCH)
-public class EventViewer {
+public class EventViewer extends SimpleBasePage {
 
 	// Handle event "selected"
 	private enum Mode {
@@ -190,10 +195,15 @@ public class EventViewer {
 	public BeanModel getModel() {
 		BeanModel<DirectedEventRow> model = beanModelSource.createEditModel(
 				DirectedEventRow.class, messages);
-		model.exclude("accountGroup", "comments", "credit",
-				"dateMilliSeconds", "day_one_based", "debit", "id",
-				"localUnitBalance", "month_zero_based","unit","unitBalance","year");
-		model.reorder("date","senderId","receiverId");
+		model.exclude("comments", "credit", "dateMilliSeconds",
+				"day_one_based", "debit", "id", "localUnitBalance", "unit",
+				"unitBalance", "year");
+
+		// model.add("senderName",new
+		// MapPropertyConduit("senderName",String.class));
+		// model.add("receiverName",new
+		// MapPropertyConduit("receiverName",String.class));
+		model.reorder("date", "senderId", "receiverId");
 		return model;
 	}
 
