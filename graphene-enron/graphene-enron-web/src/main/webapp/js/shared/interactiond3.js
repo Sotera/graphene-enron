@@ -509,6 +509,21 @@ Ext.define('DARPA.Interactiond3', {
                 .attr("transform", padstr)
                 ;
 
+				var numTicks = yScale.range().length;
+				var overallWidth = this.width - this.leftPadding - 20;
+				
+				var yAxisRuler = d3.svg.axis()
+					.scale(yScale)
+					.ticks(numTicks)
+					.tickSize(overallWidth, 0)
+					.tickFormat("")
+					.orient("right");
+					
+				this.mysvg.append("g")
+					.attr("class", "grid")
+					.call(yAxisRuler)
+					.attr("transform", padstr);
+				
             // translate is x,y. Without it, the scale was off the chart on the left.
             } // function showYAxis
 	}
