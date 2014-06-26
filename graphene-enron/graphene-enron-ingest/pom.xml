@@ -4,13 +4,12 @@
 	<parent>
 		<groupId>graphene-enron</groupId>
 		<artifactId>graphene-enron</artifactId>
-		<version>4.0.7-SNAPSHOT</version>
+		<version>4.0.8-SNAPSHOT</version>
 	</parent>
 	<artifactId>graphene-enron-ingest</artifactId>
 	<description>Ingest scripts and utilities that should not be deployed on a web server.</description>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>${base.project.groupId}</groupId>
 			<artifactId>graphene-ingest</artifactId>
@@ -32,17 +31,14 @@
 			<artifactId>graphene-dao-neo4j</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>graphene</groupId>
+			<groupId>${base.project.groupId}</groupId>
 			<artifactId>graphene-util</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>graphene</groupId>
+			<groupId>${base.project.groupId}</groupId>
 			<artifactId>graphene-introspect</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>net.sf.opencsv</groupId>
-			<artifactId>opencsv</artifactId>
-		</dependency>
+
 		<!-- This may not be the best way to do this. See build notes in this module. -->
 		<dependency>
 			<groupId>graphene-enron</groupId>
@@ -50,11 +46,6 @@
 			<version>${project.version}</version>
 			<type>jar</type>
 			<classifier>classes</classifier>
-		</dependency>
-
-		<dependency>
-			<groupId>com.mysema.querydsl</groupId>
-			<artifactId>querydsl-sql-codegen</artifactId>
 		</dependency>
 
 	</dependencies>

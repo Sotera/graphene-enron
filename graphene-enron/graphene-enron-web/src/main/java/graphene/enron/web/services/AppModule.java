@@ -5,6 +5,7 @@ import graphene.enron.model.graphserver.GraphServerModule;
 import graphene.model.idl.G_SymbolConstants;
 import graphene.rest.services.RestModule;
 import graphene.util.UtilModule;
+import graphene.web.security.ShiroSecurityModule;
 import graphene.web.services.GrapheneModule;
 
 import org.apache.tapestry5.SymbolConstants;
@@ -18,8 +19,8 @@ import org.apache.tapestry5.ioc.annotations.SubModule;
  * service definitions.
  */
 @SubModule({ EnronDAOModule.class, AppRestModule.class,
-		GraphServerModule.class, GrapheneModule.class,
-		RestModule.class, UtilModule.class })
+		GraphServerModule.class, GrapheneModule.class, RestModule.class,
+		UtilModule.class, ShiroSecurityModule.class })
 public class AppModule {
 
 	public static void bind(ServiceBinder binder) {
@@ -37,8 +38,7 @@ public class AppModule {
 		configuration.add(G_SymbolConstants.APPLICATION_NAME, "Graphene-Enron");
 		configuration.add(G_SymbolConstants.APPLICATION_CONTACT,
 				"Example Company");
-		configuration.add(SymbolConstants.APPLICATION_VERSION, "4.0.7");
+		configuration.add(SymbolConstants.APPLICATION_VERSION, "4.0.8");
 	}
 
-	
 }

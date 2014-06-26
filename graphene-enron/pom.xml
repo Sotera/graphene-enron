@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>graphene-enron</groupId>
 	<artifactId>graphene-enron</artifactId>
-	<version>4.0.7-SNAPSHOT</version>
+	<version>4.0.8-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<modules>
 		<module>graphene-enron-ingest</module>
@@ -15,79 +15,73 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- properties for dependencies (usually versions) -->
 
-		<base.project.version>4.0.7-SNAPSHOT</base.project.version>
+		<base.project.version>4.0.8-SNAPSHOT</base.project.version>
 		<base.project.groupId>graphene</base.project.groupId>
-
-
-		<!-- properties for dependencies for web frameworks -->
-		<resteasy.version>3.0.1.Final</resteasy.version>
-		<tapestry-release-version>5.3.7</tapestry-release-version>
-		<tynamo-version>0.5.0</tynamo-version>
-
-		<!-- properties for dependencies involving databases -->
-		<solr.version>4.2.0</solr.version>
-		<bonecp.version>0.8.0.RELEASE</bonecp.version>
-		<neo4j.version>2.0.0</neo4j.version>
-		<querydsl.version>3.3.1</querydsl.version>
-
-		<!-- properties for dependencies that are utilities -->
-		<jackson2.version>2.2.1	</jackson2.version>
-		<!-- <jackson2.version>2.3.0</jackson2.version> 2.3.0 does not work with 
-			resteasy 3.0.5.Final or 3.0.6.Final. -->
-		<joda-time.version>2.3</joda-time.version>
-		<opencsv.version>2.3</opencsv.version>
-		<disruptor.version>2.10.3</disruptor.version>
-		<guava.version>15.0</guava.version>
-		<sspace.version>2.0.4</sspace.version>
-		<mapdb.version>0.9.7</mapdb.version>
-		<commons-lang3.version>3.1</commons-lang3.version>
-		<commons-logging.version>1.1.1</commons-logging.version>
-		<commons-beanutils.version>1.9.0</commons-beanutils.version>
-		<commons-dbutils.version>1.5</commons-dbutils.version>
 
 		<!-- properties for testing dependencies -->
 		<jettyVersion>9.0.0</jettyVersion>
 		<servlet-api-release-version>2.5</servlet-api-release-version>
 		<testng-release-version>6.3.1</testng-release-version>
 		<easymock-release-version>3.0</easymock-release-version>
+		<tapestry-release-version>5.3.7</tapestry-release-version>
+
+		<!-- properties for github -->
+		<github.global.server>github</github.global.server>
+		<github.site.maven.plugin.version>0.9</github.site.maven.plugin.version>
 		<!-- Maven properties -->
 		<maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
 		<maven.site.plugin.version>3.0</maven.site.plugin.version>
 		<maven.project.info.reports.plugin.version>2.7</maven.project.info.reports.plugin.version>
 		<maven.dependency.plugin.version>2.1</maven.dependency.plugin.version>
-		<maven-surefire-plugin.version>2.14.1</maven-surefire-plugin.version>
+		<maven-surefire-plugin.version>2.16</maven-surefire-plugin.version>
+		<maven-war-plugin.version>2.1.1</maven-war-plugin.version>
+		<maven-enforcer-plugin.version>1.2</maven-enforcer-plugin.version>
+		<maven-javadoc-plugin.version>2.9</maven-javadoc-plugin.version>
 	</properties>
+	<repositories>
+		<repository>
+			<id>graphene-mvn-repo</id><!-- may change to githubusercontent.com -->
+			<url>https://raw.github.com/Sotera/graphene/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>vande-mvn-repo</id>
+			<url>https://raw.github.com/Sotera/vande/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<!-- This section sets dependencies for all child modules. Note that version 
 			numbers are not used here. -->
+
+		
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tapestry</groupId>
-			<artifactId>tapestry-ioc</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Provide dependency to the Tapestry javadoc taglet which replaces the 
+			Maven component report -->
 		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>2.3.1</version>
+			<groupId>org.apache.tapestry</groupId>
+			<artifactId>tapestry-javadoc</artifactId>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
-
 			<dependency>
 				<groupId>${base.project.groupId}</groupId>
 				<artifactId>graphene-analytics</artifactId>
@@ -130,7 +124,6 @@
 				<version>${base.project.version}</version>
 				<type>jar</type>
 			</dependency>
-
 			<dependency>
 				<groupId>${base.project.groupId}</groupId>
 				<artifactId>graphene-ingest</artifactId>
@@ -187,228 +180,6 @@
 				<type>jar</type>
 			</dependency>
 
-
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-log4j12</artifactId>
-				<version>1.7.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>${commons-lang3.version}</version>
-			</dependency>
-
-			<dependency><!-- Not just for test phase, some parts of Neo4J use common 
-					logging as well. -->
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>${commons-logging.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.mysema.querydsl</groupId>
-				<artifactId>querydsl-core</artifactId>
-				<version>${querydsl.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.mysema.querydsl</groupId>
-				<artifactId>querydsl-sql-codegen</artifactId>
-				<version>${querydsl.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.mysema.querydsl</groupId>
-				<artifactId>querydsl-sql</artifactId>
-				<version>${querydsl.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.mysema.querydsl</groupId>
-				<artifactId>querydsl-apt</artifactId>
-				<version>${querydsl.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.mysema.querydsl</groupId>
-				<artifactId>querydsl-collections</artifactId>
-				<version>${querydsl.version}</version>
-			</dependency>
-
-
-			<dependency>
-				<groupId>commons-dbutils</groupId>
-				<artifactId>commons-dbutils</artifactId>
-				<version>${commons-dbutils.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-beanutils</groupId>
-				<artifactId>commons-beanutils</artifactId>
-				<version>${commons-beanutils.version}</version>
-			</dependency>
-			<dependency><!-- Date and time library to replace JDK date handling. Will 
-					likely be the standard in Java 8. -->
-				<groupId>joda-time</groupId>
-				<artifactId>joda-time</artifactId>
-				<version>${joda-time.version}</version>
-			</dependency>
-
-			<dependency><!-- The main servlet filter that also allows IOC and Tapestry 
-					pages/components -->
-				<groupId>org.apache.tapestry</groupId>
-				<artifactId>tapestry-core</artifactId>
-				<version>${tapestry-release-version}</version>
-				<exclusions>
-					<exclusion>
-						<artifactId>log4j</artifactId>
-						<groupId>log4j</groupId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tapestry</groupId>
-				<artifactId>tapestry-ioc</artifactId>
-				<version>${tapestry-release-version}</version>
-			</dependency>
-
-			<!-- Here we are enforcing a specific version of resteasy and it's modules. -->
-			<dependency>
-				<groupId>org.jboss.resteasy</groupId>
-				<artifactId>resteasy-jackson2-provider</artifactId>
-				<version>${resteasy.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.resteasy</groupId>
-				<artifactId>resteasy-jaxrs-all</artifactId>
-				<version>${resteasy.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.resteasy</groupId>
-				<artifactId>resteasy-jaxrs</artifactId>
-				<version>${resteasy.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-simple</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.resteasy</groupId>
-				<artifactId>resteasy-jaxb-provider</artifactId>
-				<version>${resteasy.version}</version>
-			</dependency>
-
-			<!-- Jackson2 related dependencies -->
-			<!-- <dependency> <groupId>com.fasterxml.jackson.jaxrs</groupId> <artifactId>jackson-jaxrs-providers</artifactId> 
-				<version>${jackson2.version}</version> </dependency> -->
-			<dependency>
-				<groupId>com.fasterxml.jackson.jaxrs</groupId>
-				<artifactId>jackson-jaxrs-json-provider</artifactId>
-				<version>${jackson2.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-annotations</artifactId>
-				<version>${jackson2.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-core</artifactId>
-				<version>${jackson2.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
-				<version>${jackson2.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.dataformat</groupId>
-				<artifactId>jackson-dataformat-avro</artifactId>
-				<version>${jackson2.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.dataformat</groupId>
-				<artifactId>jackson-dataformat-csv</artifactId>
-				<version>${jackson2.version}</version>
-			</dependency>
-			<!-- Enable for binary json encoding/decoding -->
-			<dependency>
-				<groupId>com.fasterxml.jackson.dataformat</groupId>
-				<artifactId>jackson-dataformat-smile</artifactId>
-				<version>${jackson2.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.dataformat</groupId>
-				<artifactId>jackson-dataformat-xml</artifactId>
-				<version>${jackson2.version}</version>
-			</dependency>
-
-
-
-			<dependency><!-- Tapestry integration with RESTEasy. -->
-				<groupId>org.tynamo</groupId>
-				<artifactId>tapestry-resteasy</artifactId>
-				<version>0.3.2</version>
-				<exclusions><!-- Here we exclude the built in resteasy versions, so we 
-						can specify our own versions. -->
-					<exclusion>
-						<groupId>org.jboss.resteasy</groupId>
-						<artifactId>resteasy-jaxrs</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.jboss.resteasy</groupId>
-						<artifactId>resteasy-jaxb-provider</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency><!-- Tapestry integration with JQuery. This may be removed 
-					if we switch to Tapestry 5.4, which includes JQuery support by default -->
-				<groupId>org.got5</groupId>
-				<artifactId>tapestry5-jquery</artifactId>
-				<version>3.3.1</version>
-			</dependency>
-			<!-- This is less ideal, but it's in our local repos. Note that we have 
-				to specify a particular snapshot version, because putting 2.0-SNAPSHOT as 
-				the version number was not working properly. Ideally we'll stop using snapshots, 
-				and stop using this lib altogether when T5.4 is ready, as it include bootstrap 
-				support natively. -->
-			<dependency>
-				<groupId>com.trsvax.bootstrap</groupId>
-				<artifactId>tapestry-bootstrap</artifactId>
-				<version>2.0-20120526.123746-2</version>
-			</dependency>
-
-			<dependency><!-- Sometimes this one has problems because not all files 
-					are in the local repo. Note that this is a different group ID than the above 
-					one -->
-				<groupId>com.trsvax</groupId>
-				<artifactId>tapestry-bootstrap</artifactId>
-				<version>2.1.3</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.got5</groupId>
-						<artifactId>tapestry5-jquery</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency><!-- The Yahoo User Interface compressor allows compression 
-					of CSS and Javascript, for faster transfer to the client -->
-				<groupId>com.yahoo.platform.yui</groupId>
-				<artifactId>yuicompressor</artifactId>
-				<version>2.4.7</version>
-			</dependency>
-
-			<dependency><!-- This adds automatic compression of JavaScript and CSS 
-					when in production mode. -->
-				<groupId>org.apache.tapestry</groupId>
-				<artifactId>tapestry-yuicompressor</artifactId>
-				<version>${tapestry-release-version}</version>
-			</dependency>
-			<!-- <dependency> <groupId>org.apache.avro</groupId> <artifactId>avro</artifactId> 
-				<version>1.7.4</version> </dependency> <dependency> <groupId>org.apache.avro</groupId> 
-				<artifactId>avro-ipc</artifactId> <version>1.7.4</version> </dependency> -->
-			<!-- <dependency> <groupId>com.microsoft.sqlserver.jdbc.SQLServerDriver</groupId> 
-				<artifactId>sqljdbc4</artifactId> <version>4.0</version> </dependency> -->
-			<!-- <dependency> <groupId>com.microsoft.sqlserver</groupId> <artifactId>sqljdbc4</artifactId> 
-				<version>4.0</version> <scope>provided</scope> </dependency> -->
 			<dependency>
 				<!-- jTDS is an open source 100% pure Java (type 4) JDBC 3.0 driver for 
 					Microsoft SQL Server (6.5, 7, 2000, 2005, 2008, 2012) and Sybase ASE (10, 
@@ -421,91 +192,6 @@
 				<version>1.3.1</version>
 				<scope>runtime</scope>
 			</dependency>
-			<!-- Used for querying a remote solr server. -->
-			<dependency>
-				<groupId>org.apache.solr</groupId>
-				<artifactId>solr-solrj</artifactId>
-				<version>${solr.version}</version>
-				<exclusions>
-					<exclusion>
-						<artifactId>slf4j-jdk14</artifactId>
-						<groupId>org.slf4j</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>org.restlet</artifactId>
-						<groupId>org.restlet.jee</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>org.restlet.ext.servlet</artifactId>
-						<groupId>org.restlet.jee</groupId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>com.googlecode.disruptor</groupId>
-				<artifactId>disruptor</artifactId>
-				<version>${disruptor.version}</version>
-			</dependency>
-			<dependency><!-- Guava is a suite of core and expanded libraries that 
-					include utility classes, google's collections, io classes, and much much 
-					more. Guava has two code dependencies - javax.annotation per the JSR-305 
-					spec and javax.inject per the JSR-330 spec. -->
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>${guava.version}</version>
-			</dependency>
-			<dependency>
-				<!-- The S-Space Package is a Natural Language Processing library for 
-					distributional semantics representations. Distributional semantics representations 
-					model the meaning of words, phrases, and sentences as high dimensional vectors 
-					or probability distributions. The library includes common algorithms such 
-					as Latent Semantic Analysis, Random Indexing, and Latent Dirichlet Allocation. 
-					The S-Space package also includes software libraries for matrices, vectors, 
-					graphs, and numerous clustering algorithms. <url>http://fozziethebeat.github.com/S-Space</url> -->
-				<groupId>edu.ucla.sspace</groupId>
-				<artifactId>sspace</artifactId>
-				<version>${sspace.version}</version>
-			</dependency>
-			<dependency><!-- High end, but simple, CSV processing and I/O -->
-				<groupId>net.sf.opencsv</groupId>
-				<artifactId>opencsv</artifactId>
-				<version>${opencsv.version}</version>
-			</dependency>
-			<dependency><!-- MapDB provides concurrent Maps, Sets and Queues backed 
-					by disk storage or off-heap memory. It is a fast, scalable and easy to use 
-					embedded Java database. -->
-				<groupId>org.mapdb</groupId>
-				<artifactId>mapdb</artifactId>
-				<version>${mapdb.version}</version>
-			</dependency>
-
-			<dependency><!-- Library for exporting to MS Excel -->
-				<groupId>net.sourceforge.jexcelapi</groupId>
-				<artifactId>jxl</artifactId>
-				<version>2.6.12</version>
-				<exclusions>
-					<exclusion>
-						<artifactId>log4j</artifactId>
-						<groupId>log4j</groupId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<!-- Connection Pool -->
-			<dependency><!-- Lightweight, high performance connection pool. -->
-				<groupId>com.jolbox</groupId>
-				<artifactId>bonecp</artifactId>
-				<version>${bonecp.version}</version>
-				<exclusions>
-					<exclusion>
-						<artifactId>slf4j-api</artifactId>
-						<groupId>org.slf4j</groupId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<!-- <dependency> <groupId>com.jolbox</groupId> <artifactId>bonecp-provider</artifactId> 
-				<version>0.8.0-alpha1</version> <exclusions> <exclusion> <artifactId>slf4j-api</artifactId> 
-				<groupId>org.slf4j</groupId> </exclusion> </exclusions> </dependency> -->
-
 			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>servlet-api</artifactId>
@@ -513,40 +199,10 @@
 				<scope>provided</scope>
 			</dependency>
 
-			<!-- Neo4j -->
-			<dependency>
-				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j-enterprise</artifactId>
-				<version>${neo4j.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>ch.qos.logback</groupId>
-						<artifactId>logback-classic</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<!-- Neo4j, sometimes you just need the kernel, part of enterprise -->
-			<dependency>
-				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j-kernel</artifactId>
-				<version>${neo4j.version}</version>
-			</dependency>
-
-			<!-- Needed for batch inserts, part of enterprise -->
-			<dependency>
-				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j-lucene-index</artifactId>
-				<version>${neo4j.version}</version>
-			</dependency>
-
 
 			<!-- Testing dependencies, Should not be in final Jars or Wars -->
-			<dependency>
-				<groupId>org.apache.tapestry</groupId>
-				<artifactId>tapestry-test</artifactId>
-				<version>[5.3,)</version>
-				<scope>test</scope>
-			</dependency>
+			<!-- <dependency> <groupId>org.apache.tapestry</groupId> <artifactId>tapestry-test</artifactId> 
+				<version>[5.3,)</version> <scope>test</scope> </dependency> -->
 			<dependency>
 				<groupId>org.tynamo</groupId>
 				<artifactId>tapestry-model-test</artifactId>
@@ -625,7 +281,7 @@
 							<plugin>
 								<groupId>org.apache.maven.plugins</groupId>
 								<artifactId>maven-javadoc-plugin</artifactId>
-								<version>2.9</version>
+								<version>${maven-javadoc-plugin.version}</version>
 							</plugin>
 						</reportPlugins>
 					</configuration>
@@ -653,7 +309,7 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>2.9</version>
+					<version>${maven-javadoc-plugin.version}</version>
 					<configuration>
 						<dependencySourceExcludes />
 						<failOnError>false</failOnError>
@@ -665,18 +321,18 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.14.1</version>
+					<version>${maven-surefire-plugin.version}</version>
 				</plugin>
 				<plugin>
 					<!-- TODO: Switch to version >= 2.4 if we plan to build wars on a *nix 
 						machine -->
 					<artifactId>maven-war-plugin</artifactId>
-					<version>2.1.1</version>
+					<version>${maven-war-plugin.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>1.2</version>
+					<version>${maven-enforcer-plugin.version}</version>
 					<executions>
 						<execution>
 							<id>enforce-versions</id>
@@ -718,7 +374,7 @@
 
 			</plugins>
 		</pluginManagement>
-		
+
 		<plugins>
 			<!-- enforce inclusion of source plugin to all children of Graphene-Enron -->
 			<plugin>
@@ -735,14 +391,25 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin><!-- This will be run when using mvn javadoc:javadoc -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<taglet>org.apache.tapestry5.javadoc.TapestryDocTaglet</taglet>
+					<tagletArtifact>
+						<groupId>org.apache.tapestry</groupId>
+						<artifactId>tapestry-javadoc</artifactId>
+					</tagletArtifact>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<reporting>
 		<plugins>
-			<plugin>
+			<plugin><!-- This will be run when using mvn site -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9</version>
+				<version>${maven-javadoc-plugin.version}</version>
 				<configuration>
 					<failOnError>false</failOnError>
 					<dependencySourceExcludes>com.trsvax.bootstrap:*</dependencySourceExcludes>

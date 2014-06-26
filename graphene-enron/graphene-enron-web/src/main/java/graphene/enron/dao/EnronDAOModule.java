@@ -4,6 +4,8 @@ import graphene.dao.DataSourceListDAO;
 import graphene.dao.EntityDAO;
 import graphene.dao.EntityRefDAO;
 import graphene.dao.IdTypeDAO;
+import graphene.dao.PermissionDAO;
+import graphene.dao.RoleDAO;
 import graphene.dao.TransactionDAO;
 import graphene.dao.neo4j.DAONeo4JEModule;
 import graphene.dao.sql.DAOSQLModule;
@@ -15,6 +17,8 @@ import graphene.enron.dao.impl.IdTypeDAOSQLImpl;
 import graphene.enron.dao.impl.TransactionDAOSQLImpl;
 import graphene.enron.model.memorydb.EnronMemoryDB;
 import graphene.model.memorydb.IMemoryDB;
+import graphene.services.SimplePermissionDAOImpl;
+import graphene.services.SimpleRoleDAOImpl;
 import graphene.util.FastNumberUtils;
 import graphene.util.PropertiesFileSymbolProvider;
 import graphene.util.db.JDBCUtil;
@@ -47,7 +51,13 @@ public class EnronDAOModule {
 			.getLogger(EnronDAOModule.class);
 
 	public static void bind(ServiceBinder binder) {
-
+		
+		
+		binder.bind(RoleDAO.class, SimpleRoleDAOImpl.class);
+		binder.bind(PermissionDAO.class, SimplePermissionDAOImpl.class);
+		
+		
+		
 		binder.bind(EntityRefDAO.class, EntityRefDAOImpl.class).scope(
 				ScopeConstants.PERTHREAD);
 
