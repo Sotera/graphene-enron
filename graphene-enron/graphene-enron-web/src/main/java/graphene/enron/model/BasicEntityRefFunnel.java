@@ -17,8 +17,10 @@ public class BasicEntityRefFunnel implements
 		b.setCustomerNumber(f.getCustomernumber());
 		b.setCustomerType(f.getCustomertype());
 
-		b.setDateStart(DateFormatUtils.ISO_DATE_FORMAT.format(f.getDatestart()));
-		b.setDateEnd(DateFormatUtils.ISO_DATE_FORMAT.format(f.getDateend()));
+		b.setDateStart(f.getDatestart() != null ? DateFormatUtils.ISO_DATE_FORMAT
+				.format(f.getDatestart()) : null);
+		b.setDateEnd(f.getDateend() != null ? DateFormatUtils.ISO_DATE_FORMAT
+				.format(f.getDateend()) : null);
 
 		b.setEntityrefId(f.getEntityrefId());
 
