@@ -2,6 +2,7 @@ package graphene.enron.web.pages;
 
 import graphene.model.idl.G_VisualType;
 import graphene.web.annotations.PluginPage;
+import graphene.web.pages.SimpleBasePage;
 
 import org.apache.tapestry5.SymbolConstants;
 import org.apache.tapestry5.alerts.AlertManager;
@@ -16,8 +17,8 @@ import org.joda.time.DateTime;
 /**
  * Start page of application graphene-enron-web.
  */
-@PluginPage(visualType = { G_VisualType.DEFAULT })
-public class Index {
+@PluginPage(visualType = G_VisualType.TOP, menuName = "Enron Dashboard", icon = "fa fa-lg fa-fw fa-code-home")
+public class Index extends SimpleBasePage{
 	@Property
 	@Inject
 	@Symbol(SymbolConstants.TAPESTRY_VERSION)

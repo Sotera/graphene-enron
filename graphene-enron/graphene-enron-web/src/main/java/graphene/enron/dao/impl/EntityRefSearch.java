@@ -5,9 +5,9 @@ import graphene.dao.IdTypeDAO;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_Delimiter;
+import graphene.model.idl.G_SearchTuple;
 import graphene.model.idl.G_SearchType;
-import graphene.model.query.EntityRefQuery;
-import graphene.model.query.EntitySearchTuple;
+import graphene.model.query.EntityQuery;
 import graphene.model.query.EntitySearchTypeHelper;
 import graphene.model.view.entities.CustomerDetails;
 import graphene.model.view.entities.EntitySearchResponse;
@@ -48,10 +48,10 @@ public class EntityRefSearch {
 	static Logger logger = LoggerFactory.getLogger(EntityRefSearch.class);
 
 	@Inject
-	private EntityRefDAO<EnronEntityref100, EntityRefQuery> dao;
+	private EntityRefDAO<EnronEntityref100, EntityQuery> dao;
 
 	@Inject
-	private IdTypeDAO<EnronEntityref100, EntityRefQuery> idTypeDao;
+	private IdTypeDAO<EnronEntityref100, EntityQuery> idTypeDao;
 
 	private List<CustomerDetails> addRowsPerAccount(
 			Collection<CustomerDetails> custs) {
@@ -93,9 +93,9 @@ public class EntityRefSearch {
 	public Set<String> customerNameMatchEnhanced(String name,
 			boolean caseSensitive) {
 		Set<String> results = new HashSet<String>();
-		EntityRefQuery q = new EntityRefQuery();
+		EntityQuery q = new EntityQuery();
 
-		List<EntitySearchTuple<String>> tupleList = EntitySearchTypeHelper
+		List<G_SearchTuple<String>> tupleList = EntitySearchTypeHelper
 				.processSearchList(name, G_SearchType.COMPARE_CONTAINS,
 						G_CanonicalPropertyType.ANY);
 		q.setAttributeList(tupleList);
@@ -138,7 +138,7 @@ public class EntityRefSearch {
 			return sr;
 		}
 
-		EntityRefQuery customerNumberQuery = new EntityRefQuery();
+		EntityQuery customerNumberQuery = new EntityQuery();
 		customerNumberQuery.setAttributeList(EntitySearchTypeHelper
 				.processSearchList(value, G_SearchType.COMPARE_EQUALS,
 						G_CanonicalPropertyType.NAME));
@@ -152,12 +152,12 @@ public class EntityRefSearch {
 		logger.debug("Found " + cnumbers.size() + " customers with name "
 				+ value);
 
-		EntityRefQuery customerDetailsQuery = new EntityRefQuery();
+		EntityQuery customerDetailsQuery = new EntityQuery();
 		for (String cno : cnumbers) {
-			EntitySearchTuple<String> e = new EntitySearchTuple<String>(
+			G_SearchTuple<String> e = new G_SearchTuple<String>(
 					G_SearchType.COMPARE_EQUALS,
 					G_CanonicalPropertyType.CUSTOMER_NUMBER, null, cno);
-			customerDetailsQuery.getAttributeList().add(e);
+			customerDetailsQuery.addAttribute(e);
 		}
 
 		List<EnronEntityref100> crows = dao.findByQuery(customerDetailsQuery);
@@ -223,7 +223,7 @@ public class EntityRefSearch {
 			return sr;
 		}
 
-		EntityRefQuery customerQuery = new EntityRefQuery();
+		EntityQuery customerQuery = new EntityQuery();
 		customerQuery.setMaxResult(maxResults);
 		customerQuery.setAttributeList(EntitySearchTypeHelper
 				.processSearchList(value, G_SearchType.COMPARE_EQUALS,
@@ -282,7 +282,7 @@ public class EntityRefSearch {
 			return sr;
 		}
 
-		EntityRefQuery identifierQuery = new EntityRefQuery();
+		EntityQuery identifierQuery = new EntityQuery();
 		// Note: we use compare contains as the default because the original
 		// implementation of valueSearch(), used below, had a like operator. You
 		// have the option here of being more precise if you construct the query
@@ -306,10 +306,10 @@ public class EntityRefSearch {
 		// Now we find customers for those values
 		// TODO: Do we use the same search type here? This is not a very
 		// efficient way of doing joins.
-		EntityRefQuery customerQuery = new EntityRefQuery();
+		EntityQuery customerQuery = new EntityQuery();
 		for (String identifier : identifierValues) {
-			customerQuery.getAttributeList().add(
-					new EntitySearchTuple<>(G_SearchType.fromValue(searchType),
+			customerQuery.addAttribute(
+					new G_SearchTuple<>(G_SearchType.fromValue(searchType),
 							G_CanonicalPropertyType.ANY, null, identifier));
 		}
 		List<EnronEntityref100> rows = dao.findByQuery(customerQuery);

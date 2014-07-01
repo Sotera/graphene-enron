@@ -38,14 +38,10 @@ public class TransactionDAOSQLImpl extends
 		GenericDAOJDBCImpl<EnronTransactionPair100, EventQuery> implements
 		TransactionDAO<EnronTransactionPair100, EventQuery> {
 
+	private TransferRowFunnel funnel = new TransferRowFunnel();
+
 	@Inject
 	private Logger logger;
-
-	@Override
-	protected SQLQuery from(Connection conn, EntityPath<?>... o) {
-		SQLTemplates dialect = new HSQLDBTemplates(); // SQL-dialect
-		return new SQLQuery(conn, dialect).from(o);
-	}
 
 	/**
 	 * 
@@ -283,6 +279,30 @@ public class TransactionDAOSQLImpl extends
 		return results;
 	}
 
+	@Override
+	public DirectedEventRow findEventById(String id) {
+		int idInt = FastNumberUtils.parseIntWithCheck(id);
+		EnronTransactionPair100 results = null;
+		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
+		Connection conn;
+		try {
+			conn = getConnection();
+			SQLQuery sq = from(conn, t).where(t.pairId.eq(idInt));
+			results = sq.singleResult(t);
+			conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return funnel.from(results);
+	}
+
+	@Override
+	protected SQLQuery from(Connection conn, EntityPath<?>... o) {
+		SQLTemplates dialect = new HSQLDBTemplates(); // SQL-dialect
+		return new SQLQuery(conn, dialect).from(o);
+	}
+
 	/**
 	 * @param q
 	 * @return
@@ -332,8 +352,6 @@ public class TransactionDAOSQLImpl extends
 		}
 		return results;
 	}
-
-	private TransferRowFunnel funnel = new TransferRowFunnel();
 
 	@Override
 	public List<DirectedEventRow> getEvents(EventQuery q) {

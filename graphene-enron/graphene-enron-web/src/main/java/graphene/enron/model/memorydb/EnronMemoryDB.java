@@ -1,11 +1,15 @@
 package graphene.enron.model.memorydb;
 
+import graphene.dao.EntityRefDAO;
+import graphene.dao.IdTypeDAO;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.memorydb.AbstractMemoryDB;
 import graphene.model.memorydb.MemRow;
 import graphene.model.view.entities.IdType;
+
+import java.util.ArrayList;
 
 /**
  * This implementation is currently only for an EntityRef type table.
@@ -22,7 +26,15 @@ import graphene.model.view.entities.IdType;
  */
 public class EnronMemoryDB extends
 		AbstractMemoryDB<EnronEntityref100, EnronIdentifierType100> {
-
+public EnronMemoryDB(EntityRefDAO<EnronEntityref100, ?> dao,
+		IdTypeDAO<?, ?> idTypeDAO) {
+	super(dao, idTypeDAO);
+	// TODO: expand this setup logic
+//	ArrayList<G_CanonicalPropertyType> communicationTypes = new ArrayList<G_CanonicalPropertyType>();
+//	communicationTypes.add(G_CanonicalPropertyType.EMAIL);
+//	communicationTypes.add(G_CanonicalPropertyType.PHONE);
+//	groupsOfTypes.put("Communications", communicationTypes);
+}
 	/*
 	 * 
 	 */
@@ -32,24 +44,13 @@ public class EnronMemoryDB extends
 		int id;
 		String identifierString;
 
-		// Following lines are to allow for accounts created after transition
-		// date
-		// where there is no corresponding pre-transition number.
-		// The customer number is actually the post-transition number.
-
 		if (p.getAccountnumber() == null || p.getAccountnumber().length() == 0)
 			p.setAccountnumber(p.getCustomernumber());
-
-		// Often the same communication id occurs with and without leading zero.
-		// TODO: check that this is acceptable.
-		// Perhaps we should handle it when we actually look for links instead.
 
 		identifierString = p.getIdentifier();
 		IdType currentIdType = idTypeDAO.getByType(p.getIdtypeId());
 		if (currentIdType == null) {
-			// disabled error logging to make people feel more at ease. :-)
-			// logger.error("IdType for " + p.getIdtypeId()
-			// + " is null, will not load row " + p.toString());
+
 			Integer timesEncountered = invalidTypes.get(p.getIdtypeId());
 			if (timesEncountered == null) {
 				timesEncountered = 1;
@@ -62,25 +63,17 @@ public class EnronMemoryDB extends
 			return true;
 		}
 
-		/**
-		 * If it's a communication id, strip a leading zero if needed.
-		 * 
-		 * XXX: Move this ETL decision to the database.
-		 */
-		if (communicationTypes.contains(currentIdType.getType())) {
-			if (identifierString.startsWith("0"))
-				identifierString = identifierString.substring(1);
-		}
+		
 
 		if (state == STATE_LOAD_STRINGS) {
 			// this happens first
 			if (identifierString != null) {
 				identifierSet.add(identifierString);
-				if (currentIdType.getType() == G_CanonicalPropertyType.NAME) {
-					nameSet.add(identifierString);
-				} else if (communicationTypes.contains(currentIdType.getType())) {
-					communicationIdSet.add(identifierString);
-				}
+//				if (currentIdType.getType() == G_CanonicalPropertyType.NAME) {
+//					nameSet.add(identifierString);
+//				} else if (groupsOfTypes.get("Communications").contains(currentIdType.getType())) {
+//					communicationIdSet.add(identifierString);
+//				}
 			}
 			if ((val = p.getCustomernumber()) != null) {
 				customerSet.add(val);

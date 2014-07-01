@@ -3,22 +3,22 @@ package graphene.enron.dao.impl;
 import graphene.dao.EntityRefDAO;
 import graphene.dao.IdTypeDAO;
 import graphene.dao.sql.GenericDAOJDBCImpl;
-import graphene.enron.model.memorydb.EnronMemoryDB;
+import graphene.enron.model.BasicEntityRefFunnel;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
 import graphene.enron.model.sql.enron.QEnronEntityref100;
 import graphene.model.idl.G_CanonicalPropertyType;
+import graphene.model.idl.G_SearchTuple;
 import graphene.model.idl.G_SearchType;
 import graphene.model.memorydb.IMemoryDB;
 import graphene.model.memorydb.MemRow;
 import graphene.model.query.AdvancedSearch;
-import graphene.model.query.EntityRefQuery;
-import graphene.model.query.EntitySearchTuple;
-import graphene.model.query.EventQuery;
+import graphene.model.query.EntityQuery;
 import graphene.model.query.StringQuery;
-import graphene.util.G_CallBack;
+import graphene.model.view.entities.BasicEntityRef;
 import graphene.util.ExceptionUtil;
 import graphene.util.FastNumberUtils;
+import graphene.util.G_CallBack;
 import graphene.util.validator.ValidationUtils;
 
 import java.sql.Connection;
@@ -35,15 +35,14 @@ import com.mysema.query.BooleanBuilder;
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.HSQLDBTemplates;
 import com.mysema.query.sql.SQLQuery;
-import com.mysema.query.sql.SQLServer2005Templates;
 import com.mysema.query.sql.SQLTemplates;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.expr.BooleanExpression;
 import com.mysema.query.types.path.StringPath;
 
 public class EntityRefDAOImpl extends
-		GenericDAOJDBCImpl<EnronEntityref100, EntityRefQuery> implements
-		EntityRefDAO<EnronEntityref100, EntityRefQuery> {
+		GenericDAOJDBCImpl<EnronEntityref100, EntityQuery> implements
+		EntityRefDAO<EnronEntityref100, EntityQuery> {
 	private static final long INITIAL_CHUNK_SIZE = 500000;
 	static Logger logger = LoggerFactory.getLogger(EntityRefDAOImpl.class);
 
@@ -53,28 +52,7 @@ public class EntityRefDAOImpl extends
 	private static long MAX_RETURNABLE_RESULTS = 50000000;
 
 	private static final long MIN_CHUNK_SIZE = 100000;
-
-	/**
-	 * TODO: Place dialect selection at Module level, to be injected?
-	 */
-	@Override
-	protected SQLQuery from(Connection conn, EntityPath<?>... o) {
-		SQLTemplates dialect = new HSQLDBTemplates(); // SQL-dialect
-		return new SQLQuery(conn, dialect).from(o);
-	}
-
-	private EnronEntityref100 memRowToDBEntry(MemRow m) {
-		EnronEntityref100 pb = new EnronEntityref100();
-		pb.setAccountnumber(memDb
-				.getAccountNumberForID(m.entries[IMemoryDB.ACCOUNT]));
-		pb.setCustomernumber(memDb
-				.getCustomerNumberForID(m.entries[IMemoryDB.CUSTOMER]));//
-		pb.setIdtypeId(m.getIdType());
-		pb.setIdentifier(memDb.getIdValueForID(m.entries[IMemoryDB.IDENTIFIER]));
-		pb.setEntityrefId(m.offset); // used for deduplication
-		return pb;
-	}
-
+	private BasicEntityRefFunnel funnel = new BasicEntityRefFunnel();
 	@Inject
 	private IdTypeDAO<EnronIdentifierType100, StringQuery> idTypeDAO;
 	@Inject
@@ -84,28 +62,7 @@ public class EntityRefDAOImpl extends
 
 	}
 
-	@Override
-	public boolean isReady() {
-		boolean ready = false;
-		if (memDb != null && memDb.isLoaded()) {
-			// wait until memdb is loaded.
-			ready = true;
-		} else {
-			// using sql backend
-			ready = super.isReady();
-		}
-		return ready;
-	}
-
-	@Override
-	public Set<String> entityIDsByAdvancedSearch(AdvancedSearch srch) {
-		if (memDb != null && memDb.isLoaded()) {
-			return memDb.entityIDsByAdvancedSearch(srch);
-		}
-		return null;
-	}
-
-	private SQLQuery buildQuery(EntityRefQuery q, QEnronEntityref100 t,
+	private SQLQuery buildQuery(EntityQuery q, QEnronEntityref100 t,
 			Connection conn) throws Exception {
 		BooleanBuilder builder = new BooleanBuilder();
 		// make sure we have a list worth writing a query about.
@@ -116,7 +73,7 @@ public class EntityRefDAOImpl extends
 					4);
 			ArrayList<String> optimizedCustomerNumberList = new ArrayList<String>(
 					4);
-			for (EntitySearchTuple<String> tuple : q.getAttributeList()) {
+			for (G_SearchTuple<String> tuple : q.getAttributeList()) {
 				// Build a boolean clause for this loop, and then 'or' it with
 				// previous clauses
 				/*
@@ -270,9 +227,8 @@ public class EntityRefDAOImpl extends
 
 		return from(conn, t).where(builder).orderBy(t.entityrefId.asc());
 	}
-
 	@Override
-	public long count(EntityRefQuery q) throws Exception {
+	public long count(EntityQuery q) throws Exception {
 		Connection conn;
 		conn = getConnection();
 		QEnronEntityref100 t = new QEnronEntityref100("t");
@@ -283,32 +239,60 @@ public class EntityRefDAOImpl extends
 	}
 
 	@Override
+	public long countEdges(String id) throws Exception {
+		if (memDb != null && memDb.isLoaded()) {
+			long count = 0;
+			count += memDb.getRowsForAccount(id).size();
+			count += memDb.getRowsForCustomer(id).size();
+			count += memDb.getRowsForIdentifier(id).size();
+			return count;
+		} else {
+			Connection conn = getConnection();
+			QEnronEntityref100 t = new QEnronEntityref100("t");
+			long count = from(conn, t)
+					.where(t.identifier.eq(id).or(t.accountnumber.eq(id))
+							.or(t.customernumber.eq(id))).distinct().count();
+			conn.close();
+			return count;
+		}
+	}
+
+	@Override
+	public Set<String> entityIDsByAdvancedSearch(AdvancedSearch srch) {
+		if (memDb != null && memDb.isLoaded()) {
+			return memDb.entityIDsByAdvancedSearch(srch);
+		}
+		return null;
+	}
+
+	@Override
 	public List<EnronEntityref100> findByQuery(/* long offset, long maxResults, */
-	EntityRefQuery q) throws Exception {
+	EntityQuery q) throws Exception {
 
 		if (memDb != null && memDb.isLoaded()) {
-			List<EntitySearchTuple<String>> values = q.getAttributeList();
+			List<G_SearchTuple<String>> values = q.getAttributeList();
 			Set<MemRow> results = new HashSet<MemRow>();
-			for (EntitySearchTuple<String> s : values) {
-				if (s.getFamily().equals(G_CanonicalPropertyType.ACCOUNT)) {
+			for (G_SearchTuple<String> est : values) {
+				G_CanonicalPropertyType family = est.getFamily();
+				String value = est.getValue();
+				if (family.equals(G_CanonicalPropertyType.ACCOUNT)) {
 					logger.debug("finding account types that match " + values);
-					results.addAll(memDb.getRowsForAccount(s.getValue()));
-				} else if (s.getFamily().equals(
+					results.addAll(memDb.getRowsForAccount(value));
+				} else if (family.equals(
 						G_CanonicalPropertyType.CUSTOMER_NUMBER)) {
 					logger.debug("finding customer number types that match "
 							+ values);
-					results.addAll(memDb.getRowsForCustomer(s.getValue()));
-				} else if (s.getFamily().equals(G_CanonicalPropertyType.ANY)) {
+					results.addAll(memDb.getRowsForCustomer(est.getValue()));
+				} else if (family.equals(G_CanonicalPropertyType.ANY)) {
 					logger.debug("finding any types that match " + values);
-					results.addAll(memDb.getRowsForIdentifier(s.getValue(), s
-							.getFamily().getValueString()));
-					results.addAll(memDb.getRowsForAccount(s.getValue()));
-					results.addAll(memDb.getRowsForCustomer(s.getValue()));
+					results.addAll(memDb.getRowsForIdentifier(value, family.getValueString()));
+					results.addAll(memDb.getRowsForAccount(value));
+					results.addAll(memDb.getRowsForCustomer(value));
 				} else {
 					logger.debug("finding identifier types that match "
 							+ values);
 					// just identifiers --djue
-					results.addAll(memDb.getRowsForIdentifier(s.getValue(), s
+					results.addAll(memDb.getRowsForIdentifier(est.getValue(), est
 							.getFamily().getValueString()));
 				}
 
@@ -328,35 +312,13 @@ public class EntityRefDAOImpl extends
 		}
 	}
 
+	/**
+	 * TODO: Place dialect selection at Module level, to be injected?
+	 */
 	@Override
-	public Set<EnronEntityref100> getRowsForCustomer(String cust)
-			throws Exception {
-
-		Set<EnronEntityref100> results = new HashSet<EnronEntityref100>();
-		if (memDb != null && memDb.isLoaded()) {
-			// XXX: See if this step was necessary, or if it was just Eclipse
-			Set<MemRow> rows = memDb.getRowsForCustomer(cust);
-			for (MemRow r : rows) {
-				results.add(memRowToDBEntry(r));
-			}
-		} else {
-			EntityRefQuery q = new EntityRefQuery();
-
-			EntitySearchTuple<String> srch = new EntitySearchTuple<String>();
-			srch.setSearchType(G_SearchType.COMPARE_EQUALS);
-			srch.setSpecificPropertyType("customerNumber");
-			srch.setValue(cust);
-
-			List<EntitySearchTuple<String>> attrs = new ArrayList<EntitySearchTuple<String>>();
-			attrs.add(srch);
-			q.setAttributeList(attrs);
-			List<EnronEntityref100> rows = findByQuery(q);
-			for (EnronEntityref100 e : rows) {
-				results.add(e);
-			}
-		}
-
-		return results;
+	protected SQLQuery from(Connection conn, EntityPath<?>... o) {
+		SQLTemplates dialect = new HSQLDBTemplates(); // SQL-dialect
+		return new SQLQuery(conn, dialect).from(o);
 	}
 
 	@Override
@@ -385,25 +347,23 @@ public class EntityRefDAOImpl extends
 		return results;
 	}
 
-	/**
-	 * This is the portable version of the code, kept here for posterity.
-	 * 
-	 * @param offset
-	 * @param limit
-	 * @return
-	 * @throws Exception
-	 */
-
-	private List<EnronEntityref100> getAllPortable(long offset, long limit)
+	@Override
+	public List<EnronEntityref100> getAll(long offset, long limit)
 			throws Exception {
-		Connection conn = getConnection();
+		List<Tuple> tupleResults = getAllTuples(offset, limit);
+		List<EnronEntityref100> results = new ArrayList<EnronEntityref100>(
+				tupleResults.size());
+		// Funnel the tuple into the bean, but unset properties will stay null
+		// and not take up space.
 		QEnronEntityref100 t = new QEnronEntityref100("t");
-		SQLQuery sq = from(conn, t);
-		sq = setOffsetAndLimit(offset, limit, sq);
-		List<EnronEntityref100> results = sq.orderBy(t.entityrefId.asc()).list(
-				t);
-		conn.close();
-
+		for (Tuple tuple : tupleResults) {
+			EnronEntityref100 k = new EnronEntityref100();
+			k.setAccountnumber(tuple.get(t.accountnumber));
+			k.setCustomernumber(tuple.get(t.customernumber));
+			k.setIdentifier(tuple.get(t.identifier));
+			k.setIdtypeId(tuple.get(t.idtypeId));
+			results.add(k);
+		}
 		return results;
 	}
 
@@ -440,23 +400,25 @@ public class EntityRefDAOImpl extends
 		return results;
 	}
 
-	@Override
-	public List<EnronEntityref100> getAll(long offset, long limit)
+	/**
+	 * This is the portable version of the code, kept here for posterity.
+	 * 
+	 * @param offset
+	 * @param limit
+	 * @return
+	 * @throws Exception
+	 */
+
+	private List<EnronEntityref100> getAllPortable(long offset, long limit)
 			throws Exception {
-		List<Tuple> tupleResults = getAllTuples(offset, limit);
-		List<EnronEntityref100> results = new ArrayList<EnronEntityref100>(
-				tupleResults.size());
-		// Funnel the tuple into the bean, but unset properties will stay null
-		// and not take up space.
+		Connection conn = getConnection();
 		QEnronEntityref100 t = new QEnronEntityref100("t");
-		for (Tuple tuple : tupleResults) {
-			EnronEntityref100 k = new EnronEntityref100();
-			k.setAccountnumber(tuple.get(t.accountnumber));
-			k.setCustomernumber(tuple.get(t.customernumber));
-			k.setIdentifier(tuple.get(t.identifier));
-			k.setIdtypeId(tuple.get(t.idtypeId));
-			results.add(k);
-		}
+		SQLQuery sq = from(conn, t);
+		sq = setOffsetAndLimit(offset, limit, sq);
+		List<EnronEntityref100> results = sq.orderBy(t.entityrefId.asc()).list(
+				t);
+		conn.close();
+
 		return results;
 	}
 
@@ -493,6 +455,70 @@ public class EntityRefDAOImpl extends
 		return results;
 	}
 
+	@Override
+	public Set<BasicEntityRef> getBasicRowsForCustomer(String id) {
+		Set<BasicEntityRef> list = new HashSet<BasicEntityRef>(3);
+		try {
+			for (EnronEntityref100 x : getRowsForCustomer(id)) {
+				list.add(funnel.from(x));
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return list;
+
+	}
+
+	/**
+	 * Since the table uses a numeric, non contiguous id as a primary key (even
+	 * if not formally defined as one), it helps to know the maximum value it
+	 * holds for when we need to iterate over all ids.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	protected long getMaxIndexValue() throws Exception {
+		Connection conn;
+		conn = getConnection();
+		QEnronEntityref100 t = new QEnronEntityref100("t");
+		List<Integer> value = from(conn, t).list(t.entityrefId.max());
+
+		conn.close();
+		return value.get(0);
+	}
+
+	@Override
+	public Set<EnronEntityref100> getRowsForCustomer(String cust)
+			throws Exception {
+
+		Set<EnronEntityref100> results = new HashSet<EnronEntityref100>();
+		if (memDb != null && memDb.isLoaded()) {
+			// XXX: See if this step was necessary, or if it was just Eclipse
+			Set<MemRow> rows = memDb.getRowsForCustomer(cust);
+			for (MemRow r : rows) {
+				results.add(memRowToDBEntry(r));
+			}
+		} else {
+			EntityQuery q = new EntityQuery();
+
+			G_SearchTuple<String> srch = new G_SearchTuple<String>();
+			srch.setSearchType(G_SearchType.COMPARE_EQUALS);
+			srch.setSpecificPropertyType("customerNumber");
+			srch.setValue(cust);
+
+			List<G_SearchTuple<String>> attrs = new ArrayList<G_SearchTuple<String>>();
+			attrs.add(srch);
+			q.setAttributeList(attrs);
+			List<EnronEntityref100> rows = findByQuery(q);
+			for (EnronEntityref100 e : rows) {
+				results.add(e);
+			}
+		}
+
+		return results;
+	}
+
 	/**
 	 * @param path
 	 * @param builder
@@ -500,7 +526,7 @@ public class EntityRefDAOImpl extends
 	 * @return
 	 */
 	private BooleanExpression handleSearchType(StringPath path,
-			EntitySearchTuple<String> tuple) {
+			G_SearchTuple<String> tuple) {
 		BooleanExpression b = null;
 		switch (tuple.getSearchType()) {
 		case COMPARE_CONTAINS:
@@ -532,18 +558,43 @@ public class EntityRefDAOImpl extends
 		return b;
 	}
 
+	@Override
+	public boolean isReady() {
+		boolean ready = false;
+		if (memDb != null && memDb.isLoaded()) {
+			// wait until memdb is loaded.
+			ready = true;
+		} else {
+			// using sql backend
+			ready = super.isReady();
+		}
+		return ready;
+	}
+
 	private List<EnronEntityref100> memRowsToDBentries(Set<MemRow> ms) {
 		List<EnronEntityref100> results = new ArrayList<EnronEntityref100>();
 		for (MemRow m : ms) {
 			results.add(memRowToDBEntry(m));
 		}
-		logger.debug("Converted results: " + results);
+		//logger.debug("Converted results: " + results);
 		return results;
+	}
+
+	private EnronEntityref100 memRowToDBEntry(MemRow m) {
+		EnronEntityref100 pb = new EnronEntityref100();
+		pb.setAccountnumber(memDb
+				.getAccountNumberForID(m.entries[IMemoryDB.ACCOUNT]));
+		pb.setCustomernumber(memDb
+				.getCustomerNumberForID(m.entries[IMemoryDB.CUSTOMER]));//
+		pb.setIdtypeId(m.getIdType());
+		pb.setIdentifier(memDb.getIdValueForID(m.entries[IMemoryDB.IDENTIFIER]));
+		pb.setEntityrefId(m.offset); // used for deduplication
+		return pb;
 	}
 
 	@Override
 	public boolean performCallback(long offset, long maxResults,
-			G_CallBack<EnronEntityref100> cb, EntityRefQuery q) {
+			G_CallBack<EnronEntityref100> cb, EntityQuery q) {
 
 		long MAX_VALUE = 100000000;
 		try {
@@ -572,11 +623,11 @@ public class EntityRefDAOImpl extends
 	}
 
 	@Override
-	public List<EnronEntityref100> rowSearch(EntityRefQuery q) throws Exception {
+	public List<EnronEntityref100> rowSearch(EntityQuery q) throws Exception {
 		if (memDb != null && memDb.isLoaded()) {
-			List<EntitySearchTuple<String>> values = q.getAttributeList();
+			List<G_SearchTuple<String>> values = q.getAttributeList();
 			Set<MemRow> results = new HashSet<MemRow>();
-			for (EntitySearchTuple<String> s : values) {
+			for (G_SearchTuple<String> s : values) {
 				if (s.getFamily().equals(G_CanonicalPropertyType.ACCOUNT)) {
 					results.addAll(memDb.getRowsForAccount(s.getValue()));
 				} else if (s.getFamily().equals(
@@ -614,7 +665,7 @@ public class EntityRefDAOImpl extends
 	}
 
 	@Override
-	public Set<String> valueSearch(EntityRefQuery q) throws Exception {
+	public Set<String> valueSearch(EntityQuery q) throws Exception {
 		if (memDb != null && memDb.isLoaded()) {
 
 			/**
@@ -622,7 +673,7 @@ public class EntityRefDAOImpl extends
 			 * 'DAO' for processing. XXX: Fix this.
 			 */
 			Set<String> stringList = new HashSet<String>();
-			for (EntitySearchTuple<String> tuple : q.getAttributeList()) {
+			for (G_SearchTuple<String> tuple : q.getAttributeList()) {
 				stringList.add(tuple.getValue());
 			}
 
@@ -655,42 +706,5 @@ public class EntityRefDAOImpl extends
 		conn.close();
 
 		return results;
-	}
-
-	/**
-	 * Since the table uses a numeric, non contiguous id as a primary key (even
-	 * if not formally defined as one), it helps to know the maximum value it
-	 * holds for when we need to iterate over all ids.
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	protected long getMaxIndexValue() throws Exception {
-		Connection conn;
-		conn = getConnection();
-		QEnronEntityref100 t = new QEnronEntityref100("t");
-		List<Integer> value = from(conn, t).list(t.entityrefId.max());
-
-		conn.close();
-		return value.get(0);
-	}
-
-	@Override
-	public long countEdges(String id) throws Exception {
-		if (memDb != null && memDb.isLoaded()) {
-			long count = 0;
-			count += memDb.getRowsForAccount(id).size();
-			count += memDb.getRowsForCustomer(id).size();
-			count += memDb.getRowsForIdentifier(id).size();
-			return count;
-		} else {
-			Connection conn = getConnection();
-			QEnronEntityref100 t = new QEnronEntityref100("t");
-			long count = from(conn, t)
-					.where(t.identifier.eq(id).or(t.accountnumber.eq(id))
-							.or(t.customernumber.eq(id))).distinct().count();
-			conn.close();
-			return count;
-		}
 	}
 }

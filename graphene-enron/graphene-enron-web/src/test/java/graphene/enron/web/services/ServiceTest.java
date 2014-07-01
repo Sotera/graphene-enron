@@ -7,7 +7,7 @@ import graphene.enron.dao.EnronDAOModule;
 import graphene.enron.model.graphserver.GraphServerModule;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
-import graphene.model.query.EntityRefQuery;
+import graphene.model.query.EntityQuery;
 import graphene.model.query.EventQuery;
 import graphene.services.PropertyGraphBuilder;
 import graphene.util.UtilModule;
@@ -28,7 +28,7 @@ public class ServiceTest {
 	protected Logger logger;
 	protected PropertyGraphBuilder pgb;
 	//protected InteractionGraphBuilder igb;
-	protected EntityRefDAO<EnronEntityref100, EntityRefQuery> dao;
+	protected EntityRefDAO<EnronEntityref100, EntityQuery> dao;
 	protected TransactionDAO<EnronTransactionPair100, EventQuery> transactionDAO;
 	//protected InteractionFinder interactionFinder;
 

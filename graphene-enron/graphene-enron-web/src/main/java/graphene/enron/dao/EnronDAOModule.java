@@ -10,13 +10,14 @@ import graphene.dao.TransactionDAO;
 import graphene.dao.neo4j.DAONeo4JEModule;
 import graphene.dao.sql.DAOSQLModule;
 import graphene.enron.dao.impl.DataSourceListDAOImpl;
-import graphene.enron.dao.impl.EntityDAOImpl;
 import graphene.enron.dao.impl.EntityRefDAOImpl;
 import graphene.enron.dao.impl.EntityRefSearch;
 import graphene.enron.dao.impl.IdTypeDAOSQLImpl;
 import graphene.enron.dao.impl.TransactionDAOSQLImpl;
 import graphene.enron.model.memorydb.EnronMemoryDB;
+import graphene.model.idl.G_SymbolConstants;
 import graphene.model.memorydb.IMemoryDB;
+import graphene.services.EntityDAOImpl;
 import graphene.services.SimplePermissionDAOImpl;
 import graphene.services.SimpleRoleDAOImpl;
 import graphene.util.FastNumberUtils;
@@ -83,6 +84,7 @@ public class EnronDAOModule {
 			MappedConfiguration<String, String> configuration) {
 		configuration.add(MAX_MEMDB_ROWS_PARAMETER, "0");
 		configuration.add(USE_MEMDB_PARAMETER, "true");
+		configuration.add(G_SymbolConstants.CACHEFILELOCATION, "%CATALINA_HOME%/data/EnronEntityRefCache.data");
 	}
 
 
