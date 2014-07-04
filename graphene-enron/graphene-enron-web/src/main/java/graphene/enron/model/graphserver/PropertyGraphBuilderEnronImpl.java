@@ -77,7 +77,7 @@ public class PropertyGraphBuilderEnronImpl extends
 							idTypeDAO.getFamily(idTypeId));
 
 				}
-				newNodeList.add(custNode);
+				unscannedNodeList.add(custNode);
 				nodeList.addNode(custNode);
 			}
 
@@ -96,7 +96,7 @@ public class PropertyGraphBuilderEnronImpl extends
 				acnoNode.setLabel(acno);
 				acnoNode.addProperty("background-color", "Lime");
 				acnoNode.addProperty("color", "Lime");
-				newNodeList.add(acnoNode);
+				unscannedNodeList.add(acnoNode);
 				nodeList.addNode(acnoNode);
 			}
 		}
@@ -130,7 +130,7 @@ public class PropertyGraphBuilderEnronImpl extends
 				if (nodeType == G_CanonicalPropertyType.ADDRESS) {
 					idNode.addProperty("color", "gray");
 				}
-				newNodeList.add(idNode);
+				unscannedNodeList.add(idNode);
 				nodeList.addNode(idNode);
 			}
 			if (custNode != null && idNode != null) {

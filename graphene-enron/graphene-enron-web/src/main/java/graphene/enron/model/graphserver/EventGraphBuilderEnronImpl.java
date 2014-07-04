@@ -12,6 +12,7 @@ import graphene.services.EventGraphBuilder;
 import graphene.util.validator.ValidationUtils;
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericNode;
+import mil.darpa.vande.generic.V_GraphQuery;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class EventGraphBuilderEnronImpl extends
 				src.addProperty("background-color", "red");
 				src.addProperty("color", "red");
 
-				newNodeList.add(src);
+				unscannedNodeList.add(src);
 				nodeList.addNode(src);
 			}
 
@@ -103,7 +104,7 @@ public class EventGraphBuilderEnronImpl extends
 				target.addProperty("Account Owner", t_acname);
 				target.addProperty("color", "red");
 
-				newNodeList.add(target);
+				unscannedNodeList.add(target);
 				nodeList.addNode(target);
 			}
 
@@ -134,4 +135,6 @@ public class EventGraphBuilderEnronImpl extends
 
 		return true;
 	}
+
+
 }

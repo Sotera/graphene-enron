@@ -4,12 +4,9 @@ import graphene.dao.EntityRefDAO;
 import graphene.dao.IdTypeDAO;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
-import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.memorydb.AbstractMemoryDB;
 import graphene.model.memorydb.MemRow;
 import graphene.model.view.entities.IdType;
-
-import java.util.ArrayList;
 
 /**
  * This implementation is currently only for an EntityRef type table.
@@ -29,11 +26,6 @@ public class EnronMemoryDB extends
 public EnronMemoryDB(EntityRefDAO<EnronEntityref100, ?> dao,
 		IdTypeDAO<?, ?> idTypeDAO) {
 	super(dao, idTypeDAO);
-	// TODO: expand this setup logic
-//	ArrayList<G_CanonicalPropertyType> communicationTypes = new ArrayList<G_CanonicalPropertyType>();
-//	communicationTypes.add(G_CanonicalPropertyType.EMAIL);
-//	communicationTypes.add(G_CanonicalPropertyType.PHONE);
-//	groupsOfTypes.put("Communications", communicationTypes);
 }
 	/*
 	 * 
@@ -69,11 +61,6 @@ public EnronMemoryDB(EntityRefDAO<EnronEntityref100, ?> dao,
 			// this happens first
 			if (identifierString != null) {
 				identifierSet.add(identifierString);
-//				if (currentIdType.getType() == G_CanonicalPropertyType.NAME) {
-//					nameSet.add(identifierString);
-//				} else if (groupsOfTypes.get("Communications").contains(currentIdType.getType())) {
-//					communicationIdSet.add(identifierString);
-//				}
 			}
 			if ((val = p.getCustomernumber()) != null) {
 				customerSet.add(val);

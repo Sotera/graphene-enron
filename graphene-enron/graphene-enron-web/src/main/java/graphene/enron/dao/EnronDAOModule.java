@@ -11,7 +11,6 @@ import graphene.dao.neo4j.DAONeo4JEModule;
 import graphene.dao.sql.DAOSQLModule;
 import graphene.enron.dao.impl.DataSourceListDAOImpl;
 import graphene.enron.dao.impl.EntityRefDAOImpl;
-import graphene.enron.dao.impl.EntityRefSearch;
 import graphene.enron.dao.impl.IdTypeDAOSQLImpl;
 import graphene.enron.dao.impl.TransactionDAOSQLImpl;
 import graphene.enron.model.memorydb.EnronMemoryDB;
@@ -73,7 +72,6 @@ public class EnronDAOModule {
 		// distributed configuration!)
 		binder.bind(DataSourceListDAO.class, DataSourceListDAOImpl.class);
 
-		binder.bind(EntityRefSearch.class);
 
 		binder.bind(IMemoryDB.class, EnronMemoryDB.class);
 	}
