@@ -1,5 +1,6 @@
 package graphene.enron.web.pages;
 
+import graphene.model.idl.G_SymbolConstants;
 import graphene.model.idl.G_VisualType;
 import graphene.web.annotations.PluginPage;
 import graphene.web.pages.SimpleBasePage;
@@ -18,20 +19,15 @@ import org.joda.time.DateTime;
  * Start page of application graphene-enron-web.
  */
 @PluginPage(visualType = G_VisualType.TOP, menuName = "Enron Dashboard", icon = "fa fa-lg fa-fw fa-code-home")
-public class Index extends SimpleBasePage{
+public class Index extends SimpleBasePage {
 	@Property
 	@Inject
 	@Symbol(SymbolConstants.TAPESTRY_VERSION)
 	private String tapestryVersion;
-
-	@InjectComponent
-	private Zone zone;
-	
-	
-	@Persist
 	@Property
-	private int clickCount;
-
+	@Inject
+	@Symbol(G_SymbolConstants.APPLICATION_NAME)
+	private String appName;
 	@Inject
 	private AlertManager alertManager;
 
@@ -39,17 +35,4 @@ public class Index extends SimpleBasePage{
 		return new DateTime();
 	}
 
-	void onActionFromIncrement() {
-		alertManager.info("Increment clicked");
-
-		clickCount++;
-	}
-
-	Object onActionFromIncrementAjax() {
-		clickCount++;
-
-		alertManager.info("Increment (via Ajax) clicked");
-
-		return zone;
-	}
 }

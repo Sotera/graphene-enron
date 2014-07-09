@@ -17,6 +17,7 @@ import org.apache.tapestry5.ioc.annotations.InjectService;
 import org.apache.tapestry5.ioc.annotations.SubModule;
 import org.apache.tapestry5.ioc.services.SymbolProvider;
 import org.slf4j.Logger;
+import org.tynamo.security.SecuritySymbols;
 
 /**
  * This module is automatically included as part of the Tapestry IoC Registry,
@@ -43,6 +44,7 @@ public class AppModule {
 		configuration.add(G_SymbolConstants.APPLICATION_NAME, "Graphene-Enron");
 		configuration.add(G_SymbolConstants.APPLICATION_CONTACT,
 				"Example Company");
+		configuration.override(SecuritySymbols.SUCCESS_URL, "/index");
 		configuration.add(SymbolConstants.APPLICATION_VERSION, "4.0.8");
 	}
 

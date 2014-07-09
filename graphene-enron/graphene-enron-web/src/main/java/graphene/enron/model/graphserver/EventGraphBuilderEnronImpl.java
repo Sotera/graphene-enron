@@ -42,6 +42,7 @@ public class EventGraphBuilderEnronImpl extends
 		this.dao = dao;
 		this.propertyDAO = propertyDAO;
 		this.supportedDatasets.add("Enron");
+		this.supportedDatasets.add("events");
 	}
 
 	/**

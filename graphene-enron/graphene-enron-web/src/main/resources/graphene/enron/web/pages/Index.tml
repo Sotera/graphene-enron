@@ -12,30 +12,16 @@
 				The current time is:
 				<strong>${currentTime}</strong>
 			</p>
+			<p>
+				Main search screen is here:
+				<strong>
+					<a href="enron.html">HERE</a>
+				</strong>
+			</p>
 
-			<!-- A Zone is a component that can be updated in place, triggered by 
-				other components. -->
-			<t:zone t:id="zone">
-				<p>
-					You have clicked the link
-					<strong>${clickCount}</strong>
-					times.
-				</p>
-
-				<p>
-					[
-					<t:actionlink t:id="increment">increment</t:actionlink>
-					]
-            &nbsp;
-					[
-					<t:actionlink t:id="incrementAjax" zone="^">increment  (via
-						Ajax)
-					</t:actionlink>
-					]
-				</p>
-
-			</t:zone>
 		</div>
 	</div>
-	<div class="row-fluid"><div class="span9" height="*"></div></div>
+	<div class="row-fluid">
+		<div class="span9" height="*"></div>
+	</div>
 </html>
