@@ -28,26 +28,26 @@ public class GraphServiceTest extends ServiceTest {
 
 	}
 
-	@Test(dataProvider = "AllIds")
-	public void testPG(String id, String degree) throws Exception {
-		System.out.println("Starting property graph test 1");
-		V_GraphQuery q = new V_GraphQuery();
-		q.setType("customer");
-		q.setMaxNodes(300);
-		q.setMaxEdgesPerNode(50);
-		q.setMaxHops(FastNumberUtils.parseIntWithCheck(degree));
-		q.addSearchIds(new String[] { id });
-		System.out.println(q);
-		try {
-			V_GenericGraph g = pgb.makeGraphResponse(q);
-			printGraph(g);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new Exception(e);
-		}
-
-	}
-
-
+	// Note, we should not include tests that need to see the database; we
+	// should programmatically fill the memdb and query on that.
+	// @Test(dataProvider = "AllIds")
+	// public void testPG(String id, String degree) throws Exception {
+	// System.out.println("Starting property graph test 1");
+	// V_GraphQuery q = new V_GraphQuery();
+	// q.setType("customer");
+	// q.setMaxNodes(300);
+	// q.setMaxEdgesPerNode(50);
+	// q.setMaxHops(FastNumberUtils.parseIntWithCheck(degree));
+	// q.addSearchIds(new String[] { id });
+	// System.out.println(q);
+	// try {
+	// V_GenericGraph g = pgb.makeGraphResponse(q);
+	// printGraph(g);
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// throw new Exception(e);
+	// }
+	//
+	// }
 
 }

@@ -27,10 +27,11 @@ public class ServiceTest {
 	protected DBConnectionPoolService cp;
 	protected Logger logger;
 	protected PropertyGraphBuilder pgb;
-	//protected InteractionGraphBuilder igb;
+	// protected InteractionGraphBuilder igb;
 	protected EntityRefDAO<EnronEntityref100, EntityQuery> dao;
 	protected TransactionDAO<EnronTransactionPair100, EventQuery> transactionDAO;
-	//protected InteractionFinder interactionFinder;
+
+	// protected InteractionFinder interactionFinder;
 
 	protected void printGraph(V_GenericGraph g) {
 		System.out.println("=====================");
@@ -47,10 +48,10 @@ public class ServiceTest {
 	public void setup() {
 
 		RegistryBuilder builder = new RegistryBuilder();
-		builder.add(UtilModule.class);
-		builder.add(DAOSQLModule.class);
-		builder.add(GraphServerModule.class);
-		builder.add(EnronDAOModule.class);
+		builder.add(TestModule.class);
+		// builder.add(DAOSQLModule.class);
+		// builder.add(GraphServerModule.class);
+		// builder.add(EnronDAOModule.class);
 		registry = builder.build();
 		registry.performRegistryStartup();
 		cp = registry.getService("GrapheneConnectionPool",
@@ -63,14 +64,16 @@ public class ServiceTest {
 		transactionDAO = registry.getService(TransactionDAO.class);
 
 		pgb = registry.getService(PropertyGraphBuilder.class);
+		long time = 0;
 		do {
 			System.out.println("Waiting for EntityRefDAO to be available.");
 			try {
 				Thread.sleep(5000);
+				time += 5000;
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} while (!dao.isReady());
+		} while (!dao.isReady() && time < 10000);
 	}
 }
