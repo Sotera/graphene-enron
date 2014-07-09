@@ -457,13 +457,13 @@
 			<plugin><!-- This will be run when using mvn javadoc:javadoc -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<taglet>org.apache.tapestry5.javadoc.TapestryDocTaglet</taglet>
-					<tagletArtifact>
-						<groupId>org.apache.tapestry</groupId>
-						<artifactId>tapestry-javadoc</artifactId>
-					</tagletArtifact>
-				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.github</groupId>
+				<artifactId>site-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
