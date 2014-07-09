@@ -114,7 +114,7 @@ public class EventGraphBuilderEnronImpl extends
 			//Here, an event id is used, so we will get an edger per event.
 			String key = generateEdgeId(p.getPairId().toString());
 			
-			if (!edgeMap.containsKey(key)) {
+			if (key != null && !edgeMap.containsKey(key)) {
 				V_GenericEdge v = new V_GenericEdge(src, target);
 				v.setIdType(G_RelationshipType.HAS_ACCOUNT.name());
 				v.setLabel(G_RelationshipType.HAS_ACCOUNT.name());

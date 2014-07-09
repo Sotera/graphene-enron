@@ -4,14 +4,19 @@ import graphene.enron.dao.EnronDAOModule;
 import graphene.enron.model.graphserver.GraphServerModule;
 import graphene.model.idl.G_SymbolConstants;
 import graphene.rest.services.RestModule;
+import graphene.util.PropertiesFileSymbolProvider;
 import graphene.util.UtilModule;
 import graphene.web.security.ShiroSecurityModule;
 import graphene.web.services.GrapheneModule;
 
 import org.apache.tapestry5.SymbolConstants;
 import org.apache.tapestry5.ioc.MappedConfiguration;
+import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.annotations.InjectService;
 import org.apache.tapestry5.ioc.annotations.SubModule;
+import org.apache.tapestry5.ioc.services.SymbolProvider;
+import org.slf4j.Logger;
 
 /**
  * This module is automatically included as part of the Tapestry IoC Registry,
@@ -41,4 +46,15 @@ public class AppModule {
 		configuration.add(SymbolConstants.APPLICATION_VERSION, "4.0.8");
 	}
 
+	public PropertiesFileSymbolProvider buildColorsSymbolProvider(Logger logger) {
+		return new PropertiesFileSymbolProvider(logger,
+				"graphene_optional_colors01.properties", true);
+	}
+
+	public static void contributeSymbolSource(
+			OrderedConfiguration<SymbolProvider> configuration,
+			@InjectService("ColorsSymbolProvider") SymbolProvider c) {
+		configuration.add("ColorsPropertiesFile", c, "after:SystemProperties",
+				"before:ApplicationDefaults");
+	}
 }

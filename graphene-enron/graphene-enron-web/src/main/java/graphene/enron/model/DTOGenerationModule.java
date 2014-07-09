@@ -2,6 +2,7 @@ package graphene.enron.model;
 
 import graphene.model.idl.G_SymbolConstants;
 import graphene.util.db.DBConnectionPoolService;
+import graphene.util.db.JDBCUtil;
 import graphene.util.db.MainDB;
 import graphene.util.db.SecondaryDB;
 
@@ -43,6 +44,7 @@ public class DTOGenerationModule {
 	 * @param userName
 	 * @param userPassword
 	 * @param logger
+	 * @param util
 	 * @return
 	 */
 	@Marker(MainDB.class)
@@ -50,10 +52,10 @@ public class DTOGenerationModule {
 			@Inject @Symbol(G_SymbolConstants.MIDTIER_SERVER_URL) String serverUrl,
 			@Inject @Symbol(G_SymbolConstants.MIDTIER_SERVER_USERNAME) String userName,
 			@Inject @Symbol(G_SymbolConstants.MIDTIER_SERVER_PASSWORD) String userPassword,
-			final Logger logger) {
+			final Logger logger, JDBCUtil util) {
 		try {
-			return new DBConnectionPoolService(logger, serverUrl, userName,
-					userPassword, true);
+			return new DBConnectionPoolService(logger, util, serverUrl,
+					userName, userPassword, true);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			return null;
@@ -70,6 +72,7 @@ public class DTOGenerationModule {
 	 * @param userName
 	 * @param userPassword
 	 * @param logger
+	 * @param util
 	 * @return
 	 */
 	@Marker(SecondaryDB.class)
@@ -77,10 +80,10 @@ public class DTOGenerationModule {
 			@Inject @Symbol(G_SymbolConstants.MIDTIER_SERVER_URL) String serverUrl,
 			@Inject @Symbol(G_SymbolConstants.MIDTIER_SERVER_USERNAME) String userName,
 			@Inject @Symbol(G_SymbolConstants.MIDTIER_SERVER_PASSWORD) String userPassword,
-			final Logger logger) {
+			final Logger logger, JDBCUtil util) {
 		try {
-			return new DBConnectionPoolService(logger, serverUrl, userName,
-					userPassword, true);
+			return new DBConnectionPoolService(logger, util, serverUrl,
+					userName, userPassword, true);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			return null;

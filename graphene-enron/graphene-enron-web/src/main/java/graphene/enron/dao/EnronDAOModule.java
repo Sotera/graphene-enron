@@ -65,8 +65,7 @@ public class EnronDAOModule {
 
 		binder.bind(IdTypeDAO.class, IdTypeDAOSQLImpl.class);
 
-		binder.bind(TransactionDAO.class, TransactionDAOSQLImpl.class).scope(
-				ScopeConstants.PERTHREAD);
+		binder.bind(TransactionDAO.class, TransactionDAOSQLImpl.class).withId("Primary");
 
 		// TODO: Make this into a service in the core we can contribute to (for
 		// distributed configuration!)
