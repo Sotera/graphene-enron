@@ -90,6 +90,10 @@
         <script src="js/cytoscape/cytoscape.min.js"></script>
 -->
         <script src="core/js/cytoscape/arbor.js"></script>
+		
+	<!-- Draper API Logger -->
+	<script type="text/javascript" src="js/draper/draper.activity_logger-2.1.1.js"></script>
+	<!-- <script type="text/javascript" src="js/draper/draper.activity_worker-2.1.1.js"></script> -->
 
 	<script type="text/javascript">
 		var canUseD3 = true;
@@ -175,19 +179,18 @@
         <script type="text/javascript" src="js/shared/graphManagerMenu.js"></script>
 
 	<script type="text/javascript">
-//We don't need to know the absolute path or the deployment context.  The prefix is always just rest/
 
-                // DRAPER API
-                //Instantiate the Activity Logger
-                //var activityLogger = new activityLogger();
+		// initialize Draper activity logger
+		var AC = new activityLogger('js/draper/draper.activity_worker-2.1.1.js');
+		
+		// register activity logger
+		var url = "http://localhost:1337"; // or wherever the activity logging server is
+		AC.registerActivityLogger(url, "Graphene-Enron", "4.0.8");
 
-                //Register the logger.
-                //In this case, we register the logger to look for the logger on
-                //port 1337 of the machine "localhost", telling it that this
-                //software component is version 3.04 of the software named
-                //"graphene" and that the session ID is "AC76999"
-                //activityLogger.registerActivityLogger("http://localhost:1337", "graphene", "3.5 Beta", "AC76999");
-
+		// shortcuts to logSystemActivity and logUserActivity
+		// AC.loguser = AC.logUserActivity;
+		// AC.logsys = AC.logSystemActivity;
+		
 		function makeCSTab()
 		{
 			makeTab("csType", Ext.create("DARPA.CSFrame", {title:'GLOBAL SEARCH', id:'csFrame'}));
@@ -291,31 +294,30 @@
                 }
 
 		Ext.onReady(function(){
-
+		
 		   	Ext.QuickTips.init();
 		   	Ext.tip.QuickTipManager.init();
 		   	// disable the browser from acting on right-click
 		   	Ext.getBody().on("contextmenu", Ext.emptyfn, null, {preventDefault:true});
 
    			Ext.create("Ext.container.Viewport", {
-                    layout:'border',
-                    items:[
-                            Ext.create("Ext.tab.Panel", {
-                                    region:'center',
-                                    id:'tabFrame',
-                                    deferredRender:false, // need this to ensure the elements are created before we make graphs
-                                    items:[],
-                                    listeners:{
-                                            //OLD tabchange:function(me,tab) {
-                                            tabchange: function(tPanel, newc, oldc, opts) {
-                                                if (newc == getPBFrame()) {
-                                                    newc.getNameList().getListBox().expand();
-                                                }
-                                            }
-                                    }
-
-                            })
-                    ]
+				layout:'border',
+				items:[
+					Ext.create("Ext.tab.Panel", {
+						region:'center',
+						id:'tabFrame',
+						deferredRender:false, // need this to ensure the elements are created before we make graphs
+						items:[],
+						listeners:{
+							//OLD tabchange:function(me,tab) {
+							tabchange: function(tPanel, newc, oldc, opts) {
+								if (newc == getPBFrame()) {
+									newc.getNameList().getListBox().expand();
+								}
+							}
+						}
+					})
+				]
    			}); // viewport
 
             // MFM create legend for all tabs that need them
@@ -346,6 +348,7 @@
 //				alert("Schema " + schema + " Entity " + entity);
 			};
 
+			AC.logSystemActivity("Ext finished loading - application has started");
 		}); // on ready
 
 
