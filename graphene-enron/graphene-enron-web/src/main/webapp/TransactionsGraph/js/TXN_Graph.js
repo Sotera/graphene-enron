@@ -454,7 +454,7 @@ Ext.define("DARPA.TransactionGraph", {
 			for (var i = 0; i < attrs.length; ++i) {
 				var a = attrs[i];
 				if (a.key.indexOf("node-prop") == -1) {
-					html += "<TR><TD>" + a.key + "</TD><TD>" + a.val + "</TD></TR>";
+					html += "<TR><TD>" + a.key + "</TD> <TD>&nbsp;:&nbsp;</TD> <TD>" + a.val + "</TD></TR>";
 				}
 			}
 			html += "</TABLE>";

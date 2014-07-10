@@ -61,16 +61,21 @@ Ext.define("DARPA.TXNGNodeDisplay",
 		var attrs = data.attrs;
 		var detailsItems = self.items.items[0].items.items; // MFM
 		
+		for (var prop in data) {
+			if (data.hasOwnProperty(prop)) {
+				if (prop == "idType") {
+					detailsItems[0].setValue(data[prop]);
+				}
+				else if (prop == "idVal") {
+					detailsItems[1].setValue(data[prop]);
+				}
+			}
+		}
+		
 		for (var i = 0; i < attrs.length; ++i) {
 			var a = attrs[i];
-			if (a.key == 'IdentifierType') {
-				detailsItems[0].setValue(a.val);
-			}
-			else if (a.key == 'Identifier') {
-				detailsItems[1].setValue(a.val);
-			}
-			else if (a.key.indexOf("node-prop") == -1) {
-				html += "<tr><td>" + a.key + "</td><td>" + a.val + "</td></tr>";
+			if (a.key.indexOf("node-prop") == -1) {
+				html += "<tr><td>" + a.key + "</td> <td>&nbsp;:&nbsp;</td> <td>" + a.val + "</td></tr>";
 			}
 		}
 		html += "</table>";
