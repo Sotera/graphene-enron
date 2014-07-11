@@ -33,83 +33,80 @@ Ext.define("DARPA.importDialog", {
 					type: 'hbox',
 					pack: 'center'
 				},
-				items: [
-				    {
-                                        xtype: 'textareafield',
-                                        id: 'grImportTextArea',
-                                        grow: true,
-                                        margin: 2,
-                                        allowBlank: false,
-                                        autoScroll: true,
-                                        //height: yy,
-                                        width: 780,
-                                        //resizable: true,
-                                        size: 3000,  // default size of the text input
-                                        value: 'Paste a copy of your exported graph into this area and hit Import.'
-                                        
-                                    }
-				]
+				items: [{
+					xtype: 'textareafield',
+					id: 'grImportTextArea',
+					grow: true,
+					margin: 2,
+					allowBlank: false,
+					autoScroll: true,
+					//height: yy,
+					width: 780,
+					//resizable: true,
+					size: 3000,  // default size of the text input
+					value: 'Paste a copy of your exported graph into this area and hit Import.'
+				}]
 			}]
 		});
 		
 		this.buttons = [{
 			text: 'Import',
 			handler: function(btn, e) {
-                            var importTextCmp = Ext.getCmp('grImportTextArea');
-                            if (importTextCmp) {
-                                var graphJSON = null;
-                                var importText = importTextCmp.getRawValue();
-                                if (importText && importText.length > 2) {
-                                    
-                                    // DEBUG
-                                    console.log("import button hit");
-                                    
-                                    // minimal validation
-                                    var start = importText.indexOf('"nodes":');
-                                    if (start < 0 ) {
-                                        alert("Invalid input. The imported graph must be valid JSON that has been exported from a previous graph.");
-                                        return;
-                                    }
-                                    try {
-                                        graphJSON = Ext.decode(importText);
-                                    }
-                                    catch (dex) {
-                                       alert("Invalid input. The imported graph must be valid JSON that has been exported from a previous graph.");
-                                       return;
-                                    }
-                                    
-                                    if (graphJSON) {
-                                       var grGraphVis = thisWindow.getGraphVis();  // reference to the GraphVis api
-                                       if (grGraphVis) {
-                                           thisWindow.hide();
-                                           grGraphVis.importGraph(graphJSON);
-                                           thisWindow.close();
-                                       }
-                                       // else handle internal error case. grGraphVis should never be null 
-                                    }
-                                    else {
-                                        alert("Invalid input. The imported graph must be valid JSON that has been exported from a previous graph.");
-                                    }
-                                }
-                            }
-                            else {
-                                // handle error
-                            }
+				var importTextCmp = Ext.getCmp('grImportTextArea');
+				if (importTextCmp) {
+					var graphJSON = null;
+					var importText = importTextCmp.getRawValue();
+					if (importText && importText.length > 2) {
+
+						// DEBUG
+						console.log("import button hit");
+
+						// minimal validation
+						var start = importText.indexOf('"nodes":');
+						if (start < 0 ) {
+							alert("Invalid input. The imported graph must be valid JSON that has been exported from a previous graph.");
+							return;
+						}
+						try {
+							graphJSON = Ext.decode(importText);
+						}
+						catch (dex) {
+							alert("Invalid input. The imported graph must be valid JSON that has been exported from a previous graph.");
+							return;
+						}
+
+						if (graphJSON) {
+							var grGraphVis = thisWindow.getGraphVis();  // reference to the GraphVis api
+							if (grGraphVis) {
+								thisWindow.hide();
+								grGraphVis.importGraph(graphJSON);
+								thisWindow.close();
+								
+								AC.logUserActivity("User successfully imported a graph", "import_data", AC.WF_ENRICH);
+							}
+							// else handle internal error case. grGraphVis should never be null 
+						} else {
+							alert("Invalid input. The imported graph must be valid JSON that has been exported from a previous graph.");
+						}
+					}
+				} else {
+					// handle error
+				}
 			}
-		}, 
-                {
+		}, {
 			text: 'Clear',
 			handler: function(btn, e) {
-                            var importTextCmp = Ext.getCmp('grImportTextArea');
-                            if (importTextCmp) {
-                                importTextCmp.setRawValue("");
-                            }
+				var importTextCmp = Ext.getCmp('grImportTextArea');
+				if (importTextCmp) {
+					importTextCmp.setRawValue("");
+				}
+				AC.logUserActivity("User cleared import text area", "remove_graph_annotation", AC.WF_ENRICH);
 			}
-		},
-                {
+		}, {
 			text: 'Cancel',
 			handler: function(btn, e) {
 				thisWindow.close();
+				AC.logUserActivity("User canceled import", "close_modal_tools", AC.WF_CREATE);
 			}
 		}];
 		

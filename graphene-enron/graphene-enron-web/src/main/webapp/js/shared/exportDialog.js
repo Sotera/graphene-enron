@@ -93,44 +93,48 @@ Ext.define("DARPA.exportDialog", {
 			type: 'Submit', // Important!
 			handler: function(btn, e) {
 				var graphJSON = thisWindow.getGraphJSON();
-				
+
 				if (graphJSON !== "undefined" && graphJSON.graph.nodes.length > 0) {	
 					var header;
 					var serviceURL;
-                                        var downloadURL = "getExportedGraph";
+					var downloadURL = "getExportedGraph";
 					var fileExt = fileExtension.getValue();
-                                        
+
 					switch(fileExt) {
 						case ".xml":
 							header = "application/xml";
 							serviceURL = "exportGraphAsXML";
 							break;
-                                                        
+
 						case ".json":
 						default:
 							header = "application/json";
 							serviceURL = "exportGraphAsJSON";
 							break;
 					}
-					
-                                        /** NOTE
-                                         * THE BELOW COMMENTED OUT SECTION ONLY WORKS FOR GET requests and for VERY SMALL graphs
-                                         * For larger graphs we MUST use the POST method
-					var urlstring =
-						'/rest/graph/' + serviceURL + 
+
+					/** NOTE
+					* THE BELOW COMMENTED OUT SECTION ONLY WORKS FOR GET requests and for VERY SMALL graphs
+					* For larger graphs we MUST use the POST method
+					var urlstring = '/rest/graph/' + serviceURL + 
 						'?graphJSON=' + encodeURIComponent(Ext.encode(graphJSON)) + 
 						'&fileName=' + fileNameField.getValue() + 
 						'&fileExt=' + fileExtension.getValue();
-                                        
-                                        // DEBUG
-                                        console.log("urlstring = " + urlstring);
-                                            
-                                        doExportDownload(urlstring);
-                                        ** END NOTE **/
-                                        
-                                        
+
+					// DEBUG
+					console.log("urlstring = " + urlstring);
+
+					doExportDownload(urlstring);
+					** END NOTE **/
+
+					AC.logUserActivity("User confirmed export", "export_data", AC.WF_ENRICH);
+					
+					AC.logSystemActivity("Ajax request to export file", {
+						"serviceUrl" : '/rest/FIXME/graph/' + serviceURL
+					});
+					
 					// We do Not want the response to be rendered in the Browser.
-                                        // Instead we want the browser to popup a dialog to download the exported file
+					// Instead we want the browser to popup a dialog to download the exported file
 					Ext.Ajax.request({
 						url: '/rest/FIXME/graph/' + serviceURL, 
 						method: 'POST',
@@ -138,23 +142,24 @@ Ext.define("DARPA.exportDialog", {
 							'Content-Type': header
 						},
 						params: {
-                                                        // TODO - add username as a param
-                                                        userName: "TODO",
-                                                        timeStamp: ((new Date()).getTime()).toString(), // unique timestamp
+							// TODO - add username as a param
+							userName: "TODO",
+							timeStamp: ((new Date()).getTime()).toString(), // unique timestamp
 							fileName: fileNameField.getValue(),
 							fileExt: fileExt
 						},
-                                                jsonData: Ext.encode(graphJSON), 
-                                                
+						jsonData: Ext.encode(graphJSON), 
+
 						success: function(resp) {
 							thisWindow.close();
 							// DEBUG
-                                                        //console.log("resp = " + resp.responseText);
-                                                        
-                                                        // The response will be the Server location of the File containing the exported graph
-                                                        // pass this file location to doExportDownload
-                                                        var fileURI = resp.responseText;
-                                                        doExportDownload("/rest/FIXME/graph/" + downloadURL, fileURI);
+							//console.log("resp = " + resp.responseText);
+
+							// The response will be the Server location of the File containing the exported graph
+							// pass this file location to doExportDownload
+							var fileURI = resp.responseText;
+							doExportDownload("/rest/FIXME/graph/" + downloadURL, fileURI);
+							AC.logSystemActivity("Ajax request to export file succeeded");
 						},
 						failure: function(resp) {
 							thisWindow.close();
@@ -164,19 +169,21 @@ Ext.define("DARPA.exportDialog", {
 								width: 600,
 								html: resp.responseText
 							});
-							
+
 							err.show();
+							AC.logSystemActivity("Ajax request to export file failed");
 						}
 					}); 
-                                        
+
 				} else {
-					// TODO: error handling
+				// TODO: error handling
 				}
 			}
 		}, {
 			text: 'Cancel',
 			handler: function(btn, e) {
 				thisWindow.close();
+				AC.logUserActivity("User canceled export", "close_modal_tools", AC.WF_CREATE);
 			}
 		}];
 		
