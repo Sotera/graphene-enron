@@ -91,6 +91,8 @@
 						disabled:!Config.canUseD3,
 						checkHandler:function(item,checked ) {
 							item.ledger.getCharts().setVisible(checked);
+							var draper_activity = checked ? "add_to_workspace" : "remove_from_workspace";
+							AC.logUserActivity("User toggled Chart visibility", draper_activity, AC.WF_ENRICH);
 						}
 					},
 					
@@ -101,6 +103,8 @@
 						
 						checkHandler:function(item,checked ) {
 							item.ledger.getGrid().setVisible(checked);
+							var draper_activity = checked ? "add_to_workspace" : "remove_from_workspace";
+							AC.logUserActivity("User toggled Transactions visibility", draper_activity, AC.WF_ENRICH);
 						}
 					} ,
                                         // MFM JIRA-68 Local Filtering
@@ -110,7 +114,9 @@
 						ledger:config.ledger,
 						
 						checkHandler:function(item,checked ) {
-                                                    item.ledger.getGrid().showFilter(checked);
+							item.ledger.getGrid().showFilter(checked);
+							var draper_activity = checked ? "add_to_workspace" : "remove_from_workspace";
+							AC.logUserActivity("User toggled Filter visibility", draper_activity, AC.WF_ENRICH);
 						}
 					}
 
