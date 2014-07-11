@@ -37,6 +37,8 @@ Ext.define("DARPA.TXNGToolbar", {  // allows the user to change the graph layout
 				var toolbar = self.up();
 				var gr = toolbar.up();
 				gr.GraphVis.refreshLayout();
+				
+				AC.logUserActivity("User refreshed the graph display", "sort", AC.WF_EXPLORE);
 			}
 		    } // listeners
 		},

@@ -320,8 +320,7 @@ Ext
 						var hops = self.getSettings().getMaxHops();
 						var degree = parseInt(hops) + 1;
 						graphStore.proxy.extraParams.degree = degree;
-						graphStore.proxy.url = Config.entityGraphCSUrl
-								+ 'customer/' + custno;
+						graphStore.proxy.url = Config.entityGraphCSUrl + 'customer/' + custno;
 
 						self.prevLoadParams.searchValue = self.prevLoadParams.value = self.prevLoadParams.prevValue = custno;
 
@@ -333,69 +332,55 @@ Ext
 						 * pb.updateText("."); } }); }
 						 */
 
-						graphStore
-								.load({
-									scope : this, // ?
-									callback : function(records, operation,
-											success) {
+						AC.logSystemActivity("Load Entity Graph");
+						graphStore.load({
+							scope : this, // ?
+							callback : function(records, operation, success) {
 
-										var pb2 = self.getProgressBar();
+								var pb2 = self.getProgressBar();
 
-										if (success == false) {
-											alert("Search failed due to server error.");
+								if (success == false) {
+									alert("Search failed due to server error.");
 
-											if (pb2) {
-												pb2
-														.updateText("Search failed due to server error.");
-												pb2.reset();
-											}
-											self.clear();
-										} else {
-
-											self.json = records[0].raw;
-											// var graph =
-											// xmlToGraph(records[0].raw); //
-											// read the xml into graph structure
-											// self.json=
-											// self.GraphVis.graphToJSON(graph);
-											// // create the graph json object.
-
-											// results could be empty, check for
-											// this here
-											if (self.json
-													&& self.json.nodes.length == 0) {
-												alert("No data was found for this identifier.");
-												// self.clear(); // don't clear
-												// what is already shown
-											} else {
-												self.clear();
-												self
-														.showjson(self.prevLoadParams.value);
-											}
-
-											var nodeCount = self.json.nodes.length;
-											self.appendTabTitle("("
-													+ nodeCount.toString()
-													+ ")");
-
-											// if (pb2) {
-											// pb2.updateText(graph.nodes.length
-											// + " nodes");
-											// pb2.reset();
-											// }
-
-											// DRAPER API
-											// Send a System Activity Message
-											// with optional metadata
-											// activityLogger.logSystemActivity('Graph
-											// results returned and displayed',
-											// {'Tab':'PB Graph',
-											// 'searchResults': { 'nodesFound':
-											// graph.nodes.length.toString()
-											// }});
-										}
+									if (pb2) {
+										pb2.updateText("Search failed due to server error.");
+										pb2.reset();
 									}
-								});
+									self.clear();
+									
+									AC.logSystemActivity("Failed to load Entity Graph");
+								} else {
+
+									self.json = records[0].raw;
+									// var graph = xmlToGraph(records[0].raw);
+									// read the xml into graph structure
+									// self.json= self.GraphVis.graphToJSON(graph);
+									// create the graph json object.
+
+									// results could be empty, check for this here
+									if (self.json && self.json.nodes.length == 0) {
+										alert("No data was found for this identifier.");
+										// self.clear(); // don't clear what is already shown
+									} else {
+										self.clear();
+										self.showjson(self.prevLoadParams.value);
+									}
+
+									var nodeCount = self.json.nodes.length;
+									self.appendTabTitle("(" + nodeCount.toString() + ")");
+
+									// if (pb2) {
+									// pb2.updateText(graph.nodes.length
+									// + " nodes");
+									// pb2.reset();
+									// }
+									
+									AC.logSystemActivity("Loaded Entity Graph", {
+										"NodeCount" : nodeCount
+									})
+								}
+							}
+						});
 					},
 
 					afterLayout : function() {

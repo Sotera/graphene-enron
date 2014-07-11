@@ -677,6 +677,12 @@ Ext.define("DARPA.GraphVis",
         }
         scope.dispWidth = width;
         scope.dispHeight = height;
+		
+		AC.logUserActivity("User resized the graph", "resize_component", AC.WF_CREATE, {
+			"width" : width,
+			"height" : height
+		});
+		
         // DEBUG
         //console.log("resize: width = " + scope.dispWidth + ", height = " + scope.dispHeight);
     },
@@ -743,6 +749,10 @@ Ext.define("DARPA.GraphVis",
         	// set in each layout function now
             /*scope.currentLayout = layoutName;*/
 			
+			AC.logUserActivity("User changed the graph layout", "set_graph_properties", AC.WF_CREATE, {
+				"layoutName" : layoutName
+			});
+			
             switch (layoutName) {
                 case 'circle':
 					scope.doCircleLayout(config);
@@ -759,10 +769,10 @@ Ext.define("DARPA.GraphVis",
 					break
                 case 'arbor':
                 case 'arbor-snow':     // force directed arbor - out of the box
-					scope.doForceDirectedLayout('arbor-snow');
+					scope.doForceDirectedLayout('arbor-snow', config);
 					break;
                 case 'arbor-wheel':    // custom arbor
-					scope.doForceDirectedLayout('arbor-wheel');
+					scope.doForceDirectedLayout('arbor-wheel', config);
 					break;
                 default:
                     // do nothing, invalid layout
@@ -986,19 +996,24 @@ Ext.define("DARPA.GraphVis",
 				
 					if (pb) pb.updateProgress(1, "100%");
 				}
+				
+				AC.logSystemActivity("Finished COSE force-directed layout");
             }
         };
 		
 		if (config.letServerDoLayout == true) {
 			// TODO server does layout
 		} else {
+		
+			AC.logSystemActivity("Beginning COSE force-directed layout");
+		
 			// browser does layout
 			scope.gv.layout(options);
 		}
 	},
 	
     // fdType   - 'arbor-wheel' or 'arbor-snow'
-    doForceDirectedLayout: function(fdType) {
+    doForceDirectedLayout: function(fdType, config) {
     	var scope = this;
     	
 		if (config == undefined) {
@@ -1124,6 +1139,8 @@ Ext.define("DARPA.GraphVis",
 				
 					if (pb) pb.updateProgress(1, "100%");
 				}
+				
+				AC.logSystemActivity("Finished ARBOR force-directed layout");
             }
         };
     	
@@ -1131,6 +1148,9 @@ Ext.define("DARPA.GraphVis",
 			// TODO server does layout
 		} else {
 			// browser does layout
+			
+			AC.logSystemActivity("Beginning Arbor force-directed layout");
+			
 			scope.gv.layout(options);
 		}
     },
@@ -1158,6 +1178,10 @@ Ext.define("DARPA.GraphVis",
             // DEBUG
             //console.log("node selected = " + node.data().name);
 
+			AC.logUserActivity("User selected a node", "select_object", AC.WF_EXPLORE, {
+				"NodeId" : node.data().id
+			})
+			
             node._private.locked = false; // no documented API that unlocks a single node, so we must do it under the hood
             scope.owner.nodeClick(node);
         });
@@ -1165,6 +1189,11 @@ Ext.define("DARPA.GraphVis",
         scope.gv.on('cxttapend','node', function(e) {
             var node = e.cyTarget;   // the current selected node
             if (!(scope.owner.nodeRightClick==undefined))
+			
+				AC.logUserActivity("User right-clicked a node", "select_object", AC.WF_EXPLORE, {
+					"NodeId" : node.data().id
+				});
+				
 	            scope.owner.nodeRightClick(node);
         
         });
@@ -1172,6 +1201,7 @@ Ext.define("DARPA.GraphVis",
         // SELECT EDGE - This function is called for every edge selected
         scope.gv.on('select','edge', function(e) {
             var data = e.cyTarget.data();   // the current selected edge
+			var edge = e.cyTarget;
 
             // edge's data elements
             // amount, direction[], id, lineWidth, source, target, type, weight
@@ -1179,7 +1209,10 @@ Ext.define("DARPA.GraphVis",
             // This will return all of the selected edges
             //var selectedEdges = scope.gv.$('edge:selected');
 
-	    var edge = e.cyTarget;
+			AC.logUserActivity("User selected an edge", "select_object", AC.WF_EXPLORE, {
+				"EdgeId" : data.id
+			});
+			
             scope.owner.edgeClick(edge);
             // DEBUG
             //console.log("edge selected id = " + data.id + ", weight = " + data.weight);
@@ -1236,6 +1269,9 @@ Ext.define("DARPA.GraphVis",
                 }, 1000);
             }
 
+			AC.logUserActivity("User dragged a node", "drag_object", AC.WF_EXPLORE, {
+				"NodeId" : data.id
+			});
         });
 
         // MOUSEUP This function is called when a node is selected and also for every node dragged when dragging is completed
@@ -1255,9 +1291,13 @@ Ext.define("DARPA.GraphVis",
 			var distFromTop = e.originalEvent.clientY - e.originalEvent.layerY;
 			var node = e.cyTarget;   // the current selected node
 			
+			AC.logUserActivity("User hovered over a node", "hover_start", AC.WF_EXPLORE);
+			
 			timeoutFn = setTimeout(function() {
 				if (!(scope.owner.nodeMouseOver == undefined)) {
 					scope.owner.nodeMouseOver(node);
+					
+					AC.logUserActivity("User hovered and spawned pop-up over node", "show_data_info", AC.WF_EXPLORE)
 					
 					// if a popup window cannot be (re)created, scope.owner.mouseOverPopUp will be undefined
 					if (!(scope.owner.mouseOverPopUp == undefined)) {
@@ -1277,8 +1317,13 @@ Ext.define("DARPA.GraphVis",
 
 		scope.gv.on('mouseout', 'node', function(e) {
 			clearTimeout(timeoutFn);
-			if (scope.owner.mouseOverPopUp)
+			
+			AC.logUserActivity("User moused-out of a node", "hover_end", AC.WF_EXPLORE);
+			
+			if (scope.owner.mouseOverPopUp && scope.owner.mouseOverPopUp.isVisible()) {
 				scope.owner.mouseOverPopUp.hide();
+				AC.logUserActivity("Mouse-out event closed node pop-up", "hide_data_info", AC.WF_EXPLORE);
+			}
 		});         
     }
         

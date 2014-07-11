@@ -18,12 +18,8 @@ Ext.define("DARPA.GraphManagerMenu", {
 					gr = toolbar.up();
 				}
 				
+				AC.logUserActivity("User initiated export", "open_modal_tools", AC.WF_CREATE);
 				gr.exportGraph();
-								
-				// DRAPER API - this one uses the workflow type of REPORT
-				// Send a User Activity Message with optional metadata
-				//activityLogger.logUserActivity('Export Graph', <Graph Name Tab>, activityLogger.WF_REPORT, 
-				//    {'Tab':<Graph Name>, 'action': 'Export', 'selectedNode': 'NA' });
 			}
 		}, {
 			text: "Import Graph",
@@ -36,12 +32,15 @@ Ext.define("DARPA.GraphManagerMenu", {
 					var toolbar = menu.up().up();
 					gr = toolbar.up();
 				}
-				
+				AC.logUserActivity("User initiated import", "open_modal_tools", AC.WF_CREATE);
 				Ext.Msg.confirm('Confirm', 
 					'Importing another graph will delete the current graph. Are you sure you want to Import?', 
 					function(ans) {
 						if (ans == 'yes') {
+							AC.logUserActivity("User confirmed import", "import_data", AC.WF_ENRICH);
 							gr.importGraph();
+						} else {
+							AC.logUserActivity("User canceled import", "import_data", AC.WF_ENRICH);
 						}
 					}
 				);
@@ -58,12 +57,8 @@ Ext.define("DARPA.GraphManagerMenu", {
 					gr = toolbar.up();
 				}
 				
+				AC.logUserActivity("User saved the current graph", "export_data", AC.WF_ENRICH);
 				gr.saveGraph();
-
-				// DRAPER API - this one uses the workflow type of REPORT
-				// Send a User Activity Message with optional metadata
-				//activityLogger.logUserActivity('Save Graph', <Graph Name Tab>, activityLogger.WF_REPORT, 
-				//    {'Tab':<Graph Name>, 'action': 'Save', 'selectedNode': 'NA' });
 			}
 		}, {
 			text: "Restore Graph",
@@ -77,11 +72,15 @@ Ext.define("DARPA.GraphManagerMenu", {
 					gr = toolbar.up();
 				}
 				
+				AC.logUserActivity("User initiated a graph load", "import_data", AC.WF_ENRICH);
 				Ext.Msg.confirm('Confirm', 
 					'Restoring a saved graph will delete the current graph. Are you sure you want to Restore?', 
 					function(ans) {
 						if (ans == 'yes') {
+							AC.logUserActivity("User confirmed graph load", "import_data", AC.WF_ENRICH);
 							gr.restoreGraph(null);
+						} else {
+							AC.logUserActivity("User canceled graph load", "import_data", AC.WF_ENRICH);
 						}
 					}
 				);
