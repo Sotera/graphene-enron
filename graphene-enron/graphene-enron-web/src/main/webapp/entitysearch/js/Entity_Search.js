@@ -170,11 +170,11 @@ Ext.define("DARPA.EntitySearch",
          doSearch:function()  
          {
          	// DEBUG
-                //console.log("doSearch");
+            //console.log("doSearch");
                 
-                var self = this;
+            var self = this;
          	var ds = self.getDataSetControl();
-                self.run = false;  // JIRA-17 when user hits Enter to search
+            self.run = false;  // JIRA-17 when user hits Enter to search
 /*                
          	if (!ds.isValid()) {
          		Ext.MessageBox.alert("Please select a data source");
@@ -182,22 +182,31 @@ Ext.define("DARPA.EntitySearch",
        		}
 */       		
          	var grid=self.getSearchGrid();
-         	
-       		var items = grid.getStore().data.items;
-       		var filters=[];
-       		for (var i = 0; i < items.length; ++i) {
-       			var d = items[i].data;
-       			d.value = d.value.trim();
-       			if (d.value.length>0)
-       				filters.push(d);
-		}
-
-		global_current_datasource=globalSourceStore.getAt(0);       			
+			
+			global_current_datasource=globalSourceStore.getAt(0);       			
        		var source = global_current_datasource.data.id;
        		var dataset = 'Entities';
+			
+			var logMeta = {};
+			logMeta["DataSet"] = dataset;
+			logMeta["Source"] = source;
        		
+			var items = grid.getStore().data.items;
+       		var filters=[];
+       		
+			for (var i = 0; i < items.length; ++i) {
+       			var d = items[i].data;
+       			d.value = d.value.trim();
+       			if (d.value.length>0) {
+       				filters.push(d);
+					var metaKey = "Filter_" + i;
+					logMeta[metaKey] = d.fieldName + "_" + d.operator + "_" + d.value;
+				}
+			}
+			
+			AC.logUserActivity("User searched for an entity", "execute_query_filter", AC.WF_GETDATA, logMeta);
+			
        		getESFrame().getEntityGrid().getMatches(dataset, source, filters);
-		
          }
          
 });

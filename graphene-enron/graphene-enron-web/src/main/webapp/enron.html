@@ -444,11 +444,19 @@
 			}
 
 		// So we need to load it
-
+			AC.logUserActivity("User chose an entity to view", "create_workspace", AC.WF_ENRICH, {
+				"EntityId" : id
+			});
+			
+			AC.logSystemActivity("Starting request to get entity details with id");
+			
 			Ext.Ajax.request( {
 				url:Config.entityGetByID + id,
 				method:'GET',
 				success:function(resp) {
+				
+					AC.logSystemActivity("Successfully got entity details with id");
+					
 					var entity = Ext.decode(resp.responseText);
 					var frame = getEDTab(entity);
 					getTabFrame().setActiveTab(frame);
