@@ -227,6 +227,7 @@ public class EntityRefDAOImpl extends
 
 		return from(conn, t).where(builder).orderBy(t.entityrefId.asc());
 	}
+
 	@Override
 	public long count(EntityQuery q) throws Exception {
 		Connection conn;
@@ -278,22 +279,23 @@ public class EntityRefDAOImpl extends
 				if (family.equals(G_CanonicalPropertyType.ACCOUNT)) {
 					logger.debug("finding account types that match " + values);
 					results.addAll(memDb.getRowsForAccount(value));
-				} else if (family.equals(
-						G_CanonicalPropertyType.CUSTOMER_NUMBER)) {
+				} else if (family
+						.equals(G_CanonicalPropertyType.CUSTOMER_NUMBER)) {
 					logger.debug("finding customer number types that match "
 							+ values);
 					results.addAll(memDb.getRowsForCustomer(est.getValue()));
 				} else if (family.equals(G_CanonicalPropertyType.ANY)) {
 					logger.debug("finding any types that match " + values);
-					results.addAll(memDb.getRowsForIdentifier(value, family.getValueString()));
+					results.addAll(memDb.getRowsForIdentifier(value,
+							family.getValueString()));
 					results.addAll(memDb.getRowsForAccount(value));
 					results.addAll(memDb.getRowsForCustomer(value));
 				} else {
 					logger.debug("finding identifier types that match "
 							+ values);
 					// just identifiers --djue
-					results.addAll(memDb.getRowsForIdentifier(est.getValue(), est
-							.getFamily().getValueString()));
+					results.addAll(memDb.getRowsForIdentifier(est.getValue(),
+							est.getFamily().getValueString()));
 				}
 
 			}
@@ -305,7 +307,10 @@ public class EntityRefDAOImpl extends
 			QEnronEntityref100 t = new QEnronEntityref100("t");
 			SQLQuery sq = buildQuery(q, t, conn);
 			sq = setOffsetAndLimit(q, sq);
-			List<EnronEntityref100> results = sq.list(t);
+			List<EnronEntityref100> results = new ArrayList<EnronEntityref100>();
+			if (sq != null) {
+				results = sq.list(t);
+			}
 			conn.close();
 
 			return results;
@@ -576,7 +581,7 @@ public class EntityRefDAOImpl extends
 		for (MemRow m : ms) {
 			results.add(memRowToDBEntry(m));
 		}
-		//logger.debug("Converted results: " + results);
+		// logger.debug("Converted results: " + results);
 		return results;
 	}
 
@@ -646,9 +651,12 @@ public class EntityRefDAOImpl extends
 			conn = getConnection();
 			QEnronEntityref100 t = new QEnronEntityref100("t");
 			SQLQuery sq = buildQuery(q, t, conn);
-			sq = setOffsetAndLimit(q.getFirstResult(), q.getMaxResult(), sq);
 
-			List<EnronEntityref100> results = sq.list(t);
+			sq = setOffsetAndLimit(q.getFirstResult(), q.getMaxResult(), sq);
+			List<EnronEntityref100> results = new ArrayList<EnronEntityref100>();
+			if (sq != null) {
+				results = sq.list(t);
+			}
 			conn.close();
 
 			return results;
@@ -702,7 +710,9 @@ public class EntityRefDAOImpl extends
 		QEnronEntityref100 t = new QEnronEntityref100("t");
 		SQLQuery sq = buildQuery(q, t, conn);
 		sq = setOffsetAndLimit(q.getFirstResult(), q.getMaxResult(), sq);
-		results.addAll(sq.distinct().list(t.identifier));
+		if (sq != null) {
+			results.addAll(sq.distinct().list(t.identifier));
+		}
 		conn.close();
 
 		return results;

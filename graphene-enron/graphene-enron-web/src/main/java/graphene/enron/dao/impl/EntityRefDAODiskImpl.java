@@ -388,13 +388,12 @@ public class EntityRefDAODiskImpl extends
 		QEnronEntityref100 t = new QEnronEntityref100("t");
 		SQLQuery sq = from(conn, t);
 		/*
-		 * Use the built-in Id to grab a range. Here we are assuming something
-		 * about the IDs, so be careful, this code is not portable.
-		 * 
-		 * We also skip over some list of idTypes, again this is very
-		 * customer/data specific.
+		 * XXX: Note that we are treating offset and limit differently than
+		 * usual. When using it in a between statement, we need to use
+		 * limit+offset
 		 */
-		sq.where(t.entityrefId.between(offset, limit).and(
+
+		sq = sq.where(t.entityrefId.between(offset, limit + offset).and(
 				t.idtypeId.notIn(idTypeDAO.getSkipTypes())));
 
 		/*
@@ -451,7 +450,13 @@ public class EntityRefDAODiskImpl extends
 		 * customer/data specific.
 		 */
 
-		sq = sq.where(t.entityrefId.between(offset, limit));
+		/*
+		 * XXX: Note that we are treating offset and limit differently than
+		 * usual. When using it in a between statement, we need to use
+		 * limit+offset
+		 */
+
+		sq = sq.where(t.entityrefId.between(offset, limit + offset));
 
 		List<Integer> st = idTypeDAO.getSkipTypes();
 		if (st != null && st.size() > 0) {

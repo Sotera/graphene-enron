@@ -10,6 +10,7 @@ import graphene.model.view.entities.IdType;
 import graphene.util.validator.ValidationUtils;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.mysema.query.BooleanBuilder;
@@ -56,14 +57,17 @@ public class IdTypeDAOSQLImpl extends AbstractIdTypeDAO<EnronIdentifierType100>
 	@Override
 	public List<EnronIdentifierType100> findByQuery(StringQuery q)
 			throws Exception {
-		List<EnronIdentifierType100> results;
+		List<EnronIdentifierType100> results = new ArrayList<EnronIdentifierType100>();
+
 		QEnronIdentifierType100 t = new QEnronIdentifierType100("t");
 		Connection conn;
 		conn = getConnection();
 		SQLQuery sq = buildQuery(q, t, conn);
 		sq = setOffsetAndLimit(q, sq);
-		sq = sq.orderBy(t.idtypeId.asc());
-		results = sq.list(t);
+		if (sq != null) {
+			sq = sq.orderBy(t.idtypeId.asc());
+			results = sq.list(t);
+		}
 		conn.close();
 		if (results != null) {
 			logger.debug("Returning " + results.size() + " entries");
@@ -110,6 +114,5 @@ public class IdTypeDAOSQLImpl extends AbstractIdTypeDAO<EnronIdentifierType100>
 		}
 		return idType;
 	}
-
 
 }

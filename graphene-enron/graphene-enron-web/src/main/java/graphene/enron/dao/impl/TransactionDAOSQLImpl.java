@@ -261,7 +261,7 @@ public class TransactionDAOSQLImpl extends
 	@Override
 	public List<EnronTransactionPair100> findByQuery(EventQuery q)
 			throws Exception {
-		List<EnronTransactionPair100> results;
+		List<EnronTransactionPair100> results = new ArrayList<EnronTransactionPair100>();
 		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
 		Connection conn;
 		conn = getConnection();
@@ -271,7 +271,9 @@ public class TransactionDAOSQLImpl extends
 		SQLQuery sq = buildQuery(q, t, conn); // MFM
 		sq = setOffsetAndLimit(q, sq);
 		logger.debug(q.toString());
-		results = sq.list(t);
+		if (sq != null) {
+			results = sq.list(t);
+		}
 		conn.close();
 		if (results != null) {
 			logger.debug("Returning " + results.size() + " entries");
@@ -319,7 +321,10 @@ public class TransactionDAOSQLImpl extends
 		Connection conn = getConnection();
 		SQLQuery sq = from(conn, t).where(builder).orderBy(t.receiverId.asc());
 		sq = setOffsetAndLimit(q.getFirstResult(), q.getMaxResult(), sq);
-		List<Tuple> list = sq.list(t.receiverId, t.senderId);
+		List<Tuple> list = new ArrayList<Tuple>();
+		if (sq != null) {
+			list = sq.list(t.receiverId, t.senderId);
+		}
 		for (Tuple tuple : list) {
 			// TODO: fill in more fields
 			G_Link link = new G_Link(tuple.get(0, String.class), tuple.get(1,
@@ -339,13 +344,15 @@ public class TransactionDAOSQLImpl extends
 	@Override
 	public List<EnronTransactionPair100> getAll(long offset, long maxResults)
 			throws Exception {
-		List<EnronTransactionPair100> results;
 		QEnronTransactionPair100 t = new QEnronTransactionPair100("t");
 		Connection conn;
 		conn = getConnection();
 		SQLQuery sq = from(conn, t);
 		sq = setOffsetAndLimit(offset, maxResults, sq);
-		results = sq.list(t);
+		List<EnronTransactionPair100> results = new ArrayList<EnronTransactionPair100>();
+		if (sq != null) {
+			results = sq.list(t);
+		}
 		conn.close();
 		if (results != null) {
 			logger.debug("Returning " + results.size() + " entries");
