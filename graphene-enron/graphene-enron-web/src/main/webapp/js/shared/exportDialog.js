@@ -130,13 +130,13 @@ Ext.define("DARPA.exportDialog", {
 					AC.logUserActivity("User confirmed export", "export_data", AC.WF_ENRICH);
 					
 					AC.logSystemActivity("Ajax request to export file", {
-						"serviceUrl" : '/rest/FIXME/graph/' + serviceURL
+						"serviceUrl" : 'rest/graph/' + serviceURL
 					});
 					
 					// We do Not want the response to be rendered in the Browser.
 					// Instead we want the browser to popup a dialog to download the exported file
 					Ext.Ajax.request({
-						url: '/rest/FIXME/graph/' + serviceURL, 
+						url: 'rest/graph/' + serviceURL, 
 						method: 'POST',
 						headers: {
 							'Content-Type': header
@@ -158,7 +158,7 @@ Ext.define("DARPA.exportDialog", {
 							// The response will be the Server location of the File containing the exported graph
 							// pass this file location to doExportDownload
 							var fileURI = resp.responseText;
-							doExportDownload("/rest/FIXME/graph/" + downloadURL, fileURI);
+							doExportDownload("rest/graph/" + downloadURL, fileURI);
 							AC.logSystemActivity("Ajax request to export file succeeded");
 						},
 						failure: function(resp) {
