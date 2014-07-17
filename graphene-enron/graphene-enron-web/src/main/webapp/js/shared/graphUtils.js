@@ -382,25 +382,40 @@ function importGraph(context) {
 }
         
 function exportGraph(context, defaultFileName) {
-        var self = context; 
-        if (self.GraphVis) {
-            var outj = self.GraphVis.exportGraph();
+    var self = context; 
+	if (self.GraphVis) {
+	
+		var outj;
+		try {
+			outj = self.GraphVis.exportGraph();
+		} catch (e) {
+			console.error("ERROR GETTING GRAPH JSON.");
+			outj = undefined;
+		}
+		
+		var outPNG;
+		try {
+			outPNG = self.GraphVis.gv.png();
+		} catch (e) {
+			console.error("ERROR GETTING GRAPH PNG.");
+			outPNG = undefined;
+		}
+		
+		var exportWindow = Ext.create("DARPA.exportDialog", {
+			title: 'Export Window',
+			border: true
+		});
 
-            var exportWindow = Ext.create("DARPA.exportDialog", {
-                    title: 'Export Window',
-                    border: true
-            });
-
-            exportWindow.setGraphJSON(outj);
-
-            //TODO: work some magic with scope so you can build default file name with query parameters with this.getSearch().getName()
-            exportWindow.setFileName(defaultFileName);
-            exportWindow.show();
-            exportWindow.center();
-        }
-        else {
-            Ext.Msg.alert("No graph data is available for this Entity.");
-        }
+		exportWindow.setGraphJSON(outj);
+		exportWindow.setGraphPNG(outPNG);
+		//TODO: work some magic with scope so you can build default file name with query parameters with this.getSearch().getName()
+		exportWindow.setFileName(defaultFileName);
+		exportWindow.show();
+		exportWindow.center();
+	}
+	else {
+		Ext.Msg.alert("No graph data is available for this Entity.");
+	}
 }
         
 function saveGraph(context, userid) {

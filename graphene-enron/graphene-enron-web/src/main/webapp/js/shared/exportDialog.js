@@ -37,11 +37,12 @@ Ext.define("DARPA.exportDialog", {
 	buttonAlign: 'center',
 	
 	graphJSON: null, // reference to the graph json data that this dialog will export
+	graphPNG: undefined, // reference to png data from the graph that this dialog will export
 	
 	constructor: function() {
 		var thisWindow = this;
 
-		var extensionStore = ['.json', '.xml']; // expand when additional file extensions are implemented
+		var extensionStore = ['.png', '.json', '.xml']; // expand when additional file extensions are implemented
 	
 		var fileExtension = new Ext.form.ComboBox({
 			width: '25%',
@@ -97,10 +98,14 @@ Ext.define("DARPA.exportDialog", {
 				if (graphJSON !== "undefined" && graphJSON.graph.nodes.length > 0) {	
 					var header;
 					var serviceURL;
+					var skipREST = false;
 					var downloadURL = "getExportedGraph";
 					var fileExt = fileExtension.getValue();
 	                    
 					switch(fileExt) {
+						case ".png":
+							skipREST = true;
+							break;
 						case ".xml":
 							header = "application/xml";
 							serviceURL = "exportGraphAsXML";
@@ -113,46 +118,75 @@ Ext.define("DARPA.exportDialog", {
 							break;
 					}
 	
-					// We do Not want the response to be rendered in the Browser.
-					// Instead we want the browser to popup a dialog to download the exported file
-					Ext.Ajax.request({
-						url: 'rest/graph/' + serviceURL, 
-						method: 'POST',
-						headers: {
-							'Content-Type': header
-						},
-						params: {
-							// TODO - add username as a param
-							userName: "TODO",
-							timeStamp: ((new Date()).getTime()).toString(), // unique timestamp
-							fileName: fileNameField.getValue(),
-							fileExt: fileExt
-						},
-						jsonData: Ext.encode(graphJSON), 
-					                        
-						success: function(resp) {
-							thisWindow.close();
-							// DEBUG
-							//console.log("resp = " + resp.responseText);
-					
-							// The response will be the Server location of the File containing the exported graph
-							// pass this file location to doExportDownload
-							var fileURI = resp.responseText;
-							doExportDownload("rest/graph/" + downloadURL, fileURI);
-						},
-						failure: function(resp) {
-							thisWindow.close();
-							var err = new Ext.Window({
-								title: 'Export Failure',
-								height: 300,
-								width: 600,
-								html: resp.responseText
-							});
-
-							err.show();
+					if (skipREST == true) {
+						var pngData = thisWindow.getGraphPNG();
+						
+						if (typeof pngData == "undefined") {
+							Ext.Msg.alert(
+								"Invalid PNG Data Error",
+								"The PNG data you are trying to export is either incorrect or undefined."
+							);
+							return;
 						}
-					}); 
-					                        
+						
+						var download = document.createElement('a');
+						download.href = pngData;
+						download.download = fileNameField.getValue() + fileExt;
+						
+						(function (obj, evt) {
+							if (document.createEvent) {
+								var evObj = document.createEvent("MouseEvents");
+								evObj.initEvent(evt, true, false);
+								obj.dispatchEvent(evObj);
+							} else if (document.createEventObject) {
+								var evObj = document.createEventObject();
+								obj.fireEvent("on" + evt, evObj);
+							}
+						})(download, "click");
+						
+						thisWindow.close();
+					} else {
+					
+						// We do Not want the response to be rendered in the Browser.
+						// Instead we want the browser to popup a dialog to download the exported file
+						Ext.Ajax.request({
+							url: 'rest/graph/' + serviceURL, 
+							method: 'POST',
+							headers: {
+								'Content-Type': header
+							},
+							params: {
+								// TODO - add username as a param
+								userName: "TODO",
+								timeStamp: ((new Date()).getTime()).toString(), // unique timestamp
+								fileName: fileNameField.getValue(),
+								fileExt: fileExt
+							},
+							jsonData: Ext.encode(graphJSON), 
+												
+							success: function(resp) {
+								thisWindow.close();
+								// DEBUG
+								//console.log("resp = " + resp.responseText);
+						
+								// The response will be the Server location of the File containing the exported graph
+								// pass this file location to doExportDownload
+								var fileURI = resp.responseText;
+								doExportDownload("rest/graph/" + downloadURL, fileURI);
+							},
+							failure: function(resp) {
+								thisWindow.close();
+								var err = new Ext.Window({
+									title: 'Export Failure',
+									height: 300,
+									width: 600,
+									html: resp.responseText
+								});
+
+								err.show();
+							}
+						}); 
+					}                    
 				} else {
 					// TODO: error handling
 				}
@@ -174,6 +208,14 @@ Ext.define("DARPA.exportDialog", {
 	
 	getGraphJSON: function() {
 		return this.graphJSON;
+	},
+	
+	setGraphPNG: function(inPNG) {
+		this.graphPNG = inPNG;
+	},
+	
+	getGraphPNG: function() {
+		return this.graphPNG;
 	},
 	
 	setFileName: function(name) {
