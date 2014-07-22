@@ -219,12 +219,21 @@
 
         function getCurrentInstitutionName()
         {
-            if (global_current_datasource.data && global_current_datasource.data.name) {
-                return global_current_datasource.data.name;
-            }
-            else {
-                return null;
-            }
+            var institutionName;
+			
+			try {
+				if (typeof global_current_datasource == "undefined") throw "error";
+				if (typeof global_current_datasource.data == "undefined") throw "error";
+				if (typeof global_current_datasource.data.name == "undefined") throw "error";
+				
+				institutionName = global_current_datasource.data.name;
+			} catch(e) {
+				console.log("Could not resolve global_current_datasource.data.name.  Setting 'Enron' as default institution name");
+				// FIXME: only temporary implementation; no good if there are multiple "institutions" to select from
+				institutionName = "Enron";
+			}
+			
+			return institutionName;
         }
 
 		function getEDTab(entity) // entity details
