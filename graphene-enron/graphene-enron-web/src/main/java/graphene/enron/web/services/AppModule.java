@@ -6,7 +6,8 @@ import graphene.model.idl.G_SymbolConstants;
 import graphene.rest.services.RestModule;
 import graphene.util.PropertiesFileSymbolProvider;
 import graphene.util.UtilModule;
-import graphene.web.security.ShiroSecurityModule;
+//import graphene.web.security.ShiroSecurityModule;
+import graphene.web.security.NoSecurityModule;
 import graphene.web.services.GrapheneModule;
 
 import org.apache.tapestry5.SymbolConstants;
@@ -26,7 +27,7 @@ import org.tynamo.security.SecuritySymbols;
  */
 @SubModule({ EnronDAOModule.class, AppRestModule.class,
 		GraphServerModule.class, GrapheneModule.class, RestModule.class,
-		UtilModule.class, ShiroSecurityModule.class })
+		UtilModule.class, NoSecurityModule.class })
 public class AppModule {
 
 	public static void bind(ServiceBinder binder) {
