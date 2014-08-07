@@ -2,12 +2,20 @@ package graphene.enron.dao;
 
 import graphene.dao.DataSourceListDAO;
 import graphene.dao.EntityDAO;
+import graphene.dao.EntityGraphDAO;
 import graphene.dao.EntityRefDAO;
+import graphene.dao.GroupDAO;
 import graphene.dao.IdTypeDAO;
 import graphene.dao.PermissionDAO;
 import graphene.dao.RoleDAO;
 import graphene.dao.TransactionDAO;
+import graphene.dao.UserDAO;
+import graphene.dao.WorkspaceDAO;
 import graphene.dao.neo4j.DAONeo4JEModule;
+import graphene.dao.neo4j.EntityGraphDAONeo4JEImpl;
+import graphene.dao.neo4j.GroupDAONeo4JEImpl;
+import graphene.dao.neo4j.UserDAONeo4JEImpl;
+import graphene.dao.neo4j.WorkspaceDAONeo4JEImpl;
 import graphene.dao.sql.DAOSQLModule;
 import graphene.enron.dao.impl.DataSourceListDAOImpl;
 import graphene.enron.dao.impl.EntityRefDAOImpl;
@@ -73,6 +81,12 @@ public class EnronDAOModule {
 
 
 		binder.bind(IMemoryDB.class, EnronMemoryDB.class);
+		
+		// Wiring for user services
+		binder.bind(EntityGraphDAO.class, EntityGraphDAONeo4JEImpl.class);
+		binder.bind(GroupDAO.class, GroupDAONeo4JEImpl.class);
+		binder.bind(WorkspaceDAO.class, WorkspaceDAONeo4JEImpl.class);
+		binder.bind(UserDAO.class, UserDAONeo4JEImpl.class).eagerLoad();
 	}
 	final static String MAX_MEMDB_ROWS_PARAMETER = "graphene.memorydb-maxIndexRecords";
 	final static String USE_MEMDB_PARAMETER = "graphene.memorydb-useMemDB";

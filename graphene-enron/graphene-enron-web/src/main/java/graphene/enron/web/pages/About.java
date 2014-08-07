@@ -18,6 +18,6 @@ public class About {
 
 	@Property
 	@Inject
-	@Symbol(SymbolConstants.APPLICATION_VERSION)
+	@Symbol(G_SymbolConstants.APPLICATION_VERSION)
 	private String appVersion;
 }
