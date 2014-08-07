@@ -2,18 +2,21 @@ package graphene.enron.dao.impl;
 
 import graphene.dao.EntityRefDAO;
 import graphene.dao.IdTypeDAO;
-import graphene.dao.sql.DiskCacheDAOJDBCImpl;
+import graphene.dao.sql.AbstractDiskCacheDAOJDBC;
+import graphene.enron.model.BasicEntityRefFunnel;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
 import graphene.enron.model.sql.enron.QEnronEntityref100;
 import graphene.model.idl.G_CanonicalPropertyType;
+import graphene.model.idl.G_SearchTuple;
 import graphene.model.idl.G_SearchType;
+import graphene.model.idl.G_SymbolConstants;
 import graphene.model.memorydb.IMemoryDB;
 import graphene.model.memorydb.MemRow;
 import graphene.model.query.AdvancedSearch;
-import graphene.model.query.EntityRefQuery;
-import graphene.model.query.EntitySearchTuple;
+import graphene.model.query.EntityQuery;
 import graphene.model.query.StringQuery;
+import graphene.model.view.entities.BasicEntityRef;
 import graphene.model.view.entities.CustomerDetails;
 import graphene.util.FastNumberUtils;
 import graphene.util.G_CallBack;
@@ -29,6 +32,7 @@ import java.util.Set;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.ServiceId;
+import org.apache.tapestry5.ioc.annotations.Symbol;
 import org.slf4j.Logger;
 
 import com.mysema.query.BooleanBuilder;
@@ -39,35 +43,36 @@ import com.mysema.query.types.path.StringPath;
 
 @ServiceId("Disk")
 public class EntityRefDAODiskImpl extends
-		DiskCacheDAOJDBCImpl<EnronEntityref100, EntityRefQuery> implements
-		EntityRefDAO<EnronEntityref100, EntityRefQuery> {
+		AbstractDiskCacheDAOJDBC<EnronEntityref100, EntityQuery> implements
+		EntityRefDAO<EnronEntityref100, EntityQuery> {
+
+	private static final long INITIAL_CHUNK_SIZE = 500000;
+	private static final long MAX_CHUNK_SIZE = 1000000;
+	// not final
+	private static long MAX_RETURNABLE_RESULTS = 50000000;
+	private static final long MIN_CHUNK_SIZE = 100000;
+	private BasicEntityRefFunnel funnel = new BasicEntityRefFunnel();
+
+	private IdTypeDAO<EnronIdentifierType100, StringQuery> idTypeDAO;
+
+	@Inject
+	private Logger logger;
+
+	private IMemoryDB<EnronEntityref100, EnronIdentifierType100, CustomerDetails> memDb;
 
 	public EntityRefDAODiskImpl(
 			DiskCache<EnronEntityref100> diskCache,
 			IdTypeDAO<EnronIdentifierType100, StringQuery> idTypeDAO,
-			IMemoryDB<EnronEntityref100, EnronIdentifierType100, CustomerDetails> memDb) {
-		super(diskCache);
-		this.diskCache.init(EnronEntityref100.class);
+			IMemoryDB<EnronEntityref100, EnronIdentifierType100, CustomerDetails> memDb,
+			@Symbol(G_SymbolConstants.CACHEFILELOCATION) String cacheFile) {
+		setCacheFileLocation(cacheFile);
+		setDiskCache(diskCache);
+		getDiskCache().init(EnronEntityref100.class);
 		this.idTypeDAO = idTypeDAO;
 		this.memDb = memDb;
 	}
 
-	@Inject
-	private Logger logger;
-	private static final long INITIAL_CHUNK_SIZE = 500000;
-
-	private static final long MAX_CHUNK_SIZE = 1000000;
-
-	// not final
-	private static long MAX_RETURNABLE_RESULTS = 50000000;
-
-	private static final long MIN_CHUNK_SIZE = 100000;
-
-	private IdTypeDAO<EnronIdentifierType100, StringQuery> idTypeDAO;
-
-	private IMemoryDB<EnronEntityref100, EnronIdentifierType100, CustomerDetails> memDb;
-
-	private SQLQuery buildQuery(EntityRefQuery q, QEnronEntityref100 t,
+	private SQLQuery buildQuery(EntityQuery q, QEnronEntityref100 t,
 			Connection conn) throws Exception {
 		BooleanBuilder builder = new BooleanBuilder();
 		// make sure we have a list worth writing a query about.
@@ -78,7 +83,7 @@ public class EntityRefDAODiskImpl extends
 					4);
 			ArrayList<String> optimizedCustomerNumberList = new ArrayList<String>(
 					4);
-			for (EntitySearchTuple<String> tuple : q.getAttributeList()) {
+			for (G_SearchTuple<String> tuple : q.getAttributeList()) {
 				// Build a boolean clause for this loop, and then 'or' it with
 				// previous clauses
 				/*
@@ -162,7 +167,7 @@ public class EntityRefDAODiskImpl extends
 										.getValue());
 							} else {
 								BooleanExpression b = handleSearchType(
-										t.accountnumber, tuple);
+										t.customernumber, tuple);
 								if (b != null) {
 									loopBuilder.and(b);
 								}
@@ -223,7 +228,7 @@ public class EntityRefDAODiskImpl extends
 				builder.or(t.accountnumber.in(optimizedAccountNumberList));
 			}
 			if (!optimizedCustomerNumberList.isEmpty()) {
-				builder.or(t.accountnumber.in(optimizedCustomerNumberList));
+				builder.or(t.customernumber.in(optimizedCustomerNumberList));
 			}
 			if (!optimizedIdentifierList.isEmpty()) {
 				builder.or(t.identifier.in(optimizedIdentifierList));
@@ -234,13 +239,11 @@ public class EntityRefDAODiskImpl extends
 	}
 
 	@Override
-	public long count(EntityRefQuery q) throws Exception {
-
+	public long count(EntityQuery q) throws Exception {
 		Connection conn;
 		conn = getConnection();
 		QEnronEntityref100 t = new QEnronEntityref100("t");
 		SQLQuery sq = buildQuery(q, t, conn);
-		sq = setOffsetAndLimit(q, sq);
 		long count = sq.count();
 		conn.close();
 		return count;
@@ -259,7 +262,7 @@ public class EntityRefDAODiskImpl extends
 			QEnronEntityref100 t = new QEnronEntityref100("t");
 			long count = from(conn, t)
 					.where(t.identifier.eq(id).or(t.accountnumber.eq(id))
-							.or(t.accountnumber.eq(id))).distinct().count();
+							.or(t.customernumber.eq(id))).distinct().count();
 			conn.close();
 			return count;
 		}
@@ -275,12 +278,12 @@ public class EntityRefDAODiskImpl extends
 
 	@Override
 	public List<EnronEntityref100> findByQuery(/* long offset, long maxResults, */
-	EntityRefQuery q) throws Exception {
+	EntityQuery q) throws Exception {
 		// logger.debug("find results for query=" + q);
 		if (memDb != null && memDb.isLoaded()) {
-			List<EntitySearchTuple<String>> values = q.getAttributeList();
+			List<G_SearchTuple<String>> values = q.getAttributeList();
 			Set<MemRow> results = new HashSet<MemRow>();
-			for (EntitySearchTuple<String> est : values) {
+			for (G_SearchTuple<String> est : values) {
 				G_CanonicalPropertyType family = est.getFamily();
 				String value = est.getValue();
 
@@ -385,13 +388,12 @@ public class EntityRefDAODiskImpl extends
 		QEnronEntityref100 t = new QEnronEntityref100("t");
 		SQLQuery sq = from(conn, t);
 		/*
-		 * Use the built-in Id to grab a range. Here we are assuming something
-		 * about the IDs, so be careful, this code is not portable.
-		 * 
-		 * We also skip over some list of idTypes, again this is very
-		 * customer/data specific.
+		 * XXX: Note that we are treating offset and limit differently than
+		 * usual. When using it in a between statement, we need to use
+		 * limit+offset
 		 */
-		sq.where(t.entityrefId.between(offset, limit).and(
+
+		sq = sq.where(t.entityrefId.between(offset, limit + offset).and(
 				t.idtypeId.notIn(idTypeDAO.getSkipTypes())));
 
 		/*
@@ -448,7 +450,13 @@ public class EntityRefDAODiskImpl extends
 		 * customer/data specific.
 		 */
 
-		sq = sq.where(t.entityrefId.between(offset, limit));
+		/*
+		 * XXX: Note that we are treating offset and limit differently than
+		 * usual. When using it in a between statement, we need to use
+		 * limit+offset
+		 */
+
+		sq = sq.where(t.entityrefId.between(offset, limit + offset));
 
 		List<Integer> st = idTypeDAO.getSkipTypes();
 		if (st != null && st.size() > 0) {
@@ -467,6 +475,21 @@ public class EntityRefDAODiskImpl extends
 		conn.close();
 
 		return results;
+	}
+
+	@Override
+	public Set<BasicEntityRef> getBasicRowsForCustomer(String id) {
+		Set<BasicEntityRef> list = new HashSet<BasicEntityRef>(3);
+		try {
+			for (EnronEntityref100 x : getRowsForCustomer(id)) {
+				list.add(funnel.from(x));
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return list;
+
 	}
 
 	/**
@@ -511,14 +534,14 @@ public class EntityRefDAODiskImpl extends
 				results.add(memRowToDBEntry(r));
 			}
 		} else {
-			EntityRefQuery q = new EntityRefQuery();
+			EntityQuery q = new EntityQuery();
 
-			EntitySearchTuple<String> srch = new EntitySearchTuple<String>();
+			G_SearchTuple<String> srch = new G_SearchTuple<String>();
 			srch.setSearchType(G_SearchType.COMPARE_EQUALS);
 			srch.setSpecificPropertyType("customerNumber");
 			srch.setValue(cust);
 
-			List<EntitySearchTuple<String>> attrs = new ArrayList<EntitySearchTuple<String>>();
+			List<G_SearchTuple<String>> attrs = new ArrayList<G_SearchTuple<String>>();
 			attrs.add(srch);
 			q.setAttributeList(attrs);
 			List<EnronEntityref100> rows = findByQuery(q);
@@ -537,7 +560,7 @@ public class EntityRefDAODiskImpl extends
 	 * @return
 	 */
 	private BooleanExpression handleSearchType(StringPath path,
-			EntitySearchTuple<String> tuple) {
+			G_SearchTuple<String> tuple) {
 		BooleanExpression b = null;
 		switch (tuple.getSearchType()) {
 		case COMPARE_CONTAINS:
@@ -607,7 +630,7 @@ public class EntityRefDAODiskImpl extends
 
 	@Override
 	public boolean performCallback(long offset, long limit,
-			G_CallBack<EnronEntityref100> cb, EntityRefQuery q) {
+			G_CallBack<EnronEntityref100> cb, EntityQuery q) {
 		boolean success = false;
 		if (memDb == null || !memDb.isLoaded()) {
 			// load the cache, which will load into memdb
@@ -656,11 +679,11 @@ public class EntityRefDAODiskImpl extends
 	}
 
 	@Override
-	public List<EnronEntityref100> rowSearch(EntityRefQuery q) throws Exception {
+	public List<EnronEntityref100> rowSearch(EntityQuery q) throws Exception {
 		if (isReady()) {
-			List<EntitySearchTuple<String>> values = q.getAttributeList();
+			List<G_SearchTuple<String>> values = q.getAttributeList();
 			Set<MemRow> results = new HashSet<MemRow>();
-			for (EntitySearchTuple<String> s : values) {
+			for (G_SearchTuple<String> s : values) {
 				if (s.getFamily().equals(G_CanonicalPropertyType.ACCOUNT)) {
 					results.addAll(memDb.getRowsForAccount(s.getValue()));
 				} else if (s.getFamily().equals(
@@ -696,7 +719,7 @@ public class EntityRefDAODiskImpl extends
 	}
 
 	@Override
-	public Set<String> valueSearch(EntityRefQuery q) throws Exception {
+	public Set<String> valueSearch(EntityQuery q) throws Exception {
 		if (isReady()) {
 			/*
 			 * Set<String> values = mem.getValuesContaining(
@@ -707,7 +730,7 @@ public class EntityRefDAODiskImpl extends
 			 * 'DAO' for processing. XXX: Fix this.
 			 */
 			Set<String> stringList = new HashSet<String>();
-			for (EntitySearchTuple<String> tuple : q.getAttributeList()) {
+			for (G_SearchTuple<String> tuple : q.getAttributeList()) {
 				stringList.add(tuple.getValue());
 			}
 

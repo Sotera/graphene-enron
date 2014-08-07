@@ -23,17 +23,29 @@
 									<form t:type="form" t:id="filterForm" t:zone="listZone">
 										<legend>Search for Event</legend>
 
-
 										<input class="input-block-level" t:id="partialName"
-											t:type="TextField" size="50" t:validate="maxLength=255" value="partialName" />
+											t:type="TextField" size="50" t:validate="maxLength=255"
+											value="searchValue" />
 										<input class="btn btn-primary" type="submit" value="Search"
 											title="Search" />
 									</form>
 								</div>
 
 								<div id="eventList">
-									<table t:type="grid" source="events" model="model">
+									<table t:type="grid" source="events" model="model" t:row="currentEvent">
 										[Grid here]
+										<p:actionCell>
+											<a class="btn btn-xs btn-primary" t:type="pagelink" page="eventViewer" context="currentEvent.id">
+												View</a>
+										</p:actionCell>
+										<p:senderNameCell>
+											<a t:type="pagelink" page="eventViewer" context="senderName">
+												${senderName}</a>
+										</p:senderNameCell>
+										<p:receiverNameCell>
+											<a t:type="pagelink" page="eventViewer" context="receiverName">
+												${receiverName}</a>
+										</p:receiverNameCell>
 									</table>
 								</div>
 
@@ -45,49 +57,6 @@
 
 							</t:zone>
 						</td>
-
-						<!-- This is the right side of the table: where a event will be created, 
-							reviewed, or updated. -->
-
-						<td id="editorCell">
-							<t:zone t:id="drillDownZone" id="drillDownZone" t:update="prop:zoneUpdateFunction">
-
-								<t:if test="modeDrillDownevent">
-									<h1>Drill Down</h1>
-
-
-
-									<table>
-										<tr>
-											<th>Header</th>
-											<td>modeDrillDownevent</td>
-										</tr>
-
-									</table>
-								</t:if>
-
-								<t:if test="modeDrillDownAccount">
-									<h1>Review</h1>
-									<table>
-										<tr>
-											<th>Id:</th>
-											<td>${drillDownevent.senderId}</td>
-										</tr>
-										
-									</table>
-								</t:if>
-
-
-								<!-- This is needed to clear the zone. -->
-								<t:if test="modeNull">
-									<!-- The space character is needed only to make the zone update 
-										highlight visible. -->
-                                &nbsp;
-								</t:if>
-
-							</t:zone>
-						</td>
-
 					</tr>
 				</tbody>
 			</table>

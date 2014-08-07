@@ -13,10 +13,15 @@
 	<properties>
 		<customer>ENRON</customer>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.7</java.version>
 		<!-- properties for dependencies (usually versions) -->
 
 		<base.project.version>4.0.8-SNAPSHOT</base.project.version>
 		<base.project.groupId>graphene</base.project.groupId>
+
+		<!-- Properties for this instance of the app -->
+		<hsqldb.version>2.3.1</hsqldb.version>
+		<jtds.version>1.3.1</jtds.version>
 
 		<!-- properties for testing dependencies -->
 		<jettyVersion>9.0.0</jettyVersion>
@@ -24,11 +29,12 @@
 		<testng-release-version>6.3.1</testng-release-version>
 		<easymock-release-version>3.0</easymock-release-version>
 		<tapestry-release-version>5.3.7</tapestry-release-version>
-
+		<tapestry-model-test.version>0.5.0</tapestry-model-test.version>
 		<!-- properties for github -->
 		<github.global.server>github</github.global.server>
 		<github.site.maven.plugin.version>0.9</github.site.maven.plugin.version>
 		<!-- Maven properties -->
+		<maven.version>3.0.4</maven.version>
 		<maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
 		<maven.site.plugin.version>3.0</maven.site.plugin.version>
 		<maven.project.info.reports.plugin.version>2.7</maven.project.info.reports.plugin.version>
@@ -37,6 +43,8 @@
 		<maven-war-plugin.version>2.1.1</maven-war-plugin.version>
 		<maven-enforcer-plugin.version>1.2</maven-enforcer-plugin.version>
 		<maven-javadoc-plugin.version>2.9</maven-javadoc-plugin.version>
+		<maven-jetty-plugin.version>6.1.16</maven-jetty-plugin.version>
+		<maven-source-plugin.version>2.2.1</maven-source-plugin.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -61,11 +69,13 @@
 		<!-- This section sets dependencies for all child modules. Note that version 
 			numbers are not used here. -->
 
-		
+		<dependency>
+			<groupId>net.sourceforge.jtds</groupId>
+			<artifactId>jtds</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
-			<version>2.3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
@@ -189,8 +199,13 @@
 					all the DatabaseMetaData and ResultSetMetaData methods. -->
 				<groupId>net.sourceforge.jtds</groupId>
 				<artifactId>jtds</artifactId>
-				<version>1.3.1</version>
+				<version>${jtds.version}</version>
 				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.hsqldb</groupId>
+				<artifactId>hsqldb</artifactId>
+				<version>${hsqldb.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.servlet</groupId>
@@ -206,7 +221,7 @@
 			<dependency>
 				<groupId>org.tynamo</groupId>
 				<artifactId>tapestry-model-test</artifactId>
-				<version>0.5.0</version>
+				<version>${tapestry-model-test.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -244,13 +259,60 @@
 				version and configuration). -->
 			<plugins>
 				<plugin>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.8.1</version>
+					<configuration>
+						<altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>com.github.github</groupId>
+					<artifactId>site-maven-plugin</artifactId>
+					<version>${github.site.maven.plugin.version}</version>
+					<configuration>
+						<message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
+						<noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
+						<outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
+						<branch>refs/heads/mvn-repo</branch>                       <!-- remote branch name -->
+						<includes>
+							<include>**/*</include>
+						</includes>
+						<repositoryName>graphene-enron</repositoryName>      <!-- github repo name -->
+						<repositoryOwner>Sotera</repositoryOwner>    <!-- github username -->
+					</configuration>
+					<executions>
+						<!-- run site-maven-plugin's 'site' target as part of the build's normal 
+							'deploy' phase -->
+						<execution>
+							<goals>
+								<goal>site</goal>
+							</goals>
+							<phase>deploy</phase>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${maven-source-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${maven.compiler.plugin.version}</version>
 					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
-						<encoding>UTF-8</encoding>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+						<encoding>${project.build.sourceEncoding}</encoding>
 						<optimize>true</optimize>
 						<showDeprecation>true</showDeprecation>
 						<archive>
@@ -342,10 +404,10 @@
 							<configuration>
 								<rules>
 									<requireMavenVersion>
-										<version>3.0.4</version>
+										<version>${maven.version}</version>
 									</requireMavenVersion>
 									<requireJavaVersion>
-										<version>1.7</version>
+										<version>${java.version}</version>
 									</requireJavaVersion>
 								</rules>
 							</configuration>
@@ -355,7 +417,8 @@
 				<plugin>
 					<groupId>org.mortbay.jetty</groupId>
 					<artifactId>maven-jetty-plugin</artifactId>
-					<version>6.1.16</version>
+					<version>${maven-jetty-plugin.version}</version>
+
 					<configuration>
 						<!-- Log to the console. -->
 						<requestLog implementation="org.mortbay.jetty.NCSARequestLog">
@@ -371,7 +434,17 @@
 						</systemProperties>
 					</configuration>
 				</plugin>
-
+				<plugin><!-- This will be run when using mvn javadoc:javadoc -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<configuration>
+						<taglet>org.apache.tapestry5.javadoc.TapestryDocTaglet</taglet>
+						<tagletArtifact>
+							<groupId>org.apache.tapestry</groupId>
+							<artifactId>tapestry-javadoc</artifactId>
+						</tagletArtifact>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -380,27 +453,17 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2.1</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin><!-- This will be run when using mvn javadoc:javadoc -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<taglet>org.apache.tapestry5.javadoc.TapestryDocTaglet</taglet>
-					<tagletArtifact>
-						<groupId>org.apache.tapestry</groupId>
-						<artifactId>tapestry-javadoc</artifactId>
-					</tagletArtifact>
-				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.github</groupId>
+				<artifactId>site-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
@@ -409,17 +472,6 @@
 			<plugin><!-- This will be run when using mvn site -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>${maven-javadoc-plugin.version}</version>
-				<configuration>
-					<failOnError>false</failOnError>
-					<dependencySourceExcludes>com.trsvax.bootstrap:*</dependencySourceExcludes>
-					<taglet>org.apache.tapestry5.javadoc.TapestryDocTaglet</taglet>
-					<tagletArtifact>
-						<groupId>org.apache.tapestry</groupId>
-						<artifactId>tapestry-javadoc</artifactId>
-						<version>${tapestry-release-version}</version>
-					</tagletArtifact>
-				</configuration>
 			</plugin>
 		</plugins>
 	</reporting>

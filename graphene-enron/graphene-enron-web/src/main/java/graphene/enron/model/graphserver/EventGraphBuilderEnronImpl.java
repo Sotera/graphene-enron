@@ -1,7 +1,5 @@
 package graphene.enron.model.graphserver;
 
-import java.util.List;
-
 import graphene.dao.EntityRefDAO;
 import graphene.dao.IdTypeDAO;
 import graphene.dao.TransactionDAO;
@@ -9,14 +7,12 @@ import graphene.enron.model.sql.enron.EnronIdentifierType100;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_RelationshipType;
-import graphene.model.idl.G_SearchType;
-import graphene.model.query.EntityRefQuery;
-import graphene.model.query.EntitySearchTuple;
 import graphene.model.query.StringQuery;
 import graphene.services.EventGraphBuilder;
 import graphene.util.validator.ValidationUtils;
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericNode;
+import mil.darpa.vande.generic.V_GraphQuery;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
@@ -46,6 +42,7 @@ public class EventGraphBuilderEnronImpl extends
 		this.dao = dao;
 		this.propertyDAO = propertyDAO;
 		this.supportedDatasets.add("Enron");
+		this.supportedDatasets.add("events");
 	}
 
 	/**
@@ -65,11 +62,11 @@ public class EventGraphBuilderEnronImpl extends
 			src = nodeList.getNode(s_acno);
 			if (src == null) {
 				// EntityRefQuery eq = new EntityRefQuery();
-				// EntitySearchTuple<String> est = new EntitySearchTuple<>();
+				// G_SearchTuple<String> est = new G_SearchTuple<>();
 				// est.setValue(s_acno);
 				// est.setSearchType(G_SearchType.COMPARE_EQUALS);
 				// est.setFamily(G_CanonicalPropertyType.ACCOUNT);
-				// eq.getAttributeList().add(est);
+				// eq.addAttribute(est);
 				//List listOfProperties = propertyDAO.findByQuery(eq);
 				
 				
@@ -87,7 +84,7 @@ public class EventGraphBuilderEnronImpl extends
 				src.addProperty("background-color", "red");
 				src.addProperty("color", "red");
 
-				newNodeList.add(src);
+				unscannedNodeList.add(src);
 				nodeList.addNode(src);
 			}
 
@@ -108,7 +105,7 @@ public class EventGraphBuilderEnronImpl extends
 				target.addProperty("Account Owner", t_acname);
 				target.addProperty("color", "red");
 
-				newNodeList.add(target);
+				unscannedNodeList.add(target);
 				nodeList.addNode(target);
 			}
 
@@ -118,7 +115,7 @@ public class EventGraphBuilderEnronImpl extends
 			//Here, an event id is used, so we will get an edger per event.
 			String key = generateEdgeId(p.getPairId().toString());
 			
-			if (!edgeMap.containsKey(key)) {
+			if (key != null && !edgeMap.containsKey(key)) {
 				V_GenericEdge v = new V_GenericEdge(src, target);
 				v.setIdType(G_RelationshipType.HAS_ACCOUNT.name());
 				v.setLabel(G_RelationshipType.HAS_ACCOUNT.name());
@@ -139,4 +136,6 @@ public class EventGraphBuilderEnronImpl extends
 
 		return true;
 	}
+
+
 }

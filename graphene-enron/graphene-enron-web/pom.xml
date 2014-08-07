@@ -10,22 +10,15 @@
 	<packaging>war</packaging>
 	<description>Web module (war) for Enron demo</description>
 	<dependencies>
+
+
+
 		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>2.3.1</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.jtds</groupId>
-			<artifactId>jtds</artifactId>
-		</dependency>
-		
-	 	<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<scope>provided</scope>
-		</dependency> 
-		
+		</dependency>
+
 
 
 		<dependency>
@@ -100,14 +93,28 @@
 	<build>
 		<finalName>graphene-enron-web</finalName>
 		<resources>
+			<resource><!-- This is for picking up any Tapestry .tml templates, .properties 
+					or other resources which are in the src directory. Optionally these could 
+					be in the corresponding resources directory but we don't enforce that on 
+					developers. -->
+				<directory>src/main/java</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+					<exclude>**/*.class</exclude>
+				</excludes>
+			</resource>
 			<resource>
 				<directory>src/main/resources</directory>
-				<!-- <includes> <include>**/*.*</include> <include>log4j.properties</include> 
-					<include>tablenames.properties</include> </includes> -->
-				<targetPath>.</targetPath>
 			</resource>
-			<!-- <resource> <directory>src/main/filtered-resources</directory> <targetPath>filtered</targetPath> 
-				<filtering>true</filtering> </resource> -->
+			<resource>
+				<directory>src/main/filtered-resources</directory>
+				<targetPath>filtered</targetPath>
+				<filtering>true</filtering>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>

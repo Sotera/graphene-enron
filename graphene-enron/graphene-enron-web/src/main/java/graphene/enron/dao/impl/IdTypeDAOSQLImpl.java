@@ -1,23 +1,17 @@
 package graphene.enron.dao.impl;
 
 import graphene.dao.IdTypeDAO;
-import graphene.dao.sql.GenericDAOJDBCImpl;
+import graphene.dao.sql.AbstractIdTypeDAO;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
 import graphene.enron.model.sql.enron.QEnronIdentifierType100;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.query.StringQuery;
 import graphene.model.view.entities.IdType;
-import graphene.util.G_CallBack;
 import graphene.util.validator.ValidationUtils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.tapestry5.ioc.annotations.Inject;
-import org.slf4j.Logger;
 
 import com.mysema.query.BooleanBuilder;
 import com.mysema.query.sql.HSQLDBTemplates;
@@ -33,27 +27,8 @@ import com.mysema.query.types.EntityPath;
  * @author djue
  * 
  */
-public class IdTypeDAOSQLImpl extends
-		GenericDAOJDBCImpl<EnronIdentifierType100, StringQuery> implements
-		IdTypeDAO<EnronIdentifierType100, StringQuery> {
-
-	private boolean loaded;
-	private Map<Integer, IdType> loadedTypes = new HashMap<Integer, IdType>();
-	@Override
-	protected SQLQuery from(Connection conn, EntityPath<?>... o) {
-		SQLTemplates dialect = new HSQLDBTemplates(); // SQL-dialect
-		return new SQLQuery(conn, dialect).from(o);
-	}
-	@Inject
-	private Logger logger;
-
-	private List<Integer> skipTypes = new ArrayList<Integer>();
-
-	@Override
-	public boolean applySkipRule(EnronIdentifierType100 id) {
-		return false;
-	}
-
+public class IdTypeDAOSQLImpl extends AbstractIdTypeDAO<EnronIdentifierType100>
+		implements IdTypeDAO<EnronIdentifierType100, StringQuery> {
 	private SQLQuery buildQuery(StringQuery q, QEnronIdentifierType100 t,
 			Connection conn) throws Exception {
 		BooleanBuilder builder = new BooleanBuilder();
@@ -75,34 +50,35 @@ public class IdTypeDAOSQLImpl extends
 		SQLQuery sq = buildQuery(q, t, conn).orderBy(t.idtypeId.asc());
 		results = sq.count();
 		conn.close();
-
 		logger.debug("Counted " + results + " entries");
-
 		return results;
 	}
 
 	@Override
-	public void createFamilyMap() {
-		// TODO Auto-generated method stub
+	public List<EnronIdentifierType100> findByQuery(StringQuery q)
+			throws Exception {
+		List<EnronIdentifierType100> results = new ArrayList<EnronIdentifierType100>();
 
-	}
-
-	@Override
-	public List<EnronIdentifierType100> findByQuery(/*long offset,
-			long maxResults,*/ StringQuery q) throws Exception {
-		List<EnronIdentifierType100> results;
 		QEnronIdentifierType100 t = new QEnronIdentifierType100("t");
 		Connection conn;
 		conn = getConnection();
 		SQLQuery sq = buildQuery(q, t, conn);
-		sq=setOffsetAndLimit(q, sq);
-		sq=sq.orderBy(t.idtypeId.asc());
-		results = sq.list(t);
+		sq = setOffsetAndLimit(q, sq);
+		if (sq != null) {
+			sq = sq.orderBy(t.idtypeId.asc());
+			results = sq.list(t);
+		}
 		conn.close();
 		if (results != null) {
 			logger.debug("Returning " + results.size() + " entries");
 		}
 		return results;
+	}
+
+	@Override
+	protected SQLQuery from(Connection conn, EntityPath<?>... o) {
+		SQLTemplates dialect = new HSQLDBTemplates(); // SQL-dialect
+		return new SQLQuery(conn, dialect).from(o);
 	}
 
 	@Override
@@ -124,191 +100,19 @@ public class IdTypeDAOSQLImpl extends
 	}
 
 	@Override
-	public IdType getByType(int typeno) {
-
-		return getLoadedTypes().get(typeno);
-
-	}
-
-	@Override
-	public String getColumnSource(int type) {
-		if (isLoaded()) {
-			String retValue = null;
-			try {
-				retValue = getLoadedTypes().get(type).getColumnSource();
-			} catch (Exception aexp) {
-				if (type == 36) {
-					retValue = "Address";
-				} else {
-					retValue = "Other Name";
-				}
-			}
-			return retValue;
-		} else {
-			return null;
+	public IdType convertFrom(EnronIdentifierType100 id) {
+		IdType idType = new IdType();
+		idType.setColumnSource(id.getColumnsource());
+		idType.setFamily(id.getFamily());
+		idType.setIdType_id(id.getIdtypeId());
+		idType.setShortName(id.getShortName());
+		idType.setTableSource(id.getTablesource());
+		idType.setType(G_CanonicalPropertyType.fromValue(id.getFamily()));
+		if (idType.getType() == null) {
+			logger.warn("G_CanonicalPropertyType for " + idType.toString()
+					+ " was null.  This shouldn't happen");
 		}
-	}
-
-	@Override
-	public String getFamily(int type) {
-		if (isLoaded()) {
-			IdType id = getLoadedTypes().get(type);
-			if (id == null) {
-				logger.error("IdTypeCache: getFamily: could not get id definition for type "
-						+ type);
-
-				// MFM temporary fix to avoid NPEs
-				if (type == 36) {
-					return "address";
-				} else if (type == 40) {
-					return "name";
-				} else {
-					return "combo";
-				}
-				// OLD return null;
-			}
-			return id.getFamily();
-		} else {
-			return null;
-		}
-
-	}
-
-
-	/**
-	 * This public version causes a caching event to occur when it is first
-	 * called.
-	 */
-	@Override
-	public Map<Integer, IdType> getLoadedTypes() {
-		if (loadedTypes == null || loadedTypes.isEmpty()) {
-			init();
-		}
-		return loadedTypes;
-	}
-
-	@Override
-	public String getLongName(int type) {
-		return getColumnSource(type);
-	}
-
-	@Override
-	public String getShortName(int type) {
-		if (isLoaded()) {
-			String retValue = null;
-			try {
-				retValue = getLoadedTypes().get(type).getShortName();
-			} catch (Exception aexp) {
-				if (type == 36) {
-					retValue = "Address";
-				} else {
-					retValue = "Other Name";
-				}
-			}
-			return retValue;
-		} else {
-			return null;
-		}
-	}
-
-	@Override
-	public List<Integer> getSkipTypes() {
-		// Note, we're calling this here so that skiptypes will be initialized
-		// if it was never accessed before.
-		if (loadedTypes == null || loadedTypes.isEmpty()) {
-			init();
-		}
-		return skipTypes;
-	}
-
-	@Override
-	public String getTableSource(int type) {
-
-		return getLoadedTypes().get(type).getTableSource();
-
-	}
-
-	// FIXME: There should be an O(1) way of doing this.
-	@Override
-	public int getTypeByShortName(String shortName) {
-		for (IdType id : getLoadedTypes().values()) {
-			if (id.getShortName().equals(shortName)) {
-				return id.getIdType_id();
-			}
-		}
-		return 0;
-	}
-
-	// FIXME: There should be an O(1) way of doing this.
-	@Override
-	public Integer[] getTypesForFamily(G_CanonicalPropertyType family) {
-		List<Integer> results = new ArrayList<Integer>();
-		for (IdType s : getLoadedTypes().values()) {
-			if (s.getFamily().equalsIgnoreCase(family.getValueString()))
-				results.add(Integer.valueOf(s.getIdType_id()));
-		}
-		return results.toArray(new Integer[results.size()]);
-	}
-
-	@Override
-	public void init() {
-		loadedTypes = new HashMap<Integer, IdType>(100);
-		try {
-			for (EnronIdentifierType100 id : getAll(0, 0)) {
-				if (applySkipRule(id) == false) {
-
-					IdType idType = new IdType();
-					idType.setColumnSource(id.getColumnsource());
-					idType.setFamily(id.getFamily());
-					idType.setIdType_id(id.getIdtypeId());
-					idType.setShortName(id.getShortName());
-					idType.setTableSource(id.getTablesource());
-					idType.setType(G_CanonicalPropertyType.fromValue(id
-							.getFamily()));
-					if (idType.getType() == null) {
-						logger.warn("G_CanonicalPropertyType for "
-								+ idType.toString()
-								+ " was null.  This shouldn't happen");
-					}
-					// each idTypeId is unique.
-					loadedTypes.put(id.getIdtypeId(), idType);
-				}
-			}
-			logger.debug("Will use " + loadedTypes.size() + " Type definitions");
-			logger.trace(loadedTypes.values().toString());
-			loaded = true;
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			e.printStackTrace();
-			loaded = false;
-		}
-	}
-
-	@Override
-	public boolean isBadIdentifier(String id) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isLoaded() {
-		return loaded;
-	}
-
-
-	@Override
-	public void setLoaded(boolean l) {
-		loaded = l;
-	}
-
-	@Override
-	public void setLoadedTypes(Map<Integer, IdType> lt) {
-		loadedTypes = lt;
-	}
-
-	@Override
-	public void setSkipTypes(List<Integer> skipTypes) {
-		this.skipTypes = skipTypes;
+		return idType;
 	}
 
 }

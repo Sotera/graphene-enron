@@ -77,7 +77,7 @@ public class PropertyGraphBuilderEnronImpl extends
 							idTypeDAO.getFamily(idTypeId));
 
 				}
-				newNodeList.add(custNode);
+				unscannedNodeList.add(custNode);
 				nodeList.addNode(custNode);
 			}
 
@@ -96,7 +96,7 @@ public class PropertyGraphBuilderEnronImpl extends
 				acnoNode.setLabel(acno);
 				acnoNode.addProperty("background-color", "Lime");
 				acnoNode.addProperty("color", "Lime");
-				newNodeList.add(acnoNode);
+				unscannedNodeList.add(acnoNode);
 				nodeList.addNode(acnoNode);
 			}
 		}
@@ -130,12 +130,12 @@ public class PropertyGraphBuilderEnronImpl extends
 				if (nodeType == G_CanonicalPropertyType.ADDRESS) {
 					idNode.addProperty("color", "gray");
 				}
-				newNodeList.add(idNode);
+				unscannedNodeList.add(idNode);
 				nodeList.addNode(idNode);
 			}
 			if (custNode != null && idNode != null) {
-				String edgeId = generateEdgeId(custNode.getId(), idNode.getId());
-				if (!edgeMap.containsKey(edgeId)) {
+				String key = generateEdgeId(custNode.getId(), idNode.getId());
+				if (key != null && !edgeMap.containsKey(key)) {
 					V_GenericEdge v = new V_GenericEdge(custNode, idNode);
 					G_RelationshipType rel = G_RelationshipType.HAS_ID;
 					if (nodeType == G_CanonicalPropertyType.PHONE) {
@@ -154,7 +154,7 @@ public class PropertyGraphBuilderEnronImpl extends
 							G_RelationshipType.HAS_ACCOUNT.name());
 					v.addData("Source Column", p.getIdentifiercolumnsource());
 					v.addData("Source Table", p.getIdentifiertablesource());
-					edgeMap.put(edgeId, v);
+					edgeMap.put(key, v);
 				}
 
 			}

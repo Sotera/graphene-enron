@@ -121,7 +121,7 @@
 			// transferGraphUrl:prepath + 'graphml/directed/transfers/',
 			//Seems to always be used like Config.entityGraphCSUrl + 'customer/' + custno;
 			entityGraphCSUrl:prepath + 'csgraph/',
-			transferGraphCSUrl:prepath + 'csgraph/directed/transfers/',
+			transferGraphCSUrl:prepath + 'csgraph/directed/events/',
 
             // MFM User defined sessions (also used for saving and restoring graphs)
             getUDSessionUrl: prepath + 'UDsession/getSession/',         // takes a session id
@@ -219,12 +219,21 @@
 
         function getCurrentInstitutionName()
         {
-            if (global_current_datasource.data && global_current_datasource.data.name) {
-                return global_current_datasource.data.name;
-            }
-            else {
-                return null;
-            }
+            var institutionName;
+			
+			try {
+				if (typeof global_current_datasource == "undefined") throw "error";
+				if (typeof global_current_datasource.data == "undefined") throw "error";
+				if (typeof global_current_datasource.data.name == "undefined") throw "error";
+				
+				institutionName = global_current_datasource.data.name;
+			} catch(e) {
+				console.log("Could not resolve global_current_datasource.data.name.  Setting 'Enron' as default institution name");
+				// FIXME: only temporary implementation; no good if there are multiple "institutions" to select from
+				institutionName = "Enron";
+			}
+			
+			return institutionName;
         }
 
 		function getEDTab(entity) // entity details
@@ -328,20 +337,24 @@
 			if (parm && parm.length > 1) {
 
 				parm = parm.substring(1); // ditch the leading '?'
-				parms=parm.split("&");
-				var schema="";
-				var entity="";
+				parms = parm.split("&");
+				var schemas = [];
+				var entities = [];
 				for (var i = 0; i < parms.length; ++i) {
 					var p = parms[i];
 					var x = p.split("=");
 					if (x[0] == 'schema')
-						schema=x[1];
+						schemas.push(x[1]);
 					else if (x[0]=='entity')
-						entity=x[1];
+						entities.push(x[1]);
 				}
 
-				if (entity != "")
-					showEntityDetails(entity);
+				if (entities.length > 0) {
+					// for every unique entity in the URL, automatically create a tab for it
+					for (var i in entities) {
+						showEntityDetails(entities[i]);
+					}
+				}
 
 //				alert("Schema " + schema + " Entity " + entity);
 			};
