@@ -3,559 +3,558 @@
 <html>
 
 <head>
-<title>Graphene Web Demo: Enron Emails, Version 4.0.8</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title> Graphene Web Demo: Enron Emails, Version 4.0.8 </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
 <!-- CSS -->
-<link type="text/css" href="core/extjs/resources/css/ext-all.css"
-	rel="stylesheet" />
-<link type="text/css" href="core/extjs/ux/css/CheckHeader.css"
-	rel="stylesheet" />
+	<!-- MFM COMMENTED OUT <link type="text/css" href="resources/css/cssjit/base.css" rel="stylesheet" /> -->
+	<link type="text/css" href="core/resources/css/cssjit/ForceDirected.css" rel="stylesheet" />
+	<link type="text/css" href="core/extjs/resources/css/ext-all.css"  rel="stylesheet"  />
+	<link type="text/css" href="core/extjs/ux/css/CheckHeader.css"  rel="stylesheet"  />
 
-<style type="text/css">
-x-grid-cell-first {
-	overflow: hidden;
-	-o-text-overflow: ellipsis;
-	text-overflow: ellipsis;
-	padding: 2px 6px 3px;
-	white-space: nowrap;
-}
+    <style type="text/css">
+			x-grid-cell-first {
+			  overflow: hidden;
+			  -o-text-overflow: ellipsis;
+			  text-overflow: ellipsis;
+			  padding: 2px 6px 3px;
+			  white-space: nowrap; }
+		#EntityGraph {
+			background-color: lightyellow;
+			color: 'black';
+		}
+		#TransfersGraph {
+			background-color: lightyellow;
+			color: 'black';
+		}
+		x-busy-tab {
+		    background-color: lightyellow;
+		}
+		x-hasdata-tab {
+		    background-color: red;
+		    color: white;
+		}
+		x-nodata-tab {
+		    background-color: lightblue;
+		}
 
-#EntityGraph {
-	background-color: lightyellow;
-	color: 'black';
-}
+	 	  .groupcolor0 .account{
+	 	  	 color:black;
+	 	  }
+	 	  .groupcolor1  .account{
+	 	     color: red;
+	 	  }
+	 	  .groupcolor2  .account{
+	 	     color: blue;
+	 	  }
+	 	  .groupcolor3  .account{
+	 	     color: green;
+	 	  }
+	 	  .groupcolor4  .account{
+	 	     color: orange;
+	 	  }
 
-#TransfersGraph {
-	background-color: lightyellow;
-	color: 'black';
-}
+		  .bars rect {
+		     fill: steelblue;
+		  }
 
-x-busy-tab {
-	background-color: lightyellow;
-}
+		  .axis text {
+		     font: 10px sans-serif;
+		  }
 
-x-hasdata-tab {
-	background-color: red;
-	color: white;
-}
-
-x-nodata-tab {
-	background-color: lightblue;
-}
-
-.groupcolor0 .account {
-	color: black;
-}
-
-.groupcolor1  .account {
-	color: red;
-}
-
-.groupcolor2  .account {
-	color: blue;
-}
-
-.groupcolor3  .account {
-	color: green;
-}
-
-.groupcolor4  .account {
-	color: orange;
-}
-
-.bars rect {
-	fill: steelblue;
-}
-
-.axis text {
-	font: 10px sans-serif;
-}
-
-.axis path,.axis line {
-	fill: none;
-	stroke: #000;
-	shape-rendering: crispEdges;
-}
-
-.grid .tick {
-	stroke: lightgrey;
-	stroke-opacity: 0.75;
-}
-</style>
+		  .axis path, .axis line {
+		    fill: none;
+		    stroke: #000;
+		    shape-rendering: crispEdges;
+		  }
+		  
+		  .grid .tick {
+			stroke: lightgrey;
+			stroke-opacity: 0.75;
+		  }
+    </style>
 
 <!-- THIRD PARTY -->
-<script type="text/javascript" src="core/extjs/ext-all-debug.js"></script>
-<script type="text/javascript" src="core/extjs/ux/CheckColumn.js"></script>
-<script type="text/javascript" src="core/js/d3/d3.v2.js"></script>
+    <script type="text/javascript" src="core/extjs/ext-all-debug.js"></script>
+    <script type="text/javascript" src="core/extjs/ux/CheckColumn.js"></script>
+    <script type="text/javascript" src="js/d3/d3.v2.js"></script>
 
-<!-- Cytoscape.js library for the Graph -->
-<script src="core/js/libs/jquery-2.0.2.min.js"></script>
-<script src="core/js/cytoscape/cytoscape.js"></script>
-<script src="core/js/cytoscape/arbor.js"></script>
+    <!-- REMOVED the jit used by infoVis when all graphs use cytoscape -->
+	<!--<script type="text/javascript" src="js/Jit/jit.js"></script>-->
 
-<script type="text/javascript">
-	var canUseD3 = true;
-	if (Ext.isIE && Ext.ieVersion < 9) {
-		//			alert("IE Version is less than 9. Some graphics features will be disabled");
-		canUseD3 = false;
-	}
+         <!-- Cytoscape.js library for the Graph -->
+        <script src="jquery/jquery.min.js"></script>
+        <script src="core/js/cytoscape/cytoscape.js"></script>
+<!--
+        <script src="js/cytoscape/cytoscape.min.js"></script>
+-->
+        <script src="core/js/cytoscape/arbor.js"></script>
 
-	var prepath = "rest/";
+	<script type="text/javascript">
+		var canUseD3 = true;
+		if (Ext.isIE && Ext.ieVersion < 9) {
+//			alert("IE Version is less than 9. Some graphics features will be disabled");
+			canUseD3 = false;
+		}
 
-	var Config = {
-		title : 'Graphene',
-		version : '4.0.8',
-		headerUrl : prepath + 'accountdetails',
-		detailUrl : prepath + 'getTransactions',
+		var prepath="rest/";
 
-		transfers_transUrl : prepath + 'getEvents',
+		var Config = {
+		    title:'Graphene',
+		    version:'4.0.8',
+			headerUrl: prepath+'accountdetails',
+			detailUrl: prepath+'getTransactions',
 
-		entityAdvancedSearch : prepath + 'EntitySearch/advancedSearch',
-		entityGetByID : prepath + 'EntitySearch/getEntityByID/',
+            transfers_transUrl:prepath+'getEvents',
 
-		textUrl : prepath + 'FreeText/getTransactions',
-		monthlyStatisticsUrl : prepath + 'getPairMonthlyStatistics',
-		dailyStatisticsUrl : prepath + 'getPairDailyStatistics',
-		csvUrl : prepath + 'csv',
-		xlsUrl : prepath + 'xls',
+			entityAdvancedSearch:prepath+'EntitySearch/advancedSearch',
+			entityGetByID: prepath+'EntitySearch/getEntityByID/',
 
-		entityGraphUrl : prepath + 'graphml/',
-		// transferGraphUrl:prepath + 'graphml/directed/transfers/',
-		//Seems to always be used like Config.entityGraphCSUrl + 'customer/' + custno;
-		entityGraphCSUrl : prepath + 'csgraph/',
-		transferGraphCSUrl : prepath + 'csgraph/directed/events/',
+			textUrl: prepath+'FreeText/getTransactions',
+			monthlyStatisticsUrl: prepath + 'getPairMonthlyStatistics',
+			dailyStatisticsUrl: prepath + 'getPairDailyStatistics',
+			csvUrl:    prepath+'csv',
+			xlsUrl:    prepath+'xls',
 
-		// MFM User defined sessions (also used for saving and restoring graphs)
-		getUDSessionUrl : prepath + 'UDsession/getSession/', // takes a session id
-		getUDSessionsUrl : prepath + 'UDsession/getSessions', // no params
-		getUDSessionsByDateUrl : prepath + 'UDsession/getSessionsByDate/', // takes a fromdt/todt
-		getUDSessionsByUserIdUrl : prepath + 'UDsession/getSessionsByUserId/', // takes a userid
-		getUDSessionsByNameUrl : prepath + 'UDsession/getSessionsByName/', // takes a name
-		saveUDSessionUrl : prepath + 'UDsession/save', // POST - takes JSON
+			entityGraphUrl:prepath + 'graphml/',
+			// transferGraphUrl:prepath + 'graphml/directed/transfers/',
+			//Seems to always be used like Config.entityGraphCSUrl + 'customer/' + custno;
+			entityGraphCSUrl:prepath + 'csgraph/',
+			transferGraphCSUrl:prepath + 'csgraph/directed/events/',
 
-		dataSourceUrl : prepath + 'datasources/getAll',
-		restEasy : true,
-		canUseD3 : canUseD3,
-		CXF : false
-	};
+            // MFM User defined sessions (also used for saving and restoring graphs)
+            getUDSessionUrl: prepath + 'UDsession/getSession/',         // takes a session id
+            getUDSessionsUrl: prepath + 'UDsession/getSessions',        // no params
+            getUDSessionsByDateUrl: prepath + 'UDsession/getSessionsByDate/',    // takes a fromdt/todt
+            getUDSessionsByUserIdUrl: prepath + 'UDsession/getSessionsByUserId/',    // takes a userid
+            getUDSessionsByNameUrl: prepath + 'UDsession/getSessionsByName/',    // takes a name
+            saveUDSessionUrl: prepath + 'UDsession/save',    // POST - takes JSON
 
-	Config.appRoot = "/graphene-enron-web";
-	Config.helpIcon = Config.appRoot + "/images/HelpIcon_solid.gif";
-	// Icons for filter animation controls
-	Config.PlayReverse = Config.appRoot + "/images/PlayReverse_Hover14.png";
-	Config.Pause = Config.appRoot + "/images/Pause_Hover14.png";
-	Config.Play = Config.appRoot + "/images/Play_Hover14.png";
+			dataSourceUrl:	   prepath+'datasources/getAll',
+			restEasy:true,
+			canUseD3: canUseD3,
+			CXF:false
+		};
+
+		Config.appRoot = "/graphene-enron-web";
+		Config.helpIcon = Config.appRoot + "/images/HelpIcon_solid.gif";
+        // Icons for filter animation controls
+        Config.PlayReverse = Config.appRoot + "/images/PlayReverse_Hover14.png";
+        Config.Pause = Config.appRoot + "/images/Pause_Hover14.png";
+        Config.Play = Config.appRoot + "/images/Play_Hover14.png";
+
 </script>
 
 
 <!-- OUR SHARED TOOLS -->
-<script type="text/javascript" src="js/shared/utils.js"></script>
-<!-- REMOVED the infoVis when all graphs use cytoscape -->
-<!--<script type="text/javascript" src="js/shared/infoVisGraphSubs.js"></script>-->
+	<script type="text/javascript" src="js/shared/utils.js"></script>
+	<!-- REMOVED the infoVis when all graphs use cytoscape -->
+        <!--<script type="text/javascript" src="js/shared/infoVisGraphSubs.js"></script>-->
 
-<script type="text/javascript" src="js/shared/formutils.js"></script>
-<script type="text/javascript" src="js/shared/dateGroup.js"></script>
-<script type="text/javascript" src="js/shared/histogram.js"></script>
-<script type="text/javascript" src="js/shared/interactiond3.js"></script>
-<script type="text/javascript" src="js/shared/scatterplotd3.js"></script>
-<script type="text/javascript" src="js/shared/cytoGraphSubs.js"></script>
-<script type="text/javascript" src="js/shared/cytoOverrides.js"></script>
-<script type="text/javascript" src="js/shared/graphUtils.js"></script>
-<script type="text/javascript" src="js/shared/EnronLegendDefs.js"></script>
-<script type="text/javascript" src="js/shared/graphSettings.js"></script>
-<script type="text/javascript" src="js/shared/TLCharts.js"></script>
-<script type="text/javascript" src="js/shared/gridFilterSettings.js"></script>
-<script type="text/javascript" src="js/shared/filterSettings.js"></script>
-<script type="text/javascript" src="js/shared/filterSettings2.js"></script>
-<script type="text/javascript" src="js/shared/userDefinedSession.js"></script>
-<script type="text/javascript" src="js/shared/exportDialog.js"></script>
-<script type="text/javascript" src="js/shared/importDialog.js"></script>
-<script type="text/javascript" src="js/shared/ActivityLogger.js"></script>
-<script type="text/javascript" src="js/shared/nodeActions.js"></script>
-<script type="text/javascript" src="js/shared/graphLayoutMenu.js"></script>
-<script type="text/javascript" src="js/shared/graphManagerMenu.js"></script>
+    <script type="text/javascript" src="js/shared/formutils.js"></script>
+    <script type="text/javascript" src="js/shared/dateGroup.js"></script>
+    <script type="text/javascript" src="js/shared/histogram.js"></script>
+    <script type="text/javascript" src="js/shared/interactiond3.js"></script>
+    <script type="text/javascript" src="js/shared/scatterplotd3.js"></script>
+     <script type="text/javascript" src="js/shared/cytoGraphSubs.js"></script>
+     <script type="text/javascript" src="js/shared/cytoOverrides.js"></script>
+    <script type="text/javascript" src="js/shared/graphUtils.js"></script>
+        <script type="text/javascript" src="js/shared/EnronLegendDefs.js"></script>
+	<script type="text/javascript" src="js/shared/graphSettings.js"></script>
+	<script type="text/javascript" src="js/shared/TLCharts.js"></script>
+        <script type="text/javascript" src="js/shared/gridFilterSettings.js"></script>
+        <script type="text/javascript" src="js/shared/filterSettings.js"></script>
+        <script type="text/javascript" src="js/shared/filterSettings2.js"></script>
+        <script type="text/javascript" src="js/shared/userDefinedSession.js"></script>
+        <script type="text/javascript" src="js/shared/exportDialog.js"></script>
+        <script type="text/javascript" src="js/shared/importDialog.js"></script>
+        <script type="text/javascript" src="js/shared/ActivityLogger.js"></script>
+        <script type="text/javascript" src="js/shared/nodeActions.js"></script>
+        <script type="text/javascript" src="js/shared/graphLayoutMenu.js"></script>
+        <script type="text/javascript" src="js/shared/graphManagerMenu.js"></script>
 
-<script type="text/javascript">
-	//We don't need to know the absolute path or the deployment context.  The prefix is always just rest/
+	<script type="text/javascript">
+//We don't need to know the absolute path or the deployment context.  The prefix is always just rest/
 
-	// DRAPER API
-	//Instantiate the Activity Logger
-	//var activityLogger = new activityLogger();
+                // DRAPER API
+                //Instantiate the Activity Logger
+                //var activityLogger = new activityLogger();
 
-	//Register the logger.
-	//In this case, we register the logger to look for the logger on
-	//port 1337 of the machine "localhost", telling it that this
-	//software component is version 3.04 of the software named
-	//"graphene" and that the session ID is "AC76999"
-	//activityLogger.registerActivityLogger("http://localhost:1337", "graphene", "3.5 Beta", "AC76999");
+                //Register the logger.
+                //In this case, we register the logger to look for the logger on
+                //port 1337 of the machine "localhost", telling it that this
+                //software component is version 3.04 of the software named
+                //"graphene" and that the session ID is "AC76999"
+                //activityLogger.registerActivityLogger("http://localhost:1337", "graphene", "3.5 Beta", "AC76999");
 
-	function makeCSTab() {
-		makeTab("csType", Ext.create("DARPA.CSFrame", {
-			title : 'GLOBAL SEARCH',
-			id : 'csFrame'
-		}));
+		function makeCSTab()
+		{
+			makeTab("csType", Ext.create("DARPA.CSFrame", {title:'GLOBAL SEARCH', id:'csFrame'}));
 
-		// MFM set default search date range
-		var csFrame = getCSFrame().getSearch();
-		if (csFrame) {
-			var fromDate = (new Date(2006, 0, 1, 0, 0, 0)).getTime(); // default 2006
-			var toDate = (new Date()).getTime(); // Today
-			csFrame.updateCSSearchDates(fromDate, toDate);
+                        // MFM set default search date range
+                        var csFrame = getCSFrame().getSearch();
+                        if (csFrame) {
+                            var fromDate = (new Date(2006,0,1,0,0,0)).getTime();    // default 2006
+                            var toDate = (new Date()).getTime();    // Today
+                            csFrame.updateCSSearchDates(fromDate, toDate);
+                        }
 		}
-	}
-	function makeTransactionTab() {
-		makeTab("ledgerType", Ext.create("DARPA.TransactionFrame", {
-			title : 'LEDGERS',
-			id : 'TransactionFrame'
-		}));
-	}
-	function makeTransfersTab() {
-		makeTab("ledgerType", Ext.create("DARPA.TransfersFrame", {
-			title : 'TRANSFERS',
-			id : 'TransfersFrame'
-		}));
-	}
-	function makePBTab() {
-		makeTab("pbType", Ext.create("DARPA.PBFrame", {
-			title : 'ENTITY GRAPH',
-			id : 'PBFrame'
-		}));
-	}
-	function makeESTab() {
-		makeTab("esType", Ext.create("DARPA.ESFrame", {
-			title : 'ENTITY SEARCH',
-			id : 'ESFrame'
-		}));
-	}
-
-	function getCurrentInstitutionName() {
-		if (global_current_datasource.data
-				&& global_current_datasource.data.name) {
-			return global_current_datasource.data.name;
-		} else {
-			return null;
+		function makeTransactionTab()
+		{
+			makeTab("ledgerType", Ext.create("DARPA.TransactionFrame", {title:'LEDGERS', id:'TransactionFrame'})	);
 		}
-	}
+		function makeTransfersTab()
+		{
+			makeTab("ledgerType", Ext.create("DARPA.TransfersFrame", {title:'TRANSFERS', id:'TransfersFrame'})	);
+		}
+		function makePBTab()
+		{
+			makeTab("pbType", Ext.create("DARPA.PBFrame", {title:'ENTITY GRAPH', id:'PBFrame'})	);
+		}
+		function makeESTab()
+		{
+			makeTab("esType", Ext.create("DARPA.ESFrame", {title:'ENTITY SEARCH', id:'ESFrame'})	);
+		}
 
-	function getEDTab(entity) // entity details
-	{
-		var etab = Ext.getCmp(entity.id);
-		if (etab == null) {
-			var name = "";
-			for (var i = 0; i < entity.attributes.length; ++i) {
-				if (entity.attributes[i].family == 'Name') {
-					var n = entity.attributes[i].value;
-					if (name.length == 0 || n.length < name.length)
-						name = n;
-					break;
+        function getCurrentInstitutionName()
+        {
+            var institutionName;
+			
+			try {
+				if (typeof global_current_datasource == "undefined") throw "error";
+				if (typeof global_current_datasource.data == "undefined") throw "error";
+				if (typeof global_current_datasource.data.name == "undefined") throw "error";
+				
+				institutionName = global_current_datasource.data.name;
+			} catch(e) {
+				console.log("Could not resolve global_current_datasource.data.name.  Setting 'Enron' as default institution name");
+				// FIXME: only temporary implementation; no good if there are multiple "institutions" to select from
+				institutionName = "Enron";
+			}
+			
+			return institutionName;
+        }
+
+		function getEDTab(entity) // entity details
+		{
+                    var etab = Ext.getCmp(entity.id);
+                    if (etab == null) {
+                        var name="";
+                        for (var i = 0; i < entity.attributes.length; ++i) {
+                            if (entity.attributes[i].family=='Name') {
+                                    var n = entity.attributes[i].value;
+                                    if (name.length == 0 || n.length < name.length)
+                                            name = n;
+                                    break;
+                            }
+                        }
+
+                        var instName = getCurrentInstitutionName();
+                        var t = Ext.create("DARPA.EntityTab", {institution: instName, title:name, id:entity.id, entity:entity, closable:true});
+                        etab = makeTab("edType", t);
+                    }
+                    return etab;
+		}
+
+		function makeTab(cstype, contents)
+		{
+			contents.cstype=cstype;
+			contents.originalTitle = contents.title;
+			Ext.getCmp("tabFrame").add(contents);
+			return contents;
+		}
+
+	     // handle failures from calls to various Get Services
+	     // This will get called on completion of a data store load() call
+	     // It checks the response from the server and if not 'ok', displays an alert.
+	     // (previously, if there was a server error, the GUI showed no indication of this error - total silence)
+	     function QSLoadComplete(context,result) {
+	         if (result && result.exception) {
+	             var msg = "<br>Search Failed due to Server Error<br>" +
+	                 "<br>Details: Code = " + result.error.status + " Text = " + result.error.statusText;
+	             setStatus(msg);
+	             Ext.Msg.alert(msg);
+	         }
+	     }
+
+		function setStatus(status)
+                {
+                	console.log("Attempt to write to legacy status with message " + status);
+//                        Ext.getCmp("statusbar").value=status;
+                }
+
+
+
+                // MFM For IE 9.0.x support when console is not defined
+           try {
+                 var xx = console.log;
+             }
+                catch (ee) {
+                    //alert("console is not defined");
+                    console = {
+                        log: function(text) {
+                            //alert(text);
+                        }
+                    };
+                }
+
+		Ext.onReady(function(){
+
+		   	Ext.QuickTips.init();
+		   	Ext.tip.QuickTipManager.init();
+		   	// disable the browser from acting on right-click
+		   	Ext.getBody().on("contextmenu", Ext.emptyfn, null, {preventDefault:true});
+
+   			Ext.create("Ext.container.Viewport", {
+                    layout:'border',
+                    items:[
+                            Ext.create("Ext.tab.Panel", {
+                                    region:'center',
+                                    id:'tabFrame',
+                                    deferredRender:false, // need this to ensure the elements are created before we make graphs
+                                    items:[],
+                                    listeners:{
+                                            //OLD tabchange:function(me,tab) {
+                                            tabchange: function(tPanel, newc, oldc, opts) {
+                                                if (newc == getPBFrame()) {
+                                                    newc.getNameList().getListBox().expand();
+                                                }
+                                            }
+                                    }
+
+                            })
+                    ]
+   			}); // viewport
+
+            // MFM create legend for all tabs that need them
+            GLegend.createLegend();
+
+            makeESTab(); // Entity Search
+            getTabFrame().setActiveTab(getESFrame());
+
+			var parm = window.location.search;
+			if (parm && parm.length > 1) {
+
+				parm = parm.substring(1); // ditch the leading '?'
+				parms = parm.split("&");
+				var schemas = [];
+				var entities = [];
+				for (var i = 0; i < parms.length; ++i) {
+					var p = parms[i];
+					var x = p.split("=");
+					if (x[0] == 'schema')
+						schemas.push(x[1]);
+					else if (x[0]=='entity')
+						entities.push(x[1]);
 				}
-			}
 
-			var instName = getCurrentInstitutionName();
-			var t = Ext.create("DARPA.EntityTab", {
-				institution : instName,
-				title : name,
-				id : entity.id,
-				entity : entity,
-				closable : true
-			});
-			etab = makeTab("edType", t);
-		}
-		return etab;
-	}
-
-	function makeTab(cstype, contents) {
-		contents.cstype = cstype;
-		contents.originalTitle = contents.title;
-		Ext.getCmp("tabFrame").add(contents);
-		return contents;
-	}
-
-	// handle failures from calls to various Get Services
-	// This will get called on completion of a data store load() call
-	// It checks the response from the server and if not 'ok', displays an alert.
-	// (previously, if there was a server error, the GUI showed no indication of this error - total silence)
-	function QSLoadComplete(context, result) {
-		if (result && result.exception) {
-			var msg = "<br>Search Failed due to Server Error<br>"
-					+ "<br>Details: Code = " + result.error.status + " Text = "
-					+ result.error.statusText;
-			setStatus(msg);
-			Ext.Msg.alert(msg);
-		}
-	}
-
-	function setStatus(status) {
-		console.log("Attempt to write to legacy status with message " + status);
-		//                        Ext.getCmp("statusbar").value=status;
-	}
-
-	// MFM For IE 9.0.x support when console is not defined
-	try {
-		var xx = console.log;
-	} catch (ee) {
-		//alert("console is not defined");
-		console = {
-			log : function(text) {
-				//alert(text);
-			}
-		};
-	}
-
-	Ext.onReady(function() {
-
-		Ext.QuickTips.init();
-		Ext.tip.QuickTipManager.init();
-		// disable the browser from acting on right-click
-		Ext.getBody().on("contextmenu", Ext.emptyfn, null, {
-			preventDefault : true
-		});
-
-		Ext.create("Ext.container.Viewport", {
-			layout : 'border',
-			items : [ Ext.create("Ext.tab.Panel", {
-				region : 'center',
-				id : 'tabFrame',
-				deferredRender : false, // need this to ensure the elements are created before we make graphs
-				items : [],
-				listeners : {
-					//OLD tabchange:function(me,tab) {
-					tabchange : function(tPanel, newc, oldc, opts) {
-						if (newc == getPBFrame()) {
-							newc.getNameList().getListBox().expand();
-						}
+				if (entities.length > 0) {
+					// for every unique entity in the URL, automatically create a tab for it
+					for (var i in entities) {
+						showEntityDetails(entities[i]);
 					}
 				}
 
-			}) ]
-		}); // viewport
+//				alert("Schema " + schema + " Entity " + entity);
+			};
 
-		// MFM create legend for all tabs that need them
-		GLegend.createLegend();
+		}); // on ready
 
-		makeESTab(); // Entity Search
-		getTabFrame().setActiveTab(getESFrame());
 
-		var parm = window.location.search;
-		if (parm && parm.length > 1) {
+		function getCSFrame()
+		{
+			return Ext.getCmp("csFrame");
+		}
+		function getESFrame()
+		{
+			return Ext.getCmp("ESFrame");
+		}
 
-			parm = parm.substring(1); // ditch the leading '?'
-			parms = parm.split("&");
-			var schema = "";
-			var entity = "";
-			for (var i = 0; i < parms.length; ++i) {
-				var p = parms[i];
-				var x = p.split("=");
-				if (x[0] == 'schema')
-					schema = x[1];
-				else if (x[0] == 'entity')
-					entity = x[1];
+		function getTabFrame()
+		{
+			return Ext.getCmp("tabFrame");
+		}
+		function getTransactionFrame() {
+			return Ext.getCmp("TransactionFrame");
+		}
+		function getTransfersFrame() {
+			return Ext.getCmp("TransfersFrame");
+		}
+
+		function getPBFrame() {
+			return Ext.getCmp("PBFrame");
+		}
+
+
+                // MFM - Same as getCSFrame
+                function getSearchFrame()
+                {
+                        return getCSFrame();
+                }
+                // MFM NOT YET
+                /*
+                function getGraphFrame()
+                {
+                        return Ext.getCmp("graph");
+                }
+                */
+
+		function doGlobalSearch(idValue, idType, searchType, caseSensitive)
+		{
+			var tabList=[
+//			"Frame",
+//			"TransfersFrame",
+//			"PBFrame"
+			];
+			for (var i = 0; i < tabList.length; ++i) {
+				var frame=Ext.getCmp(tabList[i]);
+				utils.setBlink(frame, true);
+				frame.doSearch(idValue, idType, searchType, caseSensitive, true);
 			}
 
-			if (entity != "")
-				showEntityDetails(entity);
-
-			//				alert("Schema " + schema + " Entity " + entity);
-		}
-		;
-
-	}); // on ready
-
-	function getCSFrame() {
-		return Ext.getCmp("csFrame");
-	}
-	function getESFrame() {
-		return Ext.getCmp("ESFrame");
-	}
-
-	function getTabFrame() {
-		return Ext.getCmp("tabFrame");
-	}
-	function getTransactionFrame() {
-		return Ext.getCmp("TransactionFrame");
-	}
-	function getTransfersFrame() {
-		return Ext.getCmp("TransfersFrame");
-	}
-
-	function getPBFrame() {
-		return Ext.getCmp("PBFrame");
-	}
-
-	// MFM - Same as getCSFrame
-	function getSearchFrame() {
-		return getCSFrame();
-	}
-	// MFM NOT YET
-	/*
-	function getGraphFrame()
-	{
-	        return Ext.getCmp("graph");
-	}
-	 */
-
-	function doGlobalSearch(idValue, idType, searchType, caseSensitive) {
-		var tabList = [
-		//			"Frame",
-		//			"TransfersFrame",
-		//			"PBFrame"
-		];
-		for (var i = 0; i < tabList.length; ++i) {
-			var frame = Ext.getCmp(tabList[i]);
-			utils.setBlink(frame, true);
-			frame.doSearch(idValue, idType, searchType, caseSensitive, true);
 		}
 
-	}
-
-	function showLedger(account, entityId) {
-		if (!undefined === entityId) {
-			getTransactionFrame().doSearch(account, "account", "exactmatch",
-					false, true);
-			getTabFrame().setActiveTab(getTransactionFrame());
-		} else {
-			var tab = Ext.getCmp(entityId);
-			if (tab != null) { // TODO: Perhaps load entity and create tab
-				//tab.loadLedger(account, selectedInst);
-				//tab.loadTransfers(account, selectedInst);
-				//                    tab.loadLedger(account);
-				tab.loadTransfers(account);
+		function showLedger(account, entityId)
+		{
+			if (!undefined===entityId) {
+				getTransactionFrame().doSearch(account, "account", "exactmatch", false, true);
+				getTabFrame().setActiveTab(getTransactionFrame());
+			}
+			else {
+				var tab = Ext.getCmp(entityId);
+				if (tab != null) { // TODO: Perhaps load entity and create tab
+					//tab.loadLedger(account, selectedInst);
+					//tab.loadTransfers(account, selectedInst);
+//                    tab.loadLedger(account);
+					tab.loadTransfers(account);
+				}
 			}
 		}
-	}
 
-	function showEntityDetails(id) {
+		function showEntityDetails(id)
+		{
 		// TODO: needs schema
 		// first see if we already have a tab for this entity
 
-		if (Ext.getCmp(id) != undefined) {
-			getTabFrame().setActiveTab(Ext.getCmp(id));
-			return;
-		}
+			if (Ext.getCmp(id) != undefined) {
+				getTabFrame().setActiveTab(Ext.getCmp(id));
+				return;
+			}
 
 		//  Now see if it is in the search cache
 
-		var store = getESFrame().getEntityGrid().getStore();
-		var e = store.getById(id);
-		if (e != null) {
-			var entity = e.data;
-			var frame = getEDTab(entity);
-			getTabFrame().setActiveTab(frame);
-			return;
-		}
+			var store = getESFrame().getEntityGrid().getStore();
+			var e = store.getById(id);
+			if (e != null) {
+				var entity = e.data;
+				var frame = getEDTab(entity);
+				getTabFrame().setActiveTab(frame);
+				return;
+			}
 
 		// So we need to load it
 
-		Ext.Ajax.request({
-			url : Config.entityGetByID + id,
-			method : 'GET',
-			success : function(resp) {
-				var entity = Ext.decode(resp.responseText);
-				var frame = getEDTab(entity);
-				getTabFrame().setActiveTab(frame);
-			}
+			Ext.Ajax.request( {
+				url:Config.entityGetByID + id,
+				method:'GET',
+				success:function(resp) {
+					var entity = Ext.decode(resp.responseText);
+					var frame = getEDTab(entity);
+					getTabFrame().setActiveTab(frame);
+				}
 
-		});
+			});
 
-	}
-
-	function showEntityGraph(entity) {
-		var tab = getEDTab(entity);
-		var gr = tab.getEntityGraph();
-		if (gr) {
-			gr.load(entity.id);
-			if (gr.prevLoadParams) {
-				gr.prevLoadParams.prevNumber = entity.id;
-			} else {
-				gr.prevLoadParams = {
-					prevNumber : entity.id
-				};
-			}
 		}
-	}
 
-	// MFM
-	// This function is called from the interaction chart within the svg document
-	// when the user clicks on the interaction chart.
-	// gridId   - Id of the Transfers Grid instance containing data for the chart.
-	// x,y      - Mouse on click position within the chart
-	function highlightRowForChartPos(gridId, x, y) {
-		// DEBUG
-		//console.log("Parent: highlightRowForChartPos gridid =" + gridId + ", x =" + x + ", y=" + y);
-
-		var tGrid = Ext.getCmp(gridId);
-		if (tGrid && tGrid.highlightRowForChartPos) {
-			tGrid.highlightRowForChartPos(gridId, x, y);
+		function showEntityGraph(entity)
+		{
+			var tab = getEDTab(entity);
+		        var gr = tab.getEntityGraph();
+		        if (gr) {
+		            gr.load(entity.id);
+		            if (gr.prevLoadParams) {
+		                gr.prevLoadParams.prevNumber = entity.id;
+		            }
+		            else {
+		                gr.prevLoadParams = {prevNumber: entity.id};
+		            }
+			 }
 		}
-	}
 
-	// legacy code; should delete/depreciate
-	function updateGridFilterDates(fromDate, toDate) {
-		console.log("Tried to use updateGridFilterDates()");
-	}
+                // MFM
+                // This function is called from the interaction chart within the svg document
+                // when the user clicks on the interaction chart.
+                // gridId   - Id of the Transfers Grid instance containing data for the chart.
+                // x,y      - Mouse on click position within the chart
+                function highlightRowForChartPos(gridId, x, y) {
+                    // DEBUG
+                    //console.log("Parent: highlightRowForChartPos gridid =" + gridId + ", x =" + x + ", y=" + y);
 
-	// TODO - this needs to return the username or userid from the login page when that is implemented
-	function getSessionUserid() {
-		return "unknown";
-	}
-</script>
-<script type="text/javascript" src="CSEARCH/js/CS_Search.js"></script>
+                    var tGrid = Ext.getCmp(gridId);
+                    if (tGrid && tGrid.highlightRowForChartPos) {
+                        tGrid.highlightRowForChartPos(gridId, x, y);
+                    }
+                }
 
-<script type="text/javascript" src="CSEARCH/js/CS_Frame.js"></script>
+                // legacy code; should delete/depreciate
+                function updateGridFilterDates(fromDate, toDate) {
+                    console.log("Tried to use updateGridFilterDates()");
+                }
 
-<script type="text/javascript" src="datasets/js/dataSourceLister.js"></script>
-<script type="text/javascript" src="entitysearch/js/Entity_Search.js"></script>
-<script type="text/javascript" src="entitysearch/js/Entity_List_Grid.js"></script>
-<script type="text/javascript" src="entitysearch/js/Entity_Name_List.js"></script>
-<script type="text/javascript"
-	src="entitysearch/js/Entity_Search_Frame.js"></script>
+                // TODO - this needs to return the username or userid from the login page when that is implemented
+                function getSessionUserid() {
+                    return "unknown";
+                }
 
-<script type="text/javascript"
-	src="TransactionsGrid/js/TXN_HeaderPanel.js"></script>
-<script type="text/javascript" src="TransactionsGrid/js/TXN_Menu.js"></script>
-<script type="text/javascript" src="TransactionsGrid/js/TXN_Grid.js"></script>
-<script type="text/javascript" src="TransactionsGrid/js/TXN_Search.js"></script>
-<script type="text/javascript" src="TransfersGrid/js/Enron_timeline.js"></script>
-<script type="text/javascript"
-	src="TransfersGrid/js/Enron_timelineButtons.js"></script>
-<script type="text/javascript"
-	src="TransfersGrid/js/Enron_timelinePanel.js"></script>
-<script type="text/javascript" src="TransactionsGrid/js/TXN_Ledger.js"></script>
-<script type="text/javascript" src="TransactionsGrid/js/TXN_Frame.js"></script>
+	</script>
+    <script type="text/javascript" src="CSEARCH/js/CS_Search.js"></script>
+
+	<script type="text/javascript" src="CSEARCH/js/CS_Frame.js"></script>
+
+	<script type="text/javascript" src="datasets/js/dataSourceLister.js"></script>
+	<script type="text/javascript" src="entitysearch/js/Entity_Search.js"></script>
+	<script type="text/javascript" src="entitysearch/js/Entity_List_Grid.js"></script>
+	<script type="text/javascript" src="entitysearch/js/Entity_Name_List.js"></script>
+	<script type="text/javascript" src="entitysearch/js/Entity_Search_Frame.js"></script>
+
+    <script type="text/javascript" src="TransactionsGrid/js/TXN_HeaderPanel.js"></script>
+    <script type="text/javascript" src="TransactionsGrid/js/TXN_Menu.js"></script>
+    <script type="text/javascript" src="TransactionsGrid/js/TXN_Grid.js"></script>
+    <script type="text/javascript" src="TransactionsGrid/js/TXN_Search.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/Enron_timeline.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/Enron_timelineButtons.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/Enron_timelinePanel.js"></script>
+	<script type="text/javascript" src="TransactionsGrid/js/TXN_Ledger.js"></script>
+	<script type="text/javascript" src="TransactionsGrid/js/TXN_Frame.js"></script>
 
 
-<script type="text/javascript" src="TransfersGrid/js/TFR_HeaderPanel.js"></script>
-<script type="text/javascript" src="TransfersGrid/js/TFR_Menu.js"></script>
-<script type="text/javascript" src="TransfersGrid/js/TFR_Grid.js"></script>
-<script type="text/javascript" src="TransfersGrid/js/TFR_Search.js"></script>
-<script type="text/javascript" src="TransfersGrid/js/TFR_Ledger.js"></script>
-<script type="text/javascript" src="TransfersGrid/js/TFR_Charts.js"></script>
-<script type="text/javascript" src="TransfersGrid/js/TFR_Frame.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/TFR_HeaderPanel.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/TFR_Menu.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/TFR_Grid.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/TFR_Search.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/TFR_Ledger.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/TFR_Charts.js"></script>
+    <script type="text/javascript" src="TransfersGrid/js/TFR_Frame.js"></script>
 
-<script type="text/javascript"
-	src="entitygraph/js/EntityGraphToolBar.js"></script>
-<script type="text/javascript" src="entitygraph/js/EntityGraph.js"></script>
-<script type="text/javascript"
-	src="entitygraph/js/EntityGraphRightPanels.js"></script>
+    <script type="text/javascript" src="entitygraph/js/EntityGraphToolBar.js"></script>
+    <script type="text/javascript" src="entitygraph/js/EntityGraph.js"></script>
+	<script type="text/javascript" src="entitygraph/js/EntityGraphRightPanels.js"></script>
 
-<script type="text/javascript"
-	src="TransactionsGraph/js/TXN_GraphToolBar.js"></script>
-<script type="text/javascript"
-	src="TransactionsGraph/js/TXN_GraphNodeDisplay.js"></script>
-<script type="text/javascript" src="TransactionsGraph/js/TXN_Graph.js"></script>
-<script type="text/javascript"
-	src="TransactionsGraph/js/TXN_GraphFrame.js"></script>
+	<script type="text/javascript" src="TransactionsGraph/js/TXN_GraphToolBar.js"></script>
+	<script type="text/javascript" src="TransactionsGraph/js/TXN_GraphNodeDisplay.js"></script>
+	<script type="text/javascript" src="TransactionsGraph/js/TXN_Graph.js"></script>
+	<script type="text/javascript" src="TransactionsGraph/js/TXN_GraphFrame.js"></script>
 
-<script type="text/javascript" src="entitytab/js/EntityDetails.js"></script>
-<script type="text/javascript" src="entitytab/js/entityTab.js"></script>
+	<script type="text/javascript" src="entitytab/js/EntityDetails.js"></script>
+	<script type="text/javascript" src="entitytab/js/entityTab.js"></script>
 
 </head>
 
 
 <body>
-	<!--
+<!--
 <div id="log"></div>
 -->
 </body>

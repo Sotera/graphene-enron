@@ -759,10 +759,10 @@ Ext.define("DARPA.GraphVis",
 					break
                 case 'arbor':
                 case 'arbor-snow':     // force directed arbor - out of the box
-					scope.doForceDirectedLayout('arbor-snow');
+					scope.doForceDirectedLayout('arbor-snow', config);
 					break;
                 case 'arbor-wheel':    // custom arbor
-					scope.doForceDirectedLayout('arbor-wheel');
+					scope.doForceDirectedLayout('arbor-wheel', config);
 					break;
                 default:
                     // do nothing, invalid layout
@@ -998,7 +998,7 @@ Ext.define("DARPA.GraphVis",
 	},
 	
     // fdType   - 'arbor-wheel' or 'arbor-snow'
-    doForceDirectedLayout: function(fdType) {
+    doForceDirectedLayout: function(layoutName, config) {
     	var scope = this;
     	
 		if (config == undefined) {
