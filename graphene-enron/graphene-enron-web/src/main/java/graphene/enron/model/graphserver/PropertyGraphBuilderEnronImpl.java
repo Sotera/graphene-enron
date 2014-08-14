@@ -124,7 +124,7 @@ public class PropertyGraphBuilderEnronImpl extends
 				if (nodeType == G_CanonicalPropertyType.PHONE) {
 					idNode.addProperty("color", "green");
 				}
-				if (nodeType == G_CanonicalPropertyType.EMAIL) {
+				if (nodeType == G_CanonicalPropertyType.EMAIL_ADDRESS) {
 					idNode.addProperty("color", "aqua");
 				}
 				if (nodeType == G_CanonicalPropertyType.ADDRESS) {
@@ -141,7 +141,7 @@ public class PropertyGraphBuilderEnronImpl extends
 					if (nodeType == G_CanonicalPropertyType.PHONE) {
 						rel = G_RelationshipType.HAS_PHONE;
 					}
-					if (nodeType == G_CanonicalPropertyType.EMAIL) {
+					if (nodeType == G_CanonicalPropertyType.EMAIL_ADDRESS) {
 						rel = G_RelationshipType.HAS_EMAIL_ADDRESS;
 					}
 					if (nodeType == G_CanonicalPropertyType.ADDRESS) {
