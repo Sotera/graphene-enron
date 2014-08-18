@@ -136,22 +136,22 @@ public class PropertyGraphBuilderEnronImpl extends
 			if (custNode != null && idNode != null) {
 				String key = generateEdgeId(custNode.getId(), idNode.getId());
 				if (key != null && !edgeMap.containsKey(key)) {
-					V_GenericEdge v = new V_GenericEdge(custNode, idNode);
+					V_GenericEdge v = new V_GenericEdge( idNode,custNode);
 					G_RelationshipType rel = G_RelationshipType.HAS_ID;
 					if (nodeType == G_CanonicalPropertyType.PHONE) {
-						rel = G_RelationshipType.HAS_PHONE;
+						rel = G_RelationshipType.COMMUNICATION_ID_OF;
 					}
 					if (nodeType == G_CanonicalPropertyType.EMAIL_ADDRESS) {
-						rel = G_RelationshipType.HAS_EMAIL_ADDRESS;
+						rel = G_RelationshipType.COMMUNICATION_ID_OF;
 					}
 					if (nodeType == G_CanonicalPropertyType.ADDRESS) {
-						rel = G_RelationshipType.HAS_ADDRESS;
+						rel = G_RelationshipType.ADDRESS_OF;
 					}
 					v.setIdType(rel.name());
 					v.setLabel(null);
 					v.setIdVal(rel.name());
 					v.addData("Relationship type",
-							G_RelationshipType.HAS_ACCOUNT.name());
+							G_RelationshipType.OWNER_OF.name());
 					v.addData("Source Column", p.getIdentifiercolumnsource());
 					v.addData("Source Table", p.getIdentifiertablesource());
 					edgeMap.put(key, v);
@@ -164,11 +164,11 @@ public class PropertyGraphBuilderEnronImpl extends
 			String key = generateEdgeId(custNode.getId(), acnoNode.getId());
 			if (!edgeMap.containsKey(key)) {
 				V_GenericEdge v = new V_GenericEdge(custNode, acnoNode);
-				v.setIdType(G_RelationshipType.HAS_ACCOUNT.name());
+				v.setIdType(G_RelationshipType.OWNER_OF.name());
 				v.setLabel(null);
-				v.setIdVal(G_RelationshipType.HAS_ACCOUNT.name());
+				v.setIdVal(G_RelationshipType.OWNER_OF.name());
 				v.addData("Relationship type",
-						G_RelationshipType.HAS_ACCOUNT.name());
+						G_RelationshipType.OWNER_OF.name());
 				v.addData("Source Column", p.getIdentifiercolumnsource());
 				v.addData("Source Table", p.getIdentifiertablesource());
 

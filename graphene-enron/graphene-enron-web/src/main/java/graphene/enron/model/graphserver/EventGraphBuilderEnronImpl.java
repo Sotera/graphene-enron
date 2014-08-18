@@ -117,9 +117,9 @@ public class EventGraphBuilderEnronImpl extends
 			
 			if (key != null && !edgeMap.containsKey(key)) {
 				V_GenericEdge v = new V_GenericEdge(src, target);
-				v.setIdType(G_RelationshipType.HAS_ACCOUNT.name());
-				v.setLabel(G_RelationshipType.HAS_ACCOUNT.name());
-				v.setIdVal(G_RelationshipType.HAS_ACCOUNT.name());
+				v.setIdType(G_RelationshipType.OWNER_OF.name());
+				v.setLabel(G_RelationshipType.OWNER_OF.name());
+				v.setIdVal(G_RelationshipType.OWNER_OF.name());
 				long dt = p.getTrnDt().getTime();
 				double value = p.getTrnValueNbr();
 				v.setDoubleValue(value);

@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>graphene-enron</groupId>
 	<artifactId>graphene-enron</artifactId>
-	<version>4.0.8-SNAPSHOT</version>
+	<version>4.0.9-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<modules>
 		<module>graphene-enron-ingest</module>
@@ -16,7 +16,7 @@
 		<java.version>1.7</java.version>
 		<!-- properties for dependencies (usually versions) -->
 
-		<base.project.version>4.0.8-SNAPSHOT</base.project.version>
+		<base.project.version>4.0.9-SNAPSHOT</base.project.version>
 		<base.project.groupId>graphene</base.project.groupId>
 
 		<!-- Properties for this instance of the app -->
