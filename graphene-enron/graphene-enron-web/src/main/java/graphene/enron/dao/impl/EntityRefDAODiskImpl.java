@@ -298,7 +298,7 @@ public class EntityRefDAODiskImpl extends
 					results.addAll(memDb.getRowsForCustomer(value));
 					results.addAll(memDb.getRowsForIdentifier(value,
 							family.getValueString()));
-				} else if (family.equals(G_CanonicalPropertyType.ID)) {
+				} else if (family.equals(G_CanonicalPropertyType.OTHER_ID)) {
 					// logger.debug("finding id types that match " + s);
 					results.addAll(memDb.getRowsForIdentifier(value,
 							family.getValueString()));

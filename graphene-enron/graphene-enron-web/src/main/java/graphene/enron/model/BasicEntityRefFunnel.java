@@ -32,4 +32,10 @@ public class BasicEntityRefFunnel implements
 
 		return b;
 	}
+
+	@Override
+	public EnronEntityref100 to(BasicEntityRef f) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

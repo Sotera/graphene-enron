@@ -4,7 +4,6 @@ import graphene.dao.UnifiedCommunicationEventDAO;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
 import graphene.model.idhelper.PropertyHelper;
 import graphene.model.idl.G_Link;
-import graphene.model.idl.G_LinkTag;
 import graphene.model.idl.G_Property;
 import graphene.model.idl.G_PropertyTag;
 import graphene.model.idl.G_PropertyType;
