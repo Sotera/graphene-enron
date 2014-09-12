@@ -27,7 +27,7 @@ public class EnronIdentifierType100 implements Serializable {
         this.columnsource = columnsource;
     }
 
-    public String getFamily() {
+    public String getNodeType() {
         return family;
     }
 

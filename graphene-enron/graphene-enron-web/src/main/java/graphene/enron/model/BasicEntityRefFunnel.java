@@ -7,7 +7,7 @@ import graphene.model.view.entities.BasicEntityRef;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 public class BasicEntityRefFunnel implements
-		Funnel<BasicEntityRef, EnronEntityref100> {
+		Funnel<EnronEntityref100, BasicEntityRef> {
 
 	@Override
 	public BasicEntityRef from(EnronEntityref100 f) {

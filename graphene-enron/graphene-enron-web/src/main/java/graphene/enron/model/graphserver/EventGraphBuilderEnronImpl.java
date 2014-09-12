@@ -6,14 +6,19 @@ import graphene.dao.TransactionDAO;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
 import graphene.model.idl.G_CanonicalPropertyType;
-import graphene.model.idl.G_RelationshipType;
+import graphene.model.idl.G_CanonicalRelationshipType;
+import graphene.model.idl.G_EdgeType;
+import graphene.model.idl.G_EdgeTypeAccess;
+import graphene.model.idl.G_NodeTypeAccess;
+import graphene.model.idl.G_PropertyKey;
+import graphene.model.idl.G_PropertyKeyTypeAccess;
 import graphene.model.query.StringQuery;
 import graphene.services.EventGraphBuilder;
 import graphene.util.validator.ValidationUtils;
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericNode;
-import mil.darpa.vande.generic.V_GraphQuery;
 
+import org.apache.avro.AvroRemoteException;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
 
@@ -67,17 +72,16 @@ public class EventGraphBuilderEnronImpl extends
 				// est.setSearchType(G_SearchType.COMPARE_EQUALS);
 				// est.setFamily(G_CanonicalPropertyType.ACCOUNT);
 				// eq.addAttribute(est);
-				//List listOfProperties = propertyDAO.findByQuery(eq);
-				
-				
+				// List listOfProperties = propertyDAO.findByQuery(eq);
+
 				src = new V_GenericNode(s_acno);
 				src.setIdType("account");
-				src.setFamily(G_CanonicalPropertyType.ACCOUNT.getValueString());
+				src.setFamily(G_CanonicalPropertyType.ACCOUNT.name());
 				src.setIdVal(s_acno);
 				src.setValue(s_acno);
 				src.setLabel(s_acname);
 				src.setColor("#F08080");
-				//for (s)
+				// for (s)
 				// value type is "customer"
 				src.addProperty("Account Number", s_acno);
 				src.addProperty("Account Owner", s_acname);
@@ -95,7 +99,7 @@ public class EventGraphBuilderEnronImpl extends
 				target = new V_GenericNode(t_acno);
 				target.setIdType("account");
 				target.setFamily(G_CanonicalPropertyType.ACCOUNT
-						.getValueString());
+						.name());
 				target.setIdVal(t_acno);
 				target.setValue(t_acno);
 				target.setLabel(t_acname);
@@ -112,30 +116,43 @@ public class EventGraphBuilderEnronImpl extends
 		}
 
 		if (src != null && target != null) {
-			//Here, an event id is used, so we will get an edger per event.
+			// Here, an event id is used, so we will get an edger per event.
 			String key = generateEdgeId(p.getPairId().toString());
-			
-			if (key != null && !edgeMap.containsKey(key)) {
-				V_GenericEdge v = new V_GenericEdge(src, target);
-				v.setIdType(G_RelationshipType.OWNER_OF.name());
-				v.setLabel(G_RelationshipType.OWNER_OF.name());
-				v.setIdVal(G_RelationshipType.OWNER_OF.name());
-				long dt = p.getTrnDt().getTime();
-				double value = p.getTrnValueNbr();
-				v.setDoubleValue(value);
+			try {
+				if (key != null && !edgeMap.containsKey(key)) {
+					V_GenericEdge v = new V_GenericEdge(src, target);
+					G_EdgeType ownerOf = edgeTypeAccess
+							.getEdgeType(G_CanonicalRelationshipType.OWNER_OF
+									.name());
 
-				v.addData("date", Long.toString(dt));
-				v.addData("amount", Double.toString(value));
-				v.addData("id", p.getPairId().toString());
-				edgeMap.put(key, v);
-			}else{
-				//Handle how multiple edges are aggregated.
+					G_PropertyKey date = propertyKeyTypeAccess
+							.getPropertyKey(G_CanonicalPropertyType.TIME_DATE
+									.name());
+					G_PropertyKey id = propertyKeyTypeAccess
+							.getPropertyKey(G_CanonicalPropertyType.OTHER_ID
+									.name());
+
+					v.setIdType(ownerOf.getName());
+					v.setLabel(ownerOf.getName());
+					v.setIdVal(ownerOf.getName());
+					long dt = p.getTrnDt().getTime();
+					double value = p.getTrnValueNbr();
+					v.setDoubleValue(value);
+
+					v.addData(date.getName(), Long.toString(dt));
+					v.addData("amount", Double.toString(value));
+					v.addData(id.getName(), p.getPairId().toString());
+					edgeMap.put(key, v);
+				} else {
+					// Handle how multiple edges are aggregated.
+				}
+			} catch (AvroRemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-
 		}
 
 		return true;
 	}
-
 
 }
