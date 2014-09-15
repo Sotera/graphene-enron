@@ -9,9 +9,6 @@ import graphene.enron.model.sql.enron.EnronTransactionPair100;
 import graphene.enron.model.sql.enron.QEnronTransactionPair100;
 import graphene.enron.model.view.transferserver.TransferRowFunnel;
 import graphene.model.idl.G_Link;
-import graphene.model.idl.G_LinkTag;
-import graphene.model.idl.G_Property;
-import graphene.model.idlhelper.LinkHelper;
 import graphene.model.query.EventQuery;
 import graphene.model.view.events.DirectedEventRow;
 import graphene.util.FastNumberUtils;
@@ -329,11 +326,9 @@ public class TransactionDAOSQLImpl extends
 			list = sq.list(t.receiverId, t.senderId);
 		}
 		for (Tuple tuple : list) {
-			List<G_Property> props = null;
 			// TODO: fill in more fields
-			G_Link link = new LinkHelper(G_LinkTag.COMMUNICATION, tuple.get(
-					t.senderId).toString(), tuple.get(t.receiverId).toString(),
-					props);
+			G_Link link = new G_Link(tuple.get(0, String.class), tuple.get(1,
+					String.class), true, null, null, null, null);
 
 			results.add(link);
 		}
