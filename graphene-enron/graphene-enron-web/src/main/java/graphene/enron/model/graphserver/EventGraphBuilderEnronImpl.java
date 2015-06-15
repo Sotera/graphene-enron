@@ -6,13 +6,12 @@ import graphene.dao.TransactionDAO;
 import graphene.enron.model.sql.enron.EnronIdentifierType100;
 import graphene.enron.model.sql.enron.EnronTransactionPair100;
 import graphene.model.idl.G_CanonicalPropertyType;
-import graphene.model.idl.G_RelationshipType;
+import graphene.model.idl.G_CanonicalRelationshipType;
 import graphene.model.query.StringQuery;
 import graphene.services.EventGraphBuilder;
 import graphene.util.validator.ValidationUtils;
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericNode;
-import mil.darpa.vande.generic.V_GraphQuery;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
@@ -72,7 +71,7 @@ public class EventGraphBuilderEnronImpl extends
 				
 				src = new V_GenericNode(s_acno);
 				src.setIdType("account");
-				src.setFamily(G_CanonicalPropertyType.ACCOUNT.getValueString());
+				src.setNodeType(G_CanonicalPropertyType.ACCOUNT.name());
 				src.setIdVal(s_acno);
 				src.setValue(s_acno);
 				src.setLabel(s_acname);
@@ -94,8 +93,8 @@ public class EventGraphBuilderEnronImpl extends
 			if (target == null) {
 				target = new V_GenericNode(t_acno);
 				target.setIdType("account");
-				target.setFamily(G_CanonicalPropertyType.ACCOUNT
-						.getValueString());
+				target.setNodeType(G_CanonicalPropertyType.ACCOUNT
+						.name());
 				target.setIdVal(t_acno);
 				target.setValue(t_acno);
 				target.setLabel(t_acname);
@@ -117,9 +116,9 @@ public class EventGraphBuilderEnronImpl extends
 			
 			if (key != null && !edgeMap.containsKey(key)) {
 				V_GenericEdge v = new V_GenericEdge(src, target);
-				v.setIdType(G_RelationshipType.OWNER_OF.name());
-				v.setLabel(G_RelationshipType.OWNER_OF.name());
-				v.setIdVal(G_RelationshipType.OWNER_OF.name());
+				v.setIdType(G_CanonicalRelationshipType.OWNER_OF.name());
+				v.setLabel(G_CanonicalRelationshipType.OWNER_OF.name());
+				v.setIdVal(G_CanonicalRelationshipType.OWNER_OF.name());
 				long dt = p.getTrnDt().getTime();
 				double value = p.getTrnValueNbr();
 				v.setDoubleValue(value);

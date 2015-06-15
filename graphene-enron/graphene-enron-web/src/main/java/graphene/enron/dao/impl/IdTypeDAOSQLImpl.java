@@ -107,11 +107,7 @@ public class IdTypeDAOSQLImpl extends AbstractIdTypeDAO<EnronIdentifierType100>
 		idType.setIdType_id(id.getIdtypeId());
 		idType.setShortName(id.getShortName());
 		idType.setTableSource(id.getTablesource());
-		idType.setType(G_CanonicalPropertyType.fromValue(id.getFamily()));
-		if (idType.getType() == null) {
-			logger.warn("G_CanonicalPropertyType for " + idType.toString()
-					+ " was null.  This shouldn't happen");
-		}
+
 		return idType;
 	}
 

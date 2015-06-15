@@ -7,6 +7,7 @@ import graphene.dao.IdTypeDAO;
 import graphene.dao.PermissionDAO;
 import graphene.dao.RoleDAO;
 import graphene.dao.TransactionDAO;
+import graphene.dao.annotations.EntityLightFunnelMarker;
 import graphene.dao.sql.DAOSQLModule;
 import graphene.enron.dao.impl.DataSourceListDAOImpl;
 import graphene.enron.dao.impl.EntityRefDAOImpl;
@@ -14,8 +15,10 @@ import graphene.enron.dao.impl.IdTypeDAOSQLImpl;
 import graphene.enron.dao.impl.TransactionDAOSQLImpl;
 import graphene.enron.model.graphserver.GraphServerModule;
 import graphene.enron.model.memorydb.EnronMemoryDB;
+import graphene.model.Funnel;
 import graphene.model.idl.G_SymbolConstants;
 import graphene.model.memorydb.IMemoryDB;
+import graphene.model.view.entities.DefaultEntityLightFunnel;
 import graphene.services.EntityDAOImpl;
 import graphene.services.SimplePermissionDAOImpl;
 import graphene.services.SimpleRoleDAOImpl;
@@ -34,7 +37,7 @@ import org.apache.tapestry5.ioc.annotations.SubModule;
 import org.apache.tapestry5.ioc.services.SymbolProvider;
 import org.slf4j.Logger;
 
-@SubModule({ GraphServerModule.class,DAOSQLModule.class, UtilModule.class })
+@SubModule({ GraphServerModule.class, DAOSQLModule.class, UtilModule.class })
 public class TestModule {
 
 	public static void bind(ServiceBinder binder) {
@@ -57,6 +60,8 @@ public class TestModule {
 		binder.bind(DataSourceListDAO.class, DataSourceListDAOImpl.class);
 
 		binder.bind(IMemoryDB.class, EnronMemoryDB.class);
+		binder.bind(Funnel.class, DefaultEntityLightFunnel.class).withMarker(
+				EntityLightFunnelMarker.class);
 	}
 
 	final static String MAX_MEMDB_ROWS_PARAMETER = "graphene.memorydb-maxIndexRecords";
@@ -83,7 +88,6 @@ public class TestModule {
 			Configuration<String> configuration) {
 		configuration.add("org.hsqldb.jdbc.JDBCDriver");
 	}
-
 
 	public PropertiesFileSymbolProvider buildColorsSymbolProvider(Logger logger) {
 		return new PropertiesFileSymbolProvider(logger,

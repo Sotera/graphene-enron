@@ -4,7 +4,7 @@ import graphene.dao.EntityRefDAO;
 import graphene.dao.IdTypeDAO;
 import graphene.enron.model.sql.enron.EnronEntityref100;
 import graphene.model.idl.G_CanonicalPropertyType;
-import graphene.model.idl.G_RelationshipType;
+import graphene.model.idl.G_CanonicalRelationshipType;
 import graphene.model.query.StringQuery;
 import graphene.services.PropertyGraphBuilder;
 import graphene.util.validator.ValidationUtils;
@@ -54,8 +54,8 @@ public class PropertyGraphBuilderEnronImpl extends
 			if (custNode == null) {
 				custNode = new V_GenericNode(custno);
 				custNode.setIdType("customer");
-				custNode.setFamily(G_CanonicalPropertyType.CUSTOMER_NUMBER
-						.getValueString());
+				custNode.setNodeType(G_CanonicalPropertyType.CUSTOMER_NUMBER
+						.name());
 				custNode.setIdVal(custno);
 				custNode.setValue(custno);
 				custNode.setLabel(custno);
@@ -74,7 +74,7 @@ public class PropertyGraphBuilderEnronImpl extends
 							idTypeDAO.getShortName(idTypeId));
 					custNode.addProperty("Value", identifier);
 					custNode.addProperty("Family",
-							idTypeDAO.getFamily(idTypeId));
+							idTypeDAO.getNodeType(idTypeId));
 
 				}
 				unscannedNodeList.add(custNode);
@@ -88,9 +88,8 @@ public class PropertyGraphBuilderEnronImpl extends
 			if (acnoNode == null) {
 				acnoNode = new V_GenericNode(acno);
 				// logger.debug("Adding account node with value " + acno);
-				acnoNode.setIdType(idTypeDAO.getFamily(p.getIdtypeId()));
-				acnoNode.setFamily(G_CanonicalPropertyType.ACCOUNT
-						.getValueString());
+				acnoNode.setIdType(idTypeDAO.getNodeType(p.getIdtypeId()));
+				acnoNode.setNodeType(G_CanonicalPropertyType.ACCOUNT.name());
 				acnoNode.setIdVal(acno);
 				acnoNode.setValue(acno);
 				acnoNode.setLabel(acno);
@@ -104,13 +103,13 @@ public class PropertyGraphBuilderEnronImpl extends
 		if (ValidationUtils.isValid(identifier, p.getIdtypeId())) {
 			String nodeId = identifier + p.getIdtypeId();
 			idNode = nodeList.getNode(nodeId);
-			String idFamily = idTypeDAO.getFamily(p.getIdtypeId());
-			G_CanonicalPropertyType nodeType = idTypeDAO.getByType(
-					p.getIdtypeId()).getType();
+			String idFamily = idTypeDAO.getNodeType(p.getIdtypeId());
+			String nodeType = idTypeDAO.getByType(p.getIdtypeId())
+					.getNodeType();
 			if (idNode == null) {
 				idNode = new V_GenericNode(nodeId);
 				// logger.debug("Adding identifier node with value " + key);
-				acnoNode.setFamily(nodeType.getValueString());
+				acnoNode.setNodeType(nodeType);
 				idNode.setIdType(idFamily);
 				idNode.setIdVal(identifier);
 				idNode.setValue(identifier);
@@ -121,13 +120,13 @@ public class PropertyGraphBuilderEnronImpl extends
 					// embed more data in the important nodes. --djue
 					custNode.addProperty(idFamily, identifier);
 				}
-				if (nodeType == G_CanonicalPropertyType.PHONE) {
+				if (nodeType == G_CanonicalPropertyType.PHONE.name()) {
 					idNode.addProperty("color", "green");
 				}
-				if (nodeType == G_CanonicalPropertyType.EMAIL_ADDRESS) {
+				if (nodeType == G_CanonicalPropertyType.EMAIL_ADDRESS.name()) {
 					idNode.addProperty("color", "aqua");
 				}
-				if (nodeType == G_CanonicalPropertyType.ADDRESS) {
+				if (nodeType == G_CanonicalPropertyType.ADDRESS.name()) {
 					idNode.addProperty("color", "gray");
 				}
 				unscannedNodeList.add(idNode);
@@ -136,22 +135,23 @@ public class PropertyGraphBuilderEnronImpl extends
 			if (custNode != null && idNode != null) {
 				String key = generateEdgeId(custNode.getId(), idNode.getId());
 				if (key != null && !edgeMap.containsKey(key)) {
-					V_GenericEdge v = new V_GenericEdge( idNode,custNode);
-					G_RelationshipType rel = G_RelationshipType.HAS_ID;
-					if (nodeType == G_CanonicalPropertyType.PHONE) {
-						rel = G_RelationshipType.COMMUNICATION_ID_OF;
+					V_GenericEdge v = new V_GenericEdge(idNode, custNode);
+					G_CanonicalRelationshipType rel = G_CanonicalRelationshipType.HAS_ID;
+					if (nodeType == G_CanonicalPropertyType.PHONE.name()) {
+						rel = G_CanonicalRelationshipType.COMMUNICATION_ID_OF;
 					}
-					if (nodeType == G_CanonicalPropertyType.EMAIL_ADDRESS) {
-						rel = G_RelationshipType.COMMUNICATION_ID_OF;
+					if (nodeType == G_CanonicalPropertyType.EMAIL_ADDRESS
+							.name()) {
+						rel = G_CanonicalRelationshipType.COMMUNICATION_ID_OF;
 					}
-					if (nodeType == G_CanonicalPropertyType.ADDRESS) {
-						rel = G_RelationshipType.ADDRESS_OF;
+					if (nodeType == G_CanonicalPropertyType.ADDRESS.name()) {
+						rel = G_CanonicalRelationshipType.ADDRESS_OF;
 					}
 					v.setIdType(rel.name());
 					v.setLabel(null);
 					v.setIdVal(rel.name());
 					v.addData("Relationship type",
-							G_RelationshipType.OWNER_OF.name());
+							G_CanonicalRelationshipType.OWNER_OF.name());
 					v.addData("Source Column", p.getIdentifiercolumnsource());
 					v.addData("Source Table", p.getIdentifiertablesource());
 					edgeMap.put(key, v);
@@ -164,11 +164,11 @@ public class PropertyGraphBuilderEnronImpl extends
 			String key = generateEdgeId(custNode.getId(), acnoNode.getId());
 			if (!edgeMap.containsKey(key)) {
 				V_GenericEdge v = new V_GenericEdge(custNode, acnoNode);
-				v.setIdType(G_RelationshipType.OWNER_OF.name());
+				v.setIdType(G_CanonicalRelationshipType.OWNER_OF.name());
 				v.setLabel(null);
-				v.setIdVal(G_RelationshipType.OWNER_OF.name());
+				v.setIdVal(G_CanonicalRelationshipType.OWNER_OF.name());
 				v.addData("Relationship type",
-						G_RelationshipType.OWNER_OF.name());
+						G_CanonicalRelationshipType.OWNER_OF.name());
 				v.addData("Source Column", p.getIdentifiercolumnsource());
 				v.addData("Source Table", p.getIdentifiertablesource());
 

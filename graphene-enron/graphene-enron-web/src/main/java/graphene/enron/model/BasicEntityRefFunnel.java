@@ -10,7 +10,7 @@ public class BasicEntityRefFunnel implements
 		Funnel<BasicEntityRef, EnronEntityref100> {
 
 	@Override
-	public BasicEntityRef from(EnronEntityref100 f) {
+	public BasicEntityRef to(EnronEntityref100 f) {
 		BasicEntityRef b = new BasicEntityRef();
 		b.setAccountNumber(f.getAccountnumber());
 		b.setAccountType(f.getAccounttype());
@@ -34,7 +34,7 @@ public class BasicEntityRefFunnel implements
 	}
 
 	@Override
-	public EnronEntityref100 to(BasicEntityRef f) {
+	public EnronEntityref100 from(BasicEntityRef f) {
 		// TODO Auto-generated method stub
 		return null;
 	}
